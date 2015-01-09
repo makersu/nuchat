@@ -17,5 +17,20 @@ app.start = function() {
 
 // start the server if `$ node server.js`
 if (require.main === module) {
-  app.start();
+  //app.start();
+  app.sio = require('socket.io')(app.start());
+/*
+  app.io = require('socket.io')(app.start());
+
+  app.io.on('connection', function(socket){
+  	console.log('a user connected');
+  	socket.on('chat message', function(msg){
+    	console.log('message: ' + msg);
+    	app.io.emit('chat message', msg);
+  	});
+  	socket.on('disconnect', function(){
+  		console.log('user disconnected');
+  	});
+  });
+*/
 }
