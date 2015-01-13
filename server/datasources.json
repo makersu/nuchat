@@ -2,5 +2,9 @@
   "db": {
     "name": "db",
     "connector": "memory"
+  },
+  "mongodb": {
+    "database":"nuchat",
+    "connector": "mongodb"
   }
 }

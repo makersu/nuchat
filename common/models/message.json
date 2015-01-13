@@ -1,0 +1,23 @@
+{
+  "name": "Message",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "properties": {
+    "room": {
+      "type": "string"
+    },
+    "owner": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "posted": {
+      "type": "date"
+    }
+  },
+  "validations": [],
+  "relations": {},
+  "acls": [],
+  "methods": []
+}
