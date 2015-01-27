@@ -12,5 +12,4 @@ angular.module('Nuchatapp.controllers', [])
   $scope.friend = Friends.get($stateParams.friendId);
 })
 
-.controller('AccountCtrl', function($scope) {
-});
+
