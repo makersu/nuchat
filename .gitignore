@@ -26,3 +26,19 @@ node_modules
 
 # Users Environment Variables
 .lock-wscript
+
+# client.gitignore
+client/nuchatapp/node_modules
+client/nuchatapp/www
+client/nuchatapp/.tmp
+client/nuchatapp/.sass-cache
+client/nuchatapp/app/lib
+client/nuchatapp/coverage
+client/nuchatapp/platforms
+client/nuchatapp/plugins
+client/nuchatapp/*.swp
+client/nuchatapp/*.swo
+client/nuchatapp/*.log
+client/nuchatapp/*.DS_Store
+
+client/nuchatapp/app/scripts/config.js
