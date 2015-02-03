@@ -1,0 +1,35 @@
+{
+  "name": "room",
+  "base": "PersistedModel",
+  "idInjection": true,
+  "properties": {
+    "name": {
+      "type": "string",
+      "required": "true"
+    },
+    "description": {
+      "type": "string"
+    },
+    "created": {
+      "type": "date"
+    },
+    "lastActive": {
+      "type": "date"
+    }
+  },
+  "validations": [],
+  "relations": {
+    "admins": {
+      "type": "hasMany",
+      "model": "user",
+      "foreignKey": ""
+    },
+    "messages": {
+      "type": "hasMany",
+      "model": "message",
+      "foreignKey": ""
+    }
+  },
+  "acls": [],
+  "methods": []
+}

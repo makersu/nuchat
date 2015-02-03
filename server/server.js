@@ -3,9 +3,14 @@ var boot = require('loopback-boot');
 
 var app = module.exports = loopback();
 
+//var bodyParser = require('body-parser');
+
 // Bootstrap the application, configure models, datasources and middleware.
 // Sub-apps like REST API are mounted via boot scripts.
 boot(app, __dirname);
+
+// to support JSON-encoded bodies
+//app.use(bodyParser.json());
 
 app.start = function() {
   // start the web server

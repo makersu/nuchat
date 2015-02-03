@@ -1,0 +1,15 @@
+<ion-view title="New Room">
+  <ion-content has-tabs="true">
+    <div class="list list-inset">
+      <label class="item item-input">
+        <span class="input-label">Room Name</span>
+        <input type="text" ng-model="newRoom.name">
+      </label>
+      <label class="item item-input">
+        <span class="input-label">Description</span>
+        <input type="text" ng-model="newRoom.description">
+      </label>
+      <button class="button button-royal button-block" ng-click="createRoom()">Create Room</button>
+    </div>
+  </ion-content>
+</ion-view>

@@ -6,6 +6,7 @@
     "pretest": "jshint ."
   },
   "dependencies": {
+    "body-parser": "^1.10.2",
     "compression": "^1.0.3",
     "errorhandler": "^1.1.1",
     "loopback": "^2.8.0",
@@ -13,7 +14,8 @@
     "loopback-connector-mongodb": "^1.4.5",
     "loopback-datasource-juggler": "^2.7.0",
     "serve-favicon": "^2.0.1",
-    "socket.io": "^1.2.1"
+    "socket.io": "^1.2.1",
+    "underscore": "^1.7.0"
   },
   "optionalDependencies": {
     "loopback-explorer": "^1.1.0"

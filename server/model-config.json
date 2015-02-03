@@ -26,7 +26,15 @@
     "dataSource": "db",
     "public": false
   },
-  "Message": {
+  "user": {
+    "dataSource": "db",
+    "public": true
+  },
+  "room": {
+    "dataSource": "db",
+    "public": true
+  },
+  "message": {
     "dataSource": "db",
     "public": true
   }

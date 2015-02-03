@@ -21,9 +21,9 @@
     <!--
       The nav bar that will be updated as we navigate between views.
     -->
-    <ion-nav-bar class="bar-stable nav-title-slide-ios7">
+    <ion-nav-bar class="bar-royal nav-title-slide-ios7">
       <ion-nav-back-button class="button-icon icon ion-ios7-arrow-back">
-        Back
+        Back 
       </ion-nav-back-button>
     </ion-nav-bar>
     <!--
@@ -47,19 +47,26 @@
     <!-- endbower -->
     <!-- endbuild -->
 
+    <script src="lib/socket.io.js"></script>
     <!-- cordova script (this will be a 404 during development) -->
     <script src="cordova.js"></script>
 
 
         <!-- build:js scripts/scripts.js -->
         <script src="scripts/config.js"></script>
-        <script src="scripts/app.js"></script>
-        <script src="scripts/controllers.js"></script>
-        <script src="scripts/services.js"></script>
+        <script src="scripts/app.js"></script> 
         <script src="scripts/services/lb-services.js"></script>
-        <script src="scripts/controllers/login.js"></script>
-        <script src="scripts/controllers/register.js"></script>
-        <script src="scripts/controllers/account.js"></script>
+        <script src="scripts/services/lb-socket.js"></script>
+        <script src="scripts/services/friendService.js"></script>
+        <script src="scripts/services/roomService.js"></script>
+        <script src="scripts/services.js"></script>
+        <script src="scripts/controllers/loginCtrl.js"></script>
+        <script src="scripts/controllers/registerCtrl.js"></script>
+        <script src="scripts/controllers/accountCtrl.js"></script>
+        <script src="scripts/controllers/friendCtrl.js"></script>
+        <script src="scripts/controllers/RoomCtrl.js"></script>
+        <script src="scripts/controllers/ChatCtrl.js"></script>
+        <script src="scripts/controllers.js"></script>
         <!-- endbuild -->
 </body>
 </html>

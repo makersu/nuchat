@@ -7,7 +7,6 @@
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
 angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchatapp.services', 'lbServices'])
-
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -49,31 +48,62 @@ angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchat
 
     // Each tab has its own nav history stack:
 
-    .state('tab.dash', {
-      url: '/dash',
-      views: {
-        'tab-dash': {
-          templateUrl: 'templates/tab-dash.html',
-          controller: 'DashCtrl'
-        }
-      }
-    })
-
     .state('tab.friends', {
       url: '/friends',
       views: {
         'tab-friends': {
           templateUrl: 'templates/tab-friends.html',
-          controller: 'FriendsCtrl'
+          controller: 'FriendCtrl'
         }
       }
     })
+
     .state('tab.friend-detail', {
       url: '/friend/:friendId',
       views: {
         'tab-friends': {
           templateUrl: 'templates/friend-detail.html',
           controller: 'FriendDetailCtrl'
+        }
+      }
+    })
+
+    .state('tab.chats', {
+      url: '/chats',
+      views: {
+        'tab-chats': {
+          templateUrl: 'templates/tab-chats.html',
+          controller: 'RoomCtrl'
+        }
+      }
+    })
+
+    .state('tab.createRoom', {
+      url: '/createRoom',
+      views: {
+        'tab-chats': {
+          templateUrl: 'templates/createRoom.html',
+          controller: 'RoomCtrl'
+        }
+      }
+    })
+
+    .state('tab.chats-room', {
+      url: '/room/:roomId',
+      views: {
+        'tab-chats': {
+          templateUrl: 'templates/chats-room.html',
+          controller: 'ChatCtrl'
+        }
+      }
+    })
+
+    .state('tab.dash', {
+      url: '/dash',
+      views: {
+        'tab-dash': {
+          templateUrl: 'templates/tab-dash.html',
+          controller: 'DashCtrl'
         }
       }
     })
