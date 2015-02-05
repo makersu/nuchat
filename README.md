@@ -9,6 +9,7 @@
 #friend management
 ##get friends
 ##add friend
+##search friend
 
 #room management
 ##~~create room~~
