@@ -64,6 +64,7 @@ function RoomService(LBSocket) {
 
 //TODO:?
 function addMessage(message){
+	console.log('addMessage')
 	console.log(message)
 	var room=get(message.roomId)
 	console.log(room)

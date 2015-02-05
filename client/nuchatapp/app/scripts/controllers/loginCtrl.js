@@ -1,8 +1,8 @@
 function LoginCtrl($scope, User, $location, $ionicPopup) {
   console.log('LoginCtrl')
-
+  console.log(User.getCachedCurrent())//
   if (User.getCachedCurrent()!==null) {
-    $location.path('/tab/friends');
+    $location.path('/tab/chats');
   }
 
 	/**
@@ -38,7 +38,8 @@ function LoginCtrl($scope, User, $location, $ionicPopup) {
     console.log($scope.credentials);
     $scope.loginResult = User.login({include: 'user', rememberMe: true}, $scope.credentials,
       function () {
-        var next = $location.nextAfterLogin || '/tab/friends';
+        console.log(User.getCachedCurrent())//
+        var next = $location.nextAfterLogin || '/tab/chats';
         $location.nextAfterLogin = null;
         $location.path(next);
       },

@@ -6,7 +6,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchatapp.services', 'lbServices'])
+angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchatapp.services', 'lbServices', 'angularMoment', 'monospaced.elastic'])
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -20,8 +20,12 @@ angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchat
     }
   });
 })
+//.run(function ($rootScope, User) {
+//  $rootScope.currentUser = User.getCurrent();
+//  console.log($rootScope.currentUser)
+//})    
 
-.config(function($stateProvider, $urlRouterProvider) {
+.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
 
   // Ionic uses AngularUI Router which uses the concept of states
   // Learn more here: https://github.com/angular-ui/ui-router
@@ -88,11 +92,11 @@ angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchat
       }
     })
 
-    .state('tab.chats-room', {
+    .state('tab.chatRoom', {
       url: '/room/:roomId',
       views: {
         'tab-chats': {
-          templateUrl: 'templates/chats-room.html',
+          templateUrl: 'templates/chatRoom.html',
           controller: 'ChatCtrl'
         }
       }
@@ -120,6 +124,19 @@ angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchat
 
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/login');//
+
+  $httpProvider.interceptors.push(function ($q, $location) {
+    return {
+      responseError: function (rejection) {
+        console.log("Redirect");
+        if (rejection.status == 401 && $location.path() !== '/login' && $location.path() !== '/register') {
+          $location.nextAfterLogin = $location.path();
+          $location.path('/login');
+        }
+        return $q.reject(rejection);
+      }
+    };
+  });
 
 });
 

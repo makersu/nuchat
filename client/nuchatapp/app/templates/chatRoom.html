@@ -15,10 +15,10 @@
 
 	<div ng-repeat="message in room.messages track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)">
 
-		<div ng-if="user._id !== message.userId">
+		<div ng-if="currentUser.id !== message.owner">
 
 			<img ng-click="viewProfile(message)" class="profile-pic left" 
-			ng-src="http://ionicframework.com/img/docs/venkman.jpg" onerror="onProfilePicError(this)" />
+			ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" />
 
 			<div class="chat-bubble left">
 
@@ -26,18 +26,18 @@
 				</div>
 
 				<div class="message-detail">
-					<span ng-click="viewProfile(message)" 
-					class="bold">{{toUser.username}}</span>,
-					<span am-time-ago="message.date"></span>
+					<!-- <span ng-click="viewProfile(message)" 
+					class="bold">{{toUser.username}}</span>, -->
+					<span am-time-ago="message.created"></span>
 				</div>
 
 			</div>
 		</div>
 
-		<div ng-if="user._id === message.userId">
+		<div ng-if="currentUser.id === message.owner">
 
-			<img ng-click="viewProfile(message)" class="profile-pic right" 
-			ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" />
+			<!-- <img ng-click="viewProfile(message)" class="profile-pic right" 
+			ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" /> -->
 
 			<div class="chat-bubble right">
 
@@ -45,9 +45,9 @@
 				</div>
 
 				<div class="message-detail">
-					<span ng-click="viewProfile(message)" 
-					class="bold">{{user.username}}</span>, 
-					<span am-time-ago="message.date"></span>
+					<!-- <span ng-click="viewProfile(message)" 
+					class="bold">{{currentUser.username}}</span>,  -->
+					<span am-time-ago="message.created"></span>
 				</div>
 
 			</div>
@@ -61,13 +61,13 @@
 
 <form name="sendMessageForm" ng-submit="sendMessage(sendMessageForm)" novalidate>
 	<ion-footer-bar class="bar-stable item-input-inset message-footer" keyboard-attach>
-	<label class="item-input-wrapper">
-		<textarea ng-model="input.text" value="" placeholder="Send {{toUser.username}} a message..." required minlength="1" maxlength="144" msd-elastic></textarea>
-	</label>
-	<div class="footer-btn-wrap">
-		<button class="button button-icon icon ion-android-send footer-btn" type="submit" ng-disabled="!input.text || input.text === ''">
-		</button>
-	</div>
+		<label class="item-input-wrapper">
+			<textarea ng-model="input.text" value="" placeholder="Send {{toUser.username}} a message..." required minlength="1" maxlength="144" msd-elastic></textarea>
+		</label>
+		<div class="footer-btn-wrap">
+			<button class="button button-icon icon ion-android-send footer-btn" type="submit" ng-disabled="!input.text || input.text === ''">
+			</button>
+		</div>
 	</ion-footer-bar>
 </form>
 

@@ -25,6 +25,31 @@ module.exports = function(app) {
 	    	app.sio.emit('chat message', msg);
 	  	});
 
+
+      //
+      // UserList request
+      //
+      socket.on('friends:get', function (query) {
+        console.log('friends:get')
+        
+        app.models.User.find(function(err,friends){
+          console.log(friends)
+          
+          if(err){
+            console.log(err)
+          }
+          _.each(friends, function(friend) {
+            console.log(friend)
+            socket.emit('friends:new', {
+              id: friend.id,
+              username: friend.username
+            });
+          });//_.each
+
+        });//app.models.User.find
+      })//socket.on
+
+
       //
       // Create Room
       //
@@ -97,9 +122,9 @@ module.exports = function(app) {
       //
       // New Message
       //
-      socket.on('room:messages:new', function(message) {
-        console.log(message)
-        app.models.message.create(message,function(err, obj){
+      socket.on('room:messages:new', function(data) {
+        console.log(data)
+        app.models.message.create(data,function(err, obj){
           if(err){
             console.log(err)
             return;
