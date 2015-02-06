@@ -20,7 +20,8 @@
 ##show history messages
 ##~~show message~~
 ##~~add message~~
-##add url(card)
+##add url(card view)
+##add address(map view)
 ##add pic
 ##add file
 ##message notification
