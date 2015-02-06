@@ -5,6 +5,7 @@ angular.module('Nuchatapp.controllers', [])
 .controller('AccountCtrl', AccountCtrl)
 .controller('RoomCtrl', RoomCtrl)
 .controller('ChatCtrl', ChatCtrl)
+.controller('FriendCtrl', FriendCtrl)
 .controller('FriendDetailCtrl', function($scope, $stateParams, FriendService) {
 	console.log('FriendDetailCtrl')
 	console.log($stateParams.friendId)
