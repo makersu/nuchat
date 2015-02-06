@@ -17,6 +17,10 @@
 ##add room member
 
 #message management
-##~~show message~~
-##show history messages
-##message notification
+-- show history messages
+-- ~~show message~~
+-- ~~add message~~
+-- add url(card)
+-- add pic
+-- add file
+-- message notification
