@@ -1,9 +1,9 @@
-function FriendCtrl($scope, FriendService, User, LBSocket){
+function FriendCtrl($scope, $friend, User, LBSocket){
 	console.log('FriendCtrl');
 
   console.log('friends:get')
   LBSocket.emit('friends:get');
 
-	$scope.friends = FriendService.getAll();
+	$scope.friends = $friend.getAll();
 
 }

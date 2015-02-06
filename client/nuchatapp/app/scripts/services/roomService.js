@@ -1,4 +1,5 @@
-function RoomService(LBSocket, $localstorage) {
+function RoomService(LBSocket, $friend, $localstorage, $cordovaLocalNotification) {
+	var DEBUG = false;
 	console.log('RoomService');
 
 	LBSocket.on('rooms:new', function(room) {
@@ -81,11 +82,20 @@ function RoomService(LBSocket, $localstorage) {
 			room.messages.push(message);
 		} else {
 			var unreadMessages = $localstorage.getObject(room.id);
-			console.log(unreadMessages);
 			if (!unreadMessages) unreadMessages = [];
 			unreadMessages.push(message);
 			$localstorage.setObject(room.id, unreadMessages);
 			room.unreadMessages = unreadMessages;
+			// Sending the local notification.
+			$cordovaLocalNotification.add({
+	      id: 'newMsg',
+	  		message: message.text,
+	  		title: $friend.get(message.owner).username,
+	  		date: message.created,
+	  		autoCancel: true
+	    }).then(function () {
+	      if (DEBUG) console.log('New message notification has been added.');
+	    });
 		}
 	}
 

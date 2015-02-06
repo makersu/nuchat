@@ -6,8 +6,10 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.translate', 'lbServices', 'angularMoment', 'monospaced.elastic'])
-.run(function($ionicPlatform) {
+angular.module('Nuchatapp', ['ionic', 'config',
+    'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.translate',
+    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova'])
+.run(function($ionicPlatform, $cordovaLocalNotification) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -18,6 +20,14 @@ angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchat
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+
+    // Registering app/activity events.
+    document.addEventListener('resume', function() {
+      $cordovaLocalNotification.cancelAll()
+        .then(function() {
+          console.log('OnResume: All local notifications have been canceled.');
+        });
+    });
   });
 })
 //.run(function ($rootScope, User) {
@@ -132,6 +142,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchat
     return {
       responseError: function (rejection) {
         console.log("Redirect");
+        console.log(rejection);
         if (rejection.status == 401 && $location.path() !== '/login' && $location.path() !== '/register') {
           $location.nextAfterLogin = $location.path();
           $location.path('/login');

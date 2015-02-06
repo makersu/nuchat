@@ -1,6 +1,8 @@
 (function(window, angular, undefined) {'use strict';
 
-var urlBase = "http://localhost:3333/api";
+// For Android Development using genymotion.
+// var urlBase = 'http://192.168.56.1:3333/api';
+var urlBase = 'http://localhost:3333/api';
 var authHeader = 'authorization';
 
 /**
