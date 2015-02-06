@@ -1,0 +1,14 @@
+/* Chat Room List */
+.item-avatar {
+	.timestamp {
+		position: absolute;
+		right: 32px;
+		top: 16px;
+		color: $timestamp_color;
+		font-size: $timestamp_fontSize;
+	}
+	.badge {
+		top: inherit;
+		bottom: 16px;
+	}
+}

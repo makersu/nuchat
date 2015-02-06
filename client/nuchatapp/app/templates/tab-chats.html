@@ -4,9 +4,12 @@
   </ion-nav-buttons>
   <ion-content class="has-header">
     <ion-list>
-      <ion-item class="item-icon-right" ng-repeat="room in availableRooms track by $index" type="item-text-wrap" href="#/tab/room/{{room.id}}">
+      <ion-item class="item-avatar" ng-repeat="room in availableRooms track by $index" type="item-text-wrap" href="#/tab/room/{{::room.id}}">
+        <img src="{{ room.profile || 'images/profile.png' }}">
         {{room.name}}
-        <i class="icon ion-chevron-right icon-accessory"></i>
+        <p>{{ room.unreadMessages[room.unreadMessages.length-1].text || room.messages[room.messages.length-1].text }}</p>
+        <span class="timestamp">{{ room.unreadMessages[room.unreadMessages.length-1].created || room.messages[room.messages.length-1].created | amChatCalendar }}</span>
+        <span class="badge badge-assertive" ng-if="room.unreadMessages.length">{{ room.unreadMessages.length }}</span>
       </ion-item>
     </ion-list>
   </ion-content>

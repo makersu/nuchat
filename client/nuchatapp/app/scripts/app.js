@@ -6,7 +6,7 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchatapp.services', 'lbServices', 'angularMoment', 'monospaced.elastic'])
+angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.translate', 'lbServices', 'angularMoment', 'monospaced.elastic'])
 .run(function($ionicPlatform) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -99,6 +99,9 @@ angular.module('Nuchatapp', ['ionic', 'config', 'Nuchatapp.controllers', 'Nuchat
           templateUrl: 'templates/chatRoom.html',
           controller: 'ChatCtrl'
         }
+      },
+      onExit: function($room) {
+        $room.set(-1);
       }
     })
 

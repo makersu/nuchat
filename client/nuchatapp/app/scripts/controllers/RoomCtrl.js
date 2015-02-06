@@ -1,4 +1,4 @@
-function RoomCtrl($scope, $location, Room, LBSocket, RoomService){
+function RoomCtrl($scope, $location, Room, LBSocket, $room){
 	console.log('RoomCtrl');
 
 	$scope.goToCreateRoom = function () {
@@ -6,7 +6,7 @@ function RoomCtrl($scope, $location, Room, LBSocket, RoomService){
     $location.path('/tab/createRoom');
   };
 
-  $scope.availableRooms = RoomService.getAll();
+  $scope.availableRooms = $room.getAll();
   console.log($scope.availableRooms)
 
   console.log('rooms:get')
@@ -17,7 +17,7 @@ function RoomCtrl($scope, $location, Room, LBSocket, RoomService){
     console.log('rooms:new')
 		console.log(angular.toJson(room))
     //$scope.availableRooms.push(room);//todo
-    RoomService.addRoom(room);
+    $room.addRoom(room);
   });
 */
 
