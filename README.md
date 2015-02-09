@@ -15,6 +15,7 @@
 ##~~create room~~
 ##get rooms joined
 ##add room member
+##show room members
 
 #message management
 ##show history messages
