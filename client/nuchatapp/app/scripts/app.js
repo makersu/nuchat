@@ -6,10 +6,10 @@
 // the 2nd parameter is an array of 'requires'
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
-angular.module('Nuchatapp', ['ionic', 'config',
-    'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.translate',
+angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
+    'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate',
     'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova'])
-.run(function($ionicPlatform, $cordovaLocalNotification) {
+.run(function($ionicPlatform, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -28,6 +28,15 @@ angular.module('Nuchatapp', ['ionic', 'config',
           console.log('OnResume: All local notifications have been canceled.');
         });
     });
+    // Listen to stateChangeSuccess event
+    $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
+      var tabs = $ionicTabsDelegate.$getByHandle('chatDelegate')._instances[0].$tabsElement;
+      if (toState.name == 'tab.chatRoom') {
+        $animate.addClass(tabs, 'slideout');
+      } else {
+        $animate.removeClass(tabs, 'slideout');
+      }
+    })
   });
 })
 //.run(function ($rootScope, User) {

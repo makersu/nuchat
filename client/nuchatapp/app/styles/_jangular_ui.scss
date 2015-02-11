@@ -1,0 +1,27 @@
+@import "jangular_variables";
+
+/* Url View */
+.url-view {
+	background: $urlView_bg_color;
+	margin: 5px 0;
+	padding: 5px;
+	border: 1px solid $urlView_border_color;
+	text-decoration: none;
+	display: block;
+
+	img {
+		width: $urlViewImg_width;
+	}
+	h5 {
+		color: $urlViewTitle_font_color;
+	}
+	p {
+		color: $urlViewDescript_font_color;
+	}
+	.comment {
+		color: $urlViewComment_font_color;
+	}
+	h5, p, .comment {
+		padding: 0 2px;
+	}
+}

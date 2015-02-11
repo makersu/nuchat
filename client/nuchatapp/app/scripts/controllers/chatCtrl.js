@@ -1,8 +1,10 @@
 function ChatCtrl($scope, $stateParams, User, Room, LBSocket, $room, $localstorage){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
-  
+  /* Variables */
+  // Scope Public
 	$scope.currentUser = User.getCurrent();
+  $scope.input = {};
   console.log($scope.currentUser);
 
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
@@ -49,18 +51,35 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, $room, $localstora
 
     //$scope.messages=room.messages;
 
-    $scope.sendMessage=function(sendMessageForm){
-      console.log('sendMessage')
-    	
-    	//console.log($stateParams.roomId)
-    	//scope.input.room=$stateParams.roomId
-    	$scope.input.room=$scope.room
-      $scope.input.owner = $scope.currentUser.id;
-    	console.log($scope.input)
+  $scope.sendMessage=function(sendMessageForm){
+    console.log('sendMessage')
+  	
+  	//console.log($stateParams.roomId)
+  	//scope.input.room=$stateParams.roomId
+  	$scope.input.room=$scope.room
+    $scope.input.owner = $scope.currentUser.id;
+  	console.log($scope.input)
 
-    	LBSocket.emit('room:messages:new', $scope.input);
-      $scope.input={}
-    }
+  	LBSocket.emit('room:messages:new', $scope.input);
+    $scope.input={}
+  }
+
+  /* Choose files from device or cloud drive? */
+  $scope.uploadFile = function() {
+    window.imagePicker.getPictures(
+      function(results) {
+        for (var i = 0; i < results.length; i++) {
+          console.log('Image URI: ' + results[i]);
+          $scope.input.text = results[i];
+          $scope.sendMessage();
+        }
+      }, function (error) {
+        console.log('Error: ' + error);
+      }, {
+        width: 800
+      }
+    );
+  }
 /*
     LBSocket.on('room:messages:new', function(message) {
     	console.log('room:messages:new='+message)
