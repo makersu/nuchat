@@ -30,4 +30,5 @@
 #Dev
 ```
 lb-ng server/server.js client/nuchatapp/app/scripts/services/lb-services.js
+var urlBase = 'http://localhost:3333/api';
 ```
