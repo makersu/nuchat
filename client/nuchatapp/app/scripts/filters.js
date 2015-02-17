@@ -13,5 +13,19 @@ function amChatCalendar(moment, amMoment, angularMomentConfig, $filter) {
 	return amFilter;
 }
 
+function brief($filter, $checkFormat) {
+	function briefFilter(value) {
+		if (value) {
+			if ($checkFormat.isImg(value)) {
+				return $filter('translate')('SENT_IMG');
+			}
+		}
+		return value;
+	}
+
+	return briefFilter;
+}
+
 angular.module('Nuchatapp.filters', [])
-	.filter('amChatCalendar', ['moment', 'amMoment', 'angularMomentConfig', '$filter', amChatCalendar]);
+	.filter('amChatCalendar', ['moment', 'amMoment', 'angularMomentConfig', '$filter', amChatCalendar])
+	.filter('brief', ['$filter', '$checkFormat', brief]);

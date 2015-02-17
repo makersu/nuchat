@@ -9,6 +9,7 @@
     <!-- <link rel="stylesheet" href="vendor/some.contrib.css"> -->
     <!-- bower:css -->
     <link rel="stylesheet" href="lib/ionic/release/css/ionic.css" />
+    <link rel="stylesheet" href="lib/bootstrap-css-only/css/bootstrap.css" />
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -22,7 +23,7 @@
       The nav bar that will be updated as we navigate between views.
     -->
     <ion-nav-bar class="bar-royal nav-title-slide-ios7">
-      <ion-nav-back-button class="button-icon icon ion-ios7-arrow-back"></ion-nav-back-button>
+      <!-- <ion-nav-back-button class="button-icon icon ion-ios7-arrow-back"></ion-nav-back-button> -->
     </ion-nav-bar>
     <!--
       The views will be rendered in the <ion-nav-view> directive below
@@ -46,6 +47,7 @@
     <script src="lib/angular-elastic/elastic.js"></script>
     <script src="lib/angular-translate/angular-translate.js"></script>
     <script src="lib/ngCordova/dist/ng-cordova.js"></script>
+    <script src="lib/angular-bootstrap/ui-bootstrap-tpls.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
 
@@ -55,6 +57,9 @@
 
         <!-- build:js scripts/scripts.js -->
         <script src="lib/socket.io-client/socket.io.js"></script>
+        <script src="scripts/directives/jangular-ui.js"></script>
+        <script src="scripts/directives/jangular-mobile.js"></script>
+        <script src="scripts/directives.js"></script>
         <script src="scripts/config.js"></script>
         <script src="scripts/app.js"></script> 
         <script src="scripts/services/lb-services.js"></script>
@@ -66,7 +71,7 @@
         <script src="scripts/controllers/registerCtrl.js"></script>
         <script src="scripts/controllers/accountCtrl.js"></script>
         <script src="scripts/controllers/friendCtrl.js"></script>
-        <script src="scripts/controllers/roomCtrl.js"></script>
+        <script src="scripts/controllers/RoomCtrl.js"></script>
         <script src="scripts/controllers/chatCtrl.js"></script>
         <script src="scripts/controllers.js"></script>
         <script src="scripts/filters.js"></script>

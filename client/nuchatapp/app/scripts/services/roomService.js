@@ -1,4 +1,4 @@
-function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage) {
+function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope) {
 	var DEBUG = false;
 	console.log('RoomService');
 
@@ -79,6 +79,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		console.log(_currentRoomId)
 		if (room.id == _currentRoomId) {
 			room.messages.push(message);
+			$rootScope.$broadcast('onNewMessage');
 		} else {
 			var unreadMessages = $localstorage.getObject(room.id);
 			if (!unreadMessages) unreadMessages = [];

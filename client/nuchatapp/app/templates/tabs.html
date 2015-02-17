@@ -3,12 +3,12 @@
   Each tab's child <ion-nav-view> directive will have its own 
   navigation history that also transitions its views in and out.
 -->
-<ion-tabs class="tabs-top tabs-royal tabs-icon-top">
+<ion-tabs class="tabs-top tabs-royal tabs-icon-top" delegate-handle="chatDelegate">
 
 
   <!-- Pets Tab -->
   <ion-tab title="好友" icon="icon ion-person-stalker" href="#/tab/friends">
-    <ion-nav-view name="tab-friends"></ion-nav-view>
+    <ion-nav-view name="tab-chats"></ion-nav-view>
   </ion-tab>
 
 
