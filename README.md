@@ -1,6 +1,6 @@
 # Feature List
 
-#Account
+#ACCOUNT
 ##~~register~~
 ##~~login~~
 ##~~show account info~~
@@ -9,18 +9,18 @@
 ##third party login
 ##~~logout~~
 
-#friend management
+#FRIEND
 ##get friends
 ##add friend
 ##search friend
 
-#room management
+#ROOM
 ##~~create room~~
 ##get rooms joined
 ##add room member
 ##show room members
 
-#message management
+#MESSAGE
 ##show history messages
 ##~~show message~~
 ##~~add message~~
