@@ -12,14 +12,6 @@
 
 	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll">
 
-		<div class="metaMenu" ng-if="showMetaMenu">
-			<div class="row">
-      	<div class="col tab-item" ng-click="choosePhoto()"><i class="icon ion-image"></i>傳送圖片</div>
-      	<div class="col tab-item" ng-click="capturePhoto()"><i class="icon ion-camera"></i>拍照上傳</div>
-      	<div class="col tab-item" ng-click="captureVoice()"><i class="icon ion-mic-a"></i>語音訊息</div>
-      </div>
-    </div>
-
 		<div ng-repeat="message in room.messages track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)">
 
 			<div ng-if="currentUser.id !== message.owner">
@@ -64,7 +56,7 @@
 	<form name="sendMessageForm" ng-submit="sendMessage(sendMessageForm)" novalidate>
 		<ion-footer-bar class="bar-stable item-input-inset message-footer" keyboard-attach>
 			<div class="footer-btn-wrap">
-				<button class="button button-icon ion-plus footer-btn" type="button" ng-click="showMetaMenu=true"></button>
+				<button class="button button-icon ion-plus footer-btn" type="button" ng-click="openMetaMenu()"></button>
 			</div>
 			<label class="item-input-wrapper">
 				<textarea ng-model="input.text" value="" placeholder="Send {{toUser.username}} a message..." required minlength="1" maxlength="144" www-trigger="triggerOptions" msd-elastic ng-trim="false"></textarea>
@@ -77,6 +69,7 @@
 	</form>
 
 </ion-view>
+
 <!-- Image editing canvas -->
 <div class="canvas">
 	<div class="wrapper">
@@ -85,3 +78,13 @@
 		<div class="compelete-canvas" ng-if="editing" ng-click="completeEdit()">{{ ::'COMPLETE' | translate }}</div>
 	</div>
 </div>
+
+<script id="metamenu.html" type="text/ng-template">
+	<grid-menu>
+		<div class="row">
+	  	<div class="col tab-item" ng-click="choosePhoto()"><i class="icon ion-image"></i>傳送圖片</div>
+	  	<div class="col tab-item" ng-click="capturePhoto()"><i class="icon ion-camera"></i>拍照上傳</div>
+	  	<div class="col tab-item" ng-click="captureVoice()"><i class="icon ion-mic-a"></i>語音訊息</div>
+	  </div>
+	</grid-menu>
+</script>

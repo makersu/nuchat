@@ -3,9 +3,9 @@
 //angular.module('Nuchatapp.services', [])
 //.factory('lbSocket', function socket($rootScope) {
 function LBSocket($rootScope) {
-  var baseUrl = 'http://localhost:3333/';
+  // var baseUrl = 'http://localhost:3333/';
   // For Android Development using genymotion.
-  // var baseUrl = 'http://192.168.56.1:3333/';
+  var baseUrl = 'http://192.168.56.1:3333/';
   var socket = io.connect(baseUrl);
   return {
     on: function (eventName, callback) {

@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $stateParams, User, Room, LBSocket, $room, $localstorage, $q,
-            $ionicScrollDelegate, $ionicPopover, $timeout, $cordovaCapture){
+            $ionicScrollDelegate, $gridMenu, $timeout, $cordovaCapture){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   /* Variables */
@@ -71,6 +71,19 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, $room, $localstora
     if ($scope.showMetaMenu) {
       $scope.showMetaMenu = false;
     }
+  };
+  /* Grid Menu */
+  $gridMenu.fromTemplateUrl('metamenu.html', {
+    scope: $scope,
+    hasHeader: true
+  }).then(function(menu) {
+    $scope.metaMenu = menu;
+  });
+  $scope.openMetaMenu = function() {
+    $scope.metaMenu.show();
+  };
+  $scope.closeMetaMenu = function() {
+    $scope.metaMenu.hide();
   };
   /* Choose files from device or cloud drive? */
   $scope.choosePhoto = function() {

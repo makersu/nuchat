@@ -283,10 +283,10 @@
 				function assignTrigger(obj) {
 					var trigger = obj.trigger;
 					// console.log(obj);
-					if (!obj.invoke) {
-						console.warn('Trigger '+trigger+' will do nothing because the "invoke" function is not assigned.');
-					}
 					if (trigger) {
+						if (!obj.invoke) {
+							console.warn('Trigger '+trigger+' will do nothing because the "invoke" function is not assigned.');
+						}
 						// If array, use all charaters to trigger all types.
 						if ( angular.isArray(trigger) ) {
 							angular.forEach(trigger, function(t) {
@@ -339,15 +339,121 @@
 	});
 
 	/**
+	 * Grid Menu
+	 *
+	 * @description  (Icon) menu in grid.
+	 *
+	 */
+	jangularUI.directive('gridMenu', function($gridMenu) {
+		return {
+			restrict: 'EA',
+			transclude: true,
+			template: '<div class="menu-wrapper"><div class="grid-menu" ng-transclude></div></div>',
+		};
+	});
+	jangularUI.factory('$gridMenu', function($http, $templateCache, $document, $compile, $timeout) {
+		var _self = this;
+
+		var _instances = [];
+
+		_self.fromTemplateUrl = function(url, options) {
+			return fetchTemplate(url).then(function(templateString) {
+				return createMenu(templateString, options);
+			});
+		};
+
+		function show() {
+			var self = this;
+			if (self.hasHeader) {
+				angular.element(self.el.querySelector('.menu-wrapper')).addClass('has-header');
+			}
+
+			// Append to body if not present.
+			if (!self.el.parentElement) {
+				var body = $document.find('body').eq(0);
+				body.append(self.el);
+			}
+
+			self.$el.css('display', 'block');
+			self._isShown = true;
+
+			self.$menu.addClass('ng-enter')
+             		.removeClass('ng-leave ng-leave-active');
+
+      $timeout(function() {
+      	self.$menu.addClass('ng-enter-active');
+      });
+
+			return $timeout(function() {
+        //After animating in, allow hide on backdrop click
+        self.$el.on('click', function(e) {
+          if (e.target === self.wrapper) {
+            self.hide();
+          }
+        });
+      }, 400);
+		};
+		function hide() {
+			var self = this;
+
+			self.$menu.addClass('ng-leave');
+
+      $timeout(function() {
+      	self.$menu.addClass('ng-leave-active')
+      						.removeClass('ng-enter ng-enter-active');
+      }, 20);
+
+			self._isShown = false;
+
+			return $timeout(function() {
+        self.$el.removeClass('has-header');
+				self.$el.css('display', 'none');
+      }, self.hideDelay || 320);
+		};
+		function isShown() {
+			return this._isShown;
+		};
+
+		function fetchTemplate(url) {
+	    return $http.get(url, {cache: $templateCache})
+	    .then(function(response) {
+	      return response.data && response.data.trim();
+	    });
+	  }
+	  function createMenu(templateString, options) {
+	  	var scope = options.scope && options.scope.$new() || $rootScope.$new(true);
+	  	var element = $compile(templateString)(scope);
+	  	var wrapper = element[0].querySelector('.menu-wrapper');
+	  	var menu = angular.element(wrapper.querySelector('.grid-menu'));
+
+	  	var menu = {
+	  		$el: element,
+	  		el: element[0],
+	  		wrapper: wrapper,
+	  		$menu: menu,
+	  		scope: scope,
+	  		show: show,
+	  		hide: hide,
+	  		isShown: isShown,
+	  		hasHeader: options.hasHeader || false
+	  	};
+
+	  	return menu;
+	  }
+
+		return _self;
+	});
+
+	/**
 	 * Drawing
 	 *
 	 * @description Enable drawing on canvas.
 	 *
 	 * @acknowledge Thanks for JustGoscha shared the example code on http://stackoverflow.com/questions/16587961/is-there-already-a-canvas-drawing-directive-for-angularjs-out-there.
 	 */
-	jangularUI.directive("drawing", function() {
+	jangularUI.directive('drawing', function() {
 	  return {
-	    restrict: "A",
+	    restrict: 'A',
 	    link: function(scope, elem) {
 	      var ctx = elem[0].getContext('2d');
 
@@ -358,7 +464,7 @@
 	      var lastX;
 	      var lastY;
 
-	      elem.bind('mousedown', function(event) {
+	      elem.on('mousedown', function(event) {
 	      	console.log('draw start');
 	        if (event.offsetX !== undefined) {
 	          lastX = event.offsetX;
@@ -373,7 +479,7 @@
 
 	        drawing = true;
 	      });
-	      elem.bind('mousemove', function(event) {
+	      elem.on('mousemove', function(event) {
 	      	console.log('draw moving');
 
 	        if (drawing) {
@@ -394,7 +500,7 @@
 	        }
 
 	      });
-	      elem.bind('mouseup', function(event) {
+	      elem.on('mouseup', function(event) {
 	      	console.log('draw end');
 	        // stop drawing
 	        drawing = false;
