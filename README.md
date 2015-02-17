@@ -1,8 +1,11 @@
 # Feature List
 
-#login
+#Account
 ##~~register~~
 ##~~login~~
+##~~show account info~~
+##update account info
+##update avatar
 ##third party login
 ##~~logout~~
 
