@@ -35,12 +35,23 @@
 		return false;
 	}
 
+	function isAudio(content) {
+		if (content) {
+			var ext = content.substr(content.lastIndexOf('.'));
+			if ( ext.match(/3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4/) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Meta Message
 	 * 
-	 * Support types:
+	 * @support
 	 * 1) Hyper-link
 	 * 2) Image: jpg|jpeg|png|bmp|gif|tiff|tif|svg
+	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
 	 */
 	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView) {
 		return {
@@ -48,10 +59,11 @@
 			scope: {
 				msg: '=',
 				type: '=',
+				audioSetting: '=',
 			},
 			template: '<div ng-bind-html="message"></div>',
 			link: function(scope, elem, attrs) {
-				scope.message = angular.copy(scope.msg);
+				scope.message = scope.msg.text;
 				parse(scope.type)
 					.then(function(view) {
 						elem.append(view);
@@ -76,6 +88,7 @@
 						case METATYPE.MAP:
 							break;
 						case METATYPE.AUDIO:
+							parseAudio();
 							break;
 						case METATYPE.VIDEO:
 							break;
@@ -104,8 +117,10 @@
 							}, function(err) {
 								q.reject(err);
 							});
-					} else if (isImg(scope.message)) {
+					} else if ( isImg(scope.message) ) {
 						parseImg();
+					} else if ( isAudio(scope.message) ) {
+						parseAudio();
 					}
 					return q.promise;
 				}
@@ -186,7 +201,37 @@
 
 				// Assuming the img uri provided.
 				function parseImg() {
-					scope.message = '<img src="'+scope.message+'">';
+					scope.msg.isImg = true;
+					scope.message = '<img id="img'+scope.msg.id+'" src="'+scope.message+'">';
+				}
+
+				// Assuming the audio uri provided.
+				function parseAudio() {
+					scope.msg.isAudio = true;
+					var audioUrl = scope.message;
+					scope.message = '<img class="audio" src="'+scope.audioSetting.stop.img+'"><i class="icon ion-play"></i>';
+					elem.bind('click', function() {
+						scope.msg.isPlaying = !scope.msg.isPlaying;
+						setView();
+						
+						if (scope.msg.isPlaying) {
+							scope.audioSetting.play.fn(audioUrl)
+								.then(function() {
+									console.log('played');
+									scope.msg.isPlaying = false;
+									setView();
+								});
+						} else {
+							scope.audioSetting.stop.fn();
+						}
+
+						function setView() {
+							var img = elem.find('img');
+							img[0].src = scope.msg.isPlaying ? scope.audioSetting.play.img : scope.audioSetting.stop.img;
+							var icon = elem.find('i');
+							icon[0].className = scope.msg.isPlaying ? scope.audioSetting.play.icon : scope.audioSetting.stop.icon;
+						}
+					});
 				}
 
 				// Output error logs
@@ -195,6 +240,183 @@
 				}
 			}
 		};
+	});
+
+	/**
+	 * WWW Trigger (What/Where/When)
+	 *
+	 * @support input, textarea.
+	 *
+	 * @note    If you use the trigger including space, like ' in ', make sure to include the ng-trim="false" to avoid the auto trimming from angular.
+	 */
+	jangularUI.directive('wwwTrigger', function($filter) {
+		return {
+			require: '^ngModel',
+			restrict: 'A',
+			scope: {
+				wwwTrigger: '=',
+				inputModel: '=ngModel'
+			},
+			link: function(scope, elem, attrs, ngModel) {
+				// Break if invalid configurations.
+				throwNotObj(scope.wwwTrigger);
+				assignTrigger(scope.wwwTrigger);
+
+				var _triggers = [];
+
+				angular.forEach(scope.wwwTrigger, function(obj, key) {
+					if (key !== 'trigger' && key !== 'invoke' && key !== 'watch') {
+						// Break if invalid configurations.
+						throwNotObj(obj);
+						// Assigning the trigger and invoking function.
+						assignTrigger(obj);
+					}
+				});
+
+				scope.$watch('inputModel', myRender);
+
+				function throwNotObj(input) {
+					if (input && !angular.isObject(input)) {
+						throw 'Invalid configuratoin for the directive "www-trigger", you should use an object like, { trigger: "@" }, or { when: { trigger: " in " } }, please see the documents on http://github.com/Jameshsiao/www-trigger.';
+					}
+				}
+				function assignTrigger(obj) {
+					var trigger = obj.trigger;
+					// console.log(obj);
+					if (!obj.invoke) {
+						console.warn('Trigger '+trigger+' will do nothing because the "invoke" function is not assigned.');
+					}
+					if (trigger) {
+						// If array, use all charaters to trigger all types.
+						if ( angular.isArray(trigger) ) {
+							angular.forEach(trigger, function(t) {
+								_triggers.push({ trigger: t, invoke: obj.invoke || {} });
+							});
+						} else { // String, Numbers ...
+							_triggers.push({ trigger: trigger, invoke: obj.invoke });
+						}
+					}
+				}
+				function filterInput(value) {
+					if (value) {
+						var filtered = $filter('filter')(_triggers, function(val, idx) {
+							var startIdx = value.length - val.trigger.length;
+							if (value.substr(startIdx) == val.trigger) {
+								return true;
+							}
+						});
+						return filtered[0] || null;
+					}
+				}
+				function myRender(newVal, oldVal) {
+					if (newVal !== oldVal) {
+						var triggered = filterInput(ngModel.$modelValue);
+						if (triggered) {
+							ngModel.$rollbackViewValue();
+							var callback = function(value) {
+								console.log('callback');
+								switch (triggered.display) {
+									case 'icon':
+										break;
+									case 'link':
+										break;
+									// Default: show in text.
+									default:
+										if (angular.isDate(value)) {
+											scope.inputModel += value.toLocaleDateString();
+										} else {
+											scope.inputModel += value.toString();
+										}
+										break;
+								}
+							};
+							triggered.invoke(callback);
+						}
+					}
+				}
+			}
+		};
+	});
+
+	/**
+	 * Drawing
+	 *
+	 * @description Enable drawing on canvas.
+	 *
+	 * @acknowledge Thanks for JustGoscha shared the example code on http://stackoverflow.com/questions/16587961/is-there-already-a-canvas-drawing-directive-for-angularjs-out-there.
+	 */
+	jangularUI.directive("drawing", function() {
+	  return {
+	    restrict: "A",
+	    link: function(scope, elem) {
+	      var ctx = elem[0].getContext('2d');
+
+	      // variable that decides if something should be drawn on mousemove
+	      var drawing = false;
+
+	      // the last coordinates before the current move
+	      var lastX;
+	      var lastY;
+
+	      elem.bind('mousedown', function(event) {
+	      	console.log('draw start');
+	        if (event.offsetX !== undefined) {
+	          lastX = event.offsetX;
+	          lastY = event.offsetY;
+	        } else { // Firefox compatibility
+	          lastX = event.layerX - event.currentTarget.offsetLeft;
+	          lastY = event.layerY - event.currentTarget.offsetTop;
+	        }
+
+	        // begins new line
+	        ctx.beginPath();
+
+	        drawing = true;
+	      });
+	      elem.bind('mousemove', function(event) {
+	      	console.log('draw moving');
+
+	        if (drawing) {
+	          // get current mouse position
+	          if (event.offsetX !== undefined) {
+	            currentX = event.offsetX;
+	            currentY = event.offsetY;
+	          } else {
+	            currentX = event.layerX - event.currentTarget.offsetLeft;
+	            currentY = event.layerY - event.currentTarget.offsetTop;
+	          }
+
+	          draw(lastX, lastY, currentX, currentY);
+
+	          // set current coordinates to last one
+	          lastX = currentX;
+	          lastY = currentY;
+	        }
+
+	      });
+	      elem.bind('mouseup', function(event) {
+	      	console.log('draw end');
+	        // stop drawing
+	        drawing = false;
+	      });
+
+	      // canvas reset
+	      function reset() {
+	       	elem[0].width = elem[0].width; 
+	      }
+
+	      function draw(lX, lY, cX, cY) {
+	        // line from
+	        ctx.moveTo(lX,lY);
+	        // to
+	        ctx.lineTo(cX,cY);
+	        // color
+	        ctx.strokeStyle = "#4bf";
+	        // draw it
+	        ctx.stroke();
+	      }
+	    }
+	  };
 	});
 
 	/**
@@ -242,6 +464,9 @@
   	
   	return _self;
   });
+
+  // Constants
+  jangularUI.constant('METATYPE', METATYPE);
 
 	return jangularUI;
 })();

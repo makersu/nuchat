@@ -8,3 +8,35 @@
   	}
   }
 }
+
+// Meta Menu
+.metaMenu.ng-enter, .metaMenu.ng-leave {
+  -webkit-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+  transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+}
+.metaMenu.ng-enter,
+.metaMenu.ng-leave.ng-leave-active {
+  top: -100px;
+  opacity: 0;
+}
+
+.metaMenu.ng-leave,
+.metaMenu.ng-enter.ng-enter-active {
+  top: 0;
+  opacity: 1;
+}
+
+// Triggers
+.trigger-func.ng-enter, .trigger-func.ng-leave {
+  -webkit-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+  transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.5s;
+}
+.trigger-func.ng-enter,
+.trigger-func.ng-leave.ng-leave-active {
+  opacity: 0;
+}
+
+.trigger-func.ng-leave,
+.trigger-func.ng-enter.ng-enter-active {
+  opacity: 1;
+}

@@ -8,8 +8,8 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate',
-    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova'])
-.run(function($ionicPlatform, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate) {
+    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap'])
+.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate, $ionicScrollDelegate, $timeout) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -30,13 +30,30 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     });
     // Listen to stateChangeSuccess event
     $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-      var tabs = $ionicTabsDelegate.$getByHandle('chatDelegate')._instances[0].$tabsElement;
-      if (toState.name == 'tab.chatRoom') {
-        $animate.addClass(tabs, 'slideout');
-      } else {
-        $animate.removeClass(tabs, 'slideout');
+      var tabs = null;
+      var tabHandles = $filter('filter')($ionicTabsDelegate.$getByHandle('chatDelegate')._instances, { $$delegateHandle: 'chatDelegate' });
+      if (tabHandles.length) {
+        tabs = tabHandles[0].$tabsElement;
       }
-    })
+      if (tabs) {
+        if (toState.name == 'tab.chatRoom') { // Remove tabs.
+          $animate.addClass(tabs, 'slideout')
+            .then(function() {
+              // Shifting the message bubbles upward.
+              var scrollContent = null;
+              var scrollHandles = $filter('filter')($ionicScrollDelegate.$getByHandle('userMessageScroll')._instances, { $$delegateHandle: 'userMessageScroll' });;
+              if (scrollHandles.length) {
+                scrollContent = scrollHandles[0].$element;
+              }
+              if (scrollContent) {
+                scrollContent.removeClass('has-tabs-top');              
+              }
+            });
+        } else {  // Re-add tabs.
+          $animate.removeClass(tabs, 'slideout');
+        }
+      }
+    });
   });
 })
 //.run(function ($rootScope, User) {

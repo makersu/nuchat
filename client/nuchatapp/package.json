@@ -53,6 +53,8 @@
     "org.apache.cordova.console",
     "https://github.com/katzer/cordova-plugin-local-notifications.git",
     "org.apache.cordova.inappbrowser",
-    "https://github.com/wymsee/cordova-imagePicker.git"
+    "https://github.com/wymsee/cordova-imagePicker.git",
+    "org.apache.cordova.media-capture",
+    "org.apache.cordova.media"
   ]
 }
