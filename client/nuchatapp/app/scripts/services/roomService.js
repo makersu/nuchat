@@ -1,21 +1,32 @@
-function RoomService(LBSocket, $friend, $localstorage, $cordovaLocalNotification) {
+function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage) {
 	var DEBUG = false;
 	console.log('RoomService');
 
-	LBSocket.on('rooms:new', function(room) {
+	LBSocket.on('rooms:new', function(room) {	
     console.log('rooms:new');
-		console.log(angular.toJson(room));
-    //$scope.availableRooms.push(room);//todo
+		console.log(room);
+    if(room.type=="private"){
+			if(room.ownerId!=User.getCachedCurrent().id){
+    		room.name=FriendService.get(room.ownerId).username
+    	}
+    	else{
+    		room.name=FriendService.get(room.friend).username
+    	}
+    }
+		console.log(room);
     addRoom(room);
+    //join room
+    console.log('room:join')
+		LBSocket.emit('room:join', room.id, function(room) {
+    	console.log('room:join callback')
+			console.log(room)
+		});
   });
 
   LBSocket.on('room:messages:new', function(message) {
   	console.log('room:messages:new');
   	console.log(message);
-  	//$scope.room.messages.push(message)
     addMessage(message);
-
-		//self.addMessage(message);
   });
 
 	var rooms = {};
@@ -28,32 +39,30 @@ function RoomService(LBSocket, $friend, $localstorage, $cordovaLocalNotification
 	}
 
 	function get(roomId) {
-		if (angular.isUndefined(roomId)) roomId = _currentRoomId;
-		console.log(roomId);
-		// for(var i=0; i< rooms.length;i++){
-		console.log(rooms[roomId]);
-			// if(rooms[i].id==roomId){
-		console.log('room.messages='+rooms[roomId].messages);
-		if (!rooms[roomId].messages) {
-			rooms[roomId].messages = [];
+		if (angular.isUndefined(roomId)){
+			roomId = _currentRoomId;
 		}
+		console.log(roomId);
+		
+		console.log(rooms[roomId]);
+
+		if(!rooms[roomId].messages){
+			rooms[roomId].messages = [];
+		}	
+
+		console.log(rooms[roomId].messages);	
+
 		return rooms[roomId];
-			// }
-		// }
+
 	}
 
+	//TODO
 	function set(roomId) {
 		_currentRoomId = roomId;
 	}
 
 	function addRoom(room) {
 		console.log("addRoom="+room);
-		// for(var i=0; i< rooms.length;i++){
-		// 	if(rooms[i].id==room.id){
-		// 		return;
-		// 	}	
-		// }
-		// rooms.push(room);//todo
 		if (!rooms[room.id]) {
 			rooms[room.id] = room;
 		} else {
@@ -61,23 +70,13 @@ function RoomService(LBSocket, $friend, $localstorage, $cordovaLocalNotification
 		}
 	}
 
-/*
-	function addRoom(room){
-		console.log("addRoom")
-		console.log(rooms[room.id])
-		if(!rooms[room.id]){
-			rooms[room.id]=room
-		}
-		
-	}
-*/
-
 	//TODO:?
 	function addMessage(message) {
 		console.log('addMessage');
 		console.log(message);
 		var room = get(message.roomId);
 		console.log(room);
+		console.log(_currentRoomId)
 		if (room.id == _currentRoomId) {
 			room.messages.push(message);
 		} else {
@@ -90,7 +89,7 @@ function RoomService(LBSocket, $friend, $localstorage, $cordovaLocalNotification
 			$cordovaLocalNotification.add({
 	      id: 'newMsg',
 	  		message: message.text,
-	  		title: $friend.get(message.owner).username,
+	  		title: FriendService.get(message.ownerId).username,
 	  		date: message.created,
 	  		autoCancel: true
 	    }).then(function () {

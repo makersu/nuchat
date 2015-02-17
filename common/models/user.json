@@ -1,0 +1,16 @@
+{
+  "name": "user",
+  "base": "User",
+  "idInjection": true,
+  "properties": {},
+  "validations": [],
+  "relations": {
+    "privateRooms": {
+      "type": "hasMany",
+      "model": "room",
+      "foreignKey": "ownerId"
+    }
+  },
+  "acls": [],
+  "methods": []
+}

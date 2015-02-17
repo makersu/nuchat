@@ -14,7 +14,7 @@
 
 	<div ng-repeat="message in room.messages track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)">
 
-		<div ng-if="currentUser.id !== message.owner">
+		<div ng-if="currentUser.id !== message.ownerId">
 
 			<img ng-click="viewProfile(message)" class="profile-pic left" 
 			ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" />
@@ -33,7 +33,7 @@
 			</div>
 		</div>
 
-		<div ng-if="currentUser.id === message.owner">
+		<div ng-if="currentUser.id === message.ownerId">
 
 			<!-- <img ng-click="viewProfile(message)" class="profile-pic right" 
 			ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" /> -->

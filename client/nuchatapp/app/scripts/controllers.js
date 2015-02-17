@@ -6,11 +6,6 @@ angular.module('Nuchatapp.controllers', [])
 .controller('RoomCtrl', RoomCtrl)
 .controller('ChatCtrl', ChatCtrl)
 .controller('FriendCtrl', FriendCtrl)
-.controller('FriendDetailCtrl', function($scope, $stateParams, $friend) {
-	console.log('FriendDetailCtrl')
-	console.log($stateParams.friendId)
-  $scope.friend = $friend.get($stateParams.friendId);
-})
 // fitlers
 .filter('nl2br', ['$filter',
   function($filter) {

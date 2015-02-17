@@ -1,37 +1,33 @@
-function RoomCtrl($scope, $location, Room, LBSocket, $room){
-	console.log('RoomCtrl');
+function RoomCtrl($scope, $location, User, LBSocket, RoomService){
+	console.log('RoomCtrl');//
+
+  $scope.availableRooms = RoomService.getAll();
+  console.log($scope.availableRooms);//
+
+  $scope.newRoom={};
 
 	$scope.goToCreateRoom = function () {
     console.log('goToCreateRoom')
     $location.path('/tab/createRoom');
   };
-
-  $scope.availableRooms = $room.getAll();
-  console.log($scope.availableRooms)
-
-  console.log('rooms:get')
-	LBSocket.emit('rooms:get');
-
-/*
-	LBSocket.on('rooms:new', function(room) {
-    console.log('rooms:new')
-		console.log(angular.toJson(room))
-    //$scope.availableRooms.push(room);//todo
-    $room.addRoom(room);
-  });
-*/
-
-
-  $scope.newRoom={}
-
+ 
   $scope.createRoom = function() {
-  	console.log('createRoom')
+    console.log('createRoom');//
+    $scope.newRoom.type='group'
+    LBSocket.emit('rooms:create', $scope.newRoom)
+    $location.path('/tab/chats')
+  };
 
-  	//console.log($scope.newRoom)
-		
-		LBSocket.emit('rooms:create', $scope.newRoom)
+   $scope.doRefresh = function() {
+    console.log('doRefresh');//
+    console.log('rooms:get');//
+    LBSocket.emit('rooms:get',User.getCachedCurrent());//callback once getall?
+    $scope.$broadcast('scroll.refreshComplete');
+    $scope.$apply()
+  };
 
-  	$location.path('/tab/chats')
-  }
+  //TODO: refactoring move?
+  console.log('rooms:get');
+  LBSocket.emit('rooms:get',User.getCachedCurrent());//callback once getall?
 
-}	
+}

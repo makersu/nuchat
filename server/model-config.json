@@ -7,9 +7,6 @@
       "./models"
     ]
   },
-  "User": {
-    "dataSource": "db"
-  },
   "AccessToken": {
     "dataSource": "db",
     "public": false
@@ -25,6 +22,10 @@
   "Role": {
     "dataSource": "db",
     "public": false
+  },
+  "user": {
+    "dataSource": "db",
+    "public": true
   },
   "room": {
     "dataSource": "db",

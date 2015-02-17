@@ -1,10 +1,14 @@
-<ion-view title="好友">
+<ion-view cache-view="false" title="好友">
 	<ion-nav-buttons side="right">
     <button class="button button-icon ion-person-add" ng-click=""></button>
   </ion-nav-buttons>
   <ion-content class="has-header">
+    <ion-refresher
+      pulling-text="Pull to refresh..."
+      on-refresh="doRefresh()">
+    </ion-refresher>
     <ion-list>
-      <ion-item class="item-icon-right" ng-repeat="friend in friends" type="item-text-wrap" href="#/tab/friend/{{friend.id}}">
+      <ion-item class="item-icon-right" ng-repeat="friend in friends" type="item-text-wrap" ng-click="friendChat(friend.id)">
         {{friend.username}}
         <i class="icon ion-chevron-right icon-accessory"></i>
       </ion-item>

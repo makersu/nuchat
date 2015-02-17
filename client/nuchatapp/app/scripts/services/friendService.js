@@ -1,55 +1,37 @@
-function FriendService(LBSocket, User) {
-	console.log('FriendService')
+function FriendService(User, LBSocket) {
+	console.log('FriendService');
 
-	// Some fake testing data
-  //var friends = [
-  //  { id: 0, username: 'Scruff McGruff' },
-  //  { id: 1, username: 'G.I. Joe' },
-  //  { id: 2, username: 'Miss Frizzle' },
-  //  { id: 3, username: 'Ash Ketchum' }
-  //];
+	var currentUser = User.getCachedCurrent();
 
-  var currentUser = User.getCurrent();
-
-  var friends = {}
+	var friends = {};
 
 	LBSocket.on('friends:new', function(friend) {
-    console.log('friends:new')
-		console.log(friend)
-    addFriend(friend);
-  });
-
-	function addFriend(friend){
-		console.log('addFriend')
-		console.log(friend)
-		console.log(currentUser)
-		console.log(currentUser['id'])
-		//TODO?
-		if( friend.id != currentUser.id && !friends[friend.id]){
-			friends[friend.id]=friend 
+		console.log('friends:new');//
+		console.log(friend);//
+		console.log(currentUser);//
+		if( friend.id != currentUser.id){
+			console.log('addFriend');
+			friends[friend.id]=friend;
 		}
-		
-	}
+	});
 
 	function getAll(){
-		console.log('getAll')
-  	return friends
-  }
+		return friends;
+	}
 
 	function get(friendId) {
-      // Simple index lookup
-      return friends[friendId];
+    return friends[friendId];
   }
 
+  //TODO: refactoring extract and move?
+  console.log('friends:get');//
+  LBSocket.emit('friends:get');
 
-
-
-
-	var service = {
+  var service = {
 		getAll: getAll,
 		get: get
-	};
+  };
 
-	return service;
+  return service;
 
 }    

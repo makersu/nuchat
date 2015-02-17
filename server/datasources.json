@@ -1,6 +1,5 @@
 {
   "db": {
-  	"name": "db",
     "database": "nuchat",
     "connector": "mongodb"
   }

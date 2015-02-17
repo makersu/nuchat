@@ -1,7 +1,3 @@
-
-
-//angular.module('Nuchatapp.services', [])
-//.factory('lbSocket', function socket($rootScope) {
 function LBSocket($rootScope) {
   var baseUrl = 'http://localhost:3333/';
   // For Android Development using genymotion.
@@ -27,4 +23,4 @@ function LBSocket($rootScope) {
       })
     }
   };
-}//)
+}

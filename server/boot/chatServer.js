@@ -7,7 +7,7 @@ module.exports = function(app) {
 
 	  	console.log('a user connected');
 
-      console.log(socket.handshake)
+      //console.log(socket.handshake)
       //var userData = socket.handshake.user || false;
 
       
@@ -25,14 +25,25 @@ module.exports = function(app) {
 	    	app.sio.emit('chat message', msg);
 	  	});
 
+      
+      //
+      // join self room
+      //
+      socket.on('self:join', function (userId) {
+        console.log('self:join')
+        console.log(userId)
+        socket.join(userId);
+      });
+
 
       //
       // UserList request
       //
       socket.on('friends:get', function (query) {
         console.log('friends:get')
+        //console.log(app.models.User)
         
-        app.models.User.find(function(err,friends){
+        app.models.user.find(function(err,friends){
           console.log(friends)
           
           if(err){
@@ -40,6 +51,7 @@ module.exports = function(app) {
           }
           _.each(friends, function(friend) {
             console.log(friend)
+            console.log('friends:new')
             socket.emit('friends:new', {
               id: friend.id,
               username: friend.username
@@ -69,10 +81,23 @@ module.exports = function(app) {
 	  	//
       // Roomlist request
       //
-      socket.on('rooms:get', function (query) {
+      socket.on('rooms:get', function (data) {
       	console.log('rooms:get')
-      	
-        app.models.room.find({},function(err,rooms){
+        console.log(data)
+
+        var filter={
+          "where": { 
+            "or" : [
+              {"ownerId":data.id},
+              {"friend":data.id},
+              {"type":"group"}
+            ]
+          }
+        }
+
+        console.log(filter)
+
+        app.models.room.find(filter,function(err,rooms){
       		if(err){
 	      		console.log(err)
 	      	}
@@ -89,6 +114,7 @@ module.exports = function(app) {
       // Join Room
       //
       socket.on('room:join', function(id, fn) {
+        console.log('room:join')
         console.log(id)
         app.models.room.findById(id,function(err, room) {
           if (err) {
@@ -116,7 +142,154 @@ module.exports = function(app) {
             
       });//socket.on
 
-      
+      //
+      // Join Room
+      //
+      socket.on('friend:join', function(data, fn) {
+        // data.name='private room'
+        // data.type='private'
+        // data.ownerId=data.user
+        // console.log(data)
+
+        // app.models.room.find({ownerId:data.user},function(err,room){
+        var filter={
+          "where": { 
+            "or" : [
+              {"and": [{"ownerId":data.user},{"friend":data.friend}]},
+              {"and": [{"ownerId":data.friend},{"friend":data.user}]}
+            ]
+          }
+        }
+
+        app.models.room.findOne(filter,function(err,room){ 
+          if(err){
+            console.log(err)
+            return;
+          }
+          //console.log('room.length='+room.length)
+          if (!room) {
+            console.log('!room')
+            app.models.user.findById(data.user,function(err, user) {
+              if(err){
+                console.log(err)
+                return;
+              }
+              console.log(user)
+              
+              user.privateRooms.create({name:'private room',type:"private",friend:data.friend},function(err,newroom){
+                if(err){
+                  console.log(err)
+                  return;
+                }
+                console.log(newroom)
+                //join new created room
+                socket.join(newroom.id);
+
+                //notify self new room created
+                console.log('rooms:new')
+                socket.emit('rooms:new', newroom);//
+                
+                //notify friend new room created
+                console.log('friends:new')
+                app.sio.sockets.to(newroom.friend).emit('friends:new', {
+                  id: user.id,
+                  username: user.username
+                });
+                console.log('rooms:new')
+                app.sio.sockets.to(newroom.friend).emit('rooms:new', newroom);
+                // Send back Room meta to client
+                if (fn) {
+                    fn(newroom);
+                }
+              });
+
+            })
+          }
+          else{
+            console.log('!!room')
+            console.log(room)
+            socket.join(room.id);
+            // Send back Room meta to client
+            if (fn) {
+                fn(room);
+            }
+          }
+          
+
+        })
+
+
+        // app.models.user.findById(data.user,function(err, user) {
+        //   if(err){
+        //     console.log(err)
+        //     return;
+        //   }
+        //   console.log(user)
+        //   user.rooms.create(data,function(err,room){
+        //     if(err){
+        //       console.log(err)
+        //       return;
+        //     }
+        //     console.log(room)
+        //     socket.join(room.id);
+        //   });
+
+        // })
+        
+        // app.models.room.findById(id,function(err, room) {
+        //   if (err) {
+        //         // Oh shit
+        //         console.log(err)
+        //         return;
+        //   }
+        //   if (!room) {
+        //       // No room bro
+        //       return;
+        //   }
+        //   console.log(room)
+        //   console.log("socket.join id="+id)
+        //   socket.join(id);
+        //   // Send back Room meta to client
+        //   if (fn) {
+        //       fn({
+        //           id: room._id,
+        //           name: room.name,
+        //           description: room.description
+        //       });
+        //   }
+
+        // });//app.models.room.findById
+        // console.log('*app.models.user')
+        // console.log(app.models.user)
+        // console.log('*app.models.user')
+
+        
+        // app.models.Person.messages({}, function(err, room) {
+        //   if(err){
+        //     console.log(err)
+        //   }
+        //   console.log(room)
+        // });
+
+
+
+        // var privateRoom = app.models.user.rooms.build(data);
+        // console.log(privateRoom)
+
+        // app.models.user.room.create(data, function(err, room) {
+        //   if(err){
+        //     console.log(err)
+        //   }
+        //   else
+        //   {
+        //     console.log(room)
+        //   }
+  
+        // });
+
+
+            
+      });//socket.on
 
 
       //

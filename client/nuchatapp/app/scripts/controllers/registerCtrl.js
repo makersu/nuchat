@@ -1,4 +1,4 @@
-function RegisterCtrl($scope, User, $ionicPopup, $location) {
+function RegisterCtrl($scope, $ionicPopup, $location, User, LBSocket) {
   console.log('RegisterCtrl')
 
   $scope.registration = {};
@@ -6,8 +6,9 @@ function RegisterCtrl($scope, User, $ionicPopup, $location) {
 	/**
    * Redirect user to the app if already logged in
    */
+  console.log(User.getCachedCurrent());//
   if (User.getCachedCurrent()!==null) {
-    $location.path('/tab/dash');
+    $location.path('/tab/chats');
   }
 
 	/**
@@ -16,27 +17,26 @@ function RegisterCtrl($scope, User, $ionicPopup, $location) {
    * register a new user and login
    */
   $scope.register = function () {
-  	console.log('$scope.register')//
-  	console.log('$scope.registration='+angular.toJson($scope.registration))//
-    $scope.registration.created = new Date().toJSON();
-    console.log($scope.registration)
+    console.log($scope.registration)//
     $scope.user = User.create($scope.registration)
     .$promise
     .then(function (res) {
       User.login({include: 'user', rememberMe: true}, $scope.registration)
       .$promise
       .then(function (res) {
-        $location.path('/tab/friend')
+        $scope.registration={}
+        LBSocket.emit('self:join', User.getCachedCurrent().id);
+        $location.path('/tab/chats')
       }, function (err) {
         $scope.loginError = err;
         $scope.showAlert(err.statusText, err.data.error.message);
       })
 
     }, function (err) {
-      console.log(err)
+      console.log(err)//
       $scope.registerError = err;
-        //TODO: if ERR_CONNECTION_REFUSED
-        $scope.showAlert(err.statusText, err.data.error.message);
+      //TODO: if ERR_CONNECTION_REFUSED
+      $scope.showAlert(err.statusText, err.data.error.message);
     });
   };
 

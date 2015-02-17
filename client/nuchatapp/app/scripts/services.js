@@ -1,8 +1,8 @@
 'use strict';
 angular.module('Nuchatapp.services', [])
-.factory('$friend', FriendService)
+.factory('FriendService', FriendService)
 .factory('LBSocket', LBSocket)
-.factory('$room', RoomService)
+.factory('RoomService', RoomService)
 .factory('$localstorage', ['$window', function($window) {
   return {
     set: function(key, value) {

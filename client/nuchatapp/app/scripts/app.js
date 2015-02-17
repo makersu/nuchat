@@ -72,16 +72,6 @@ angular.module('Nuchatapp', ['ionic', 'config',
       }
     })
 
-    .state('tab.friend-detail', {
-      url: '/friend/:friendId',
-      views: {
-        'tab-friends': {
-          templateUrl: 'templates/friend-detail.html',
-          controller: 'FriendDetailCtrl'
-        }
-      }
-    })
-
     .state('tab.chats', {
       url: '/chats',
       views: {
@@ -110,18 +100,8 @@ angular.module('Nuchatapp', ['ionic', 'config',
           controller: 'ChatCtrl'
         }
       },
-      onExit: function($room) {
-        $room.set(-1);
-      }
-    })
-
-    .state('tab.dash', {
-      url: '/dash',
-      views: {
-        'tab-dash': {
-          templateUrl: 'templates/tab-dash.html',
-          controller: 'DashCtrl'
-        }
+      onExit: function(RoomService) {
+        RoomService.set(-1);
       }
     })
 

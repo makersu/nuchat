@@ -1,8 +1,12 @@
-<ion-view title="聊天">
+<ion-view cache-view="false" title="聊天">
 	<ion-nav-buttons side="right">
-    <button class="button button-icon ion-chatbubble-working" ng-click="goToCreateRoom()"></button>
+    <button class="button button-icon ion-more" ng-click="goToCreateRoom()"></button>
   </ion-nav-buttons>
   <ion-content class="has-header">
+    <ion-refresher
+      pulling-text="Pull to refresh..."
+      on-refresh="doRefresh()">
+    </ion-refresher>
     <ion-list>
       <ion-item class="item-avatar" ng-repeat="room in availableRooms track by $index" type="item-text-wrap" href="#/tab/room/{{::room.id}}">
         <img src="{{ room.profile || 'images/profile.png' }}">

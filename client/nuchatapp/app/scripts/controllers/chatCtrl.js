@@ -1,13 +1,13 @@
-function ChatCtrl($scope, $stateParams, User, Room, LBSocket, $room, $localstorage){
+function ChatCtrl($scope, $stateParams, User, LBSocket, RoomService, $localstorage){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   
-	$scope.currentUser = User.getCurrent();
-  console.log($scope.currentUser);
+	$scope.currentUser = User.getCachedCurrent()
+   console.log($scope.currentUser);
 
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
-  $room.set($stateParams.roomId);
-  $scope.room = $room.get();
+  RoomService.set($stateParams.roomId);
+  $scope.room = RoomService.get();
 	console.log($scope.room);
 
   // Reading unread messages from storage(or TODO: DB?)
@@ -55,7 +55,7 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, $room, $localstora
     	//console.log($stateParams.roomId)
     	//scope.input.room=$stateParams.roomId
     	$scope.input.room=$scope.room
-      $scope.input.owner = $scope.currentUser.id;
+      $scope.input.ownerId = $scope.currentUser.id;
     	console.log($scope.input)
 
     	LBSocket.emit('room:messages:new', $scope.input);
