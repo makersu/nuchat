@@ -1,23 +1,26 @@
 # Feature List
 
-#login
+#ACCOUNT
 ##~~register~~
 ##~~login~~
+##~~show account info~~
+##update account info
+##update avatar
 ##third party login
 ##~~logout~~
 
-#friend management
+#FRIEND
 ##get friends
 ##add friend
 ##search friend
 
-#room management
+#ROOM
 ##~~create room~~
 ##get rooms joined
 ##add room member
 ##show room members
 
-#message management
+#MESSAGE
 ##show history messages
 ##~~show message~~
 ##~~add message~~
