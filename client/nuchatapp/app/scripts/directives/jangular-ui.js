@@ -45,6 +45,16 @@
 		return false;
 	}
 
+	function isVideo(content) {
+		if (content) {
+			var ext = content.substr(content.lastIndexOf('.'));
+			if ( ext.match(/ogg|mp4|webm/) ) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	/**
 	 * Meta Message
 	 * 
@@ -52,6 +62,7 @@
 	 * 1) Hyper-link
 	 * 2) Image: jpg|jpeg|png|bmp|gif|tiff|tif|svg
 	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
+	 * 4) Video: ogg|mp4|webm (HTML 5 Video supports)
 	 */
 	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView) {
 		return {
@@ -91,6 +102,7 @@
 							parseAudio();
 							break;
 						case METATYPE.VIDEO:
+							parseVideo();
 							break;
 						case METATYPE.FILE:
 							break;
@@ -121,6 +133,8 @@
 						parseImg();
 					} else if ( isAudio(scope.message) ) {
 						parseAudio();
+					} else if ( isVideo(scope.message) ) {
+						parseVideo();
 					}
 					return q.promise;
 				}
@@ -232,6 +246,12 @@
 							icon[0].className = scope.msg.isPlaying ? scope.audioSetting.play.icon : scope.audioSetting.stop.icon;
 						}
 					});
+				}
+
+				function parseVideo() {
+					scope.msg.isVideo = true;
+					var videoUrl = scope.message;
+					scope.message = '<video width="160" height="90"><source src="'+videoUrl+'"></video>';
 				}
 
 				// Output error logs
@@ -480,9 +500,9 @@
 	        drawing = true;
 	      });
 	      elem.on('mousemove', function(event) {
-	      	console.log('draw moving');
 
 	        if (drawing) {
+	        	console.log('draw moving');
 	          // get current mouse position
 	          if (event.offsetX !== undefined) {
 	            currentX = event.offsetX;
@@ -492,7 +512,9 @@
 	            currentY = event.layerY - event.currentTarget.offsetTop;
 	          }
 
-	          draw(lastX, lastY, currentX, currentY);
+	          scope.$apply(function() {
+	          	draw(lastX, lastY, currentX, currentY);
+	          });
 
 	          // set current coordinates to last one
 	          lastX = currentX;

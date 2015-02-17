@@ -17,7 +17,7 @@ function brief($filter, $checkFormat) {
 	function briefFilter(value) {
 		if (value) {
 			if ($checkFormat.isImg(value)) {
-				return $filter('translate')('SEND_IMG');
+				return $filter('translate')('SENT_IMG');
 			}
 		}
 		return value;

@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $stateParams, User, Room, LBSocket, $room, $localstorage, $q,
-            $ionicScrollDelegate, $gridMenu, $timeout, $cordovaCapture){
+            $ionicScrollDelegate, $gridMenu, $timeout, $cordovaCapture, METATYPE){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   /* Variables */
@@ -106,19 +106,25 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, $room, $localstora
       .then(function(imgData) {
         $scope.input.text = imgData[0].fullPath;
         $scope.sendMessage();
-      }, function(err) {
-        console.error(err);
-      });
+        $scope.closeMetaMenu();
+      }, errorHandler);
   };
   $scope.captureVoice = function() {
     $cordovaCapture.captureAudio()
       .then(function(audioData) {
-        console.log(audioData);
         $scope.input.text = audioData[0].localURL;
         $scope.sendMessage();
-      }, function(err) {
-        console.error(err);
-      });
+        $scope.closeMetaMenu();
+      }, errorHandler);
+  };
+  $scope.captureVideo = function() {
+    $cordovaCapture.captureVideo()
+      .then(function(videoData) {
+        console.log(videoData);
+        $scope.input.text = videoData[0].fullPath;
+        $scope.sendMessage();
+        $scope.closeMetaMenu();
+      }, errorHandler);
   };
   // To edit the image message
   $scope.editImg = function(message) {

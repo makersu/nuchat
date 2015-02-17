@@ -5,6 +5,12 @@ var enTranslate = function ($translateProvider) {
 		COMPLETE: 'Complete',
 
 		// Messages
-		SEND_IMG: 'Sent an image',
+		SENT_IMG: 'Sent an image',
+
+		// Meta Menu
+		SEND_PHOTO: 'Send Photos',
+		CAPTURE_PHOTO: 'Capture a Photo',
+		VOICE_MESSAGE: 'Voice Message',
+		CAPTURE_VIDEO: 'Capture a Video',
 	});
 };

@@ -82,9 +82,14 @@
 <script id="metamenu.html" type="text/ng-template">
 	<grid-menu>
 		<div class="row">
-	  	<div class="col tab-item" ng-click="choosePhoto()"><i class="icon ion-image"></i>傳送圖片</div>
-	  	<div class="col tab-item" ng-click="capturePhoto()"><i class="icon ion-camera"></i>拍照上傳</div>
-	  	<div class="col tab-item" ng-click="captureVoice()"><i class="icon ion-mic-a"></i>語音訊息</div>
+	  	<div class="col tab-item" ng-click="choosePhoto()"><i class="icon ion-image"></i>{{ ::'SEND_PHOTO' | translate }}</div>
+	  	<div class="col tab-item" ng-click="capturePhoto()"><i class="icon ion-camera"></i>{{ ::'CAPTURE_PHOTO' | translate }}</div>
+	  	<div class="col tab-item" ng-click="captureVoice()"><i class="icon ion-mic-a"></i>{{ ::'VOICE_MESSAGE' | translate }}</div>
+	  </div>
+	  <div class="row">
+	  	<div class="col tab-item" ng-click="captureVideo()"><i class="icon ion-ios7-videocam"></i>{{ ::'CAPTURE_VIDEO' | translate }}</div>
+	  	<div class="col tab-item" ng-click="capturePhoto()"></div>
+	  	<div class="col tab-item" ng-click="captureVoice()"></div>
 	  </div>
 	</grid-menu>
 </script>
