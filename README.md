@@ -6,6 +6,7 @@
 ##~~show account info~~
 ##update account info
 ##update avatar
+##update password
 ##third party login
 ##~~logout~~
 
