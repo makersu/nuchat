@@ -515,7 +515,7 @@ module.exports = function (grunt) {
     return grunt.task.run(['init', 'concurrent:ionic']);
   });
   grunt.registerTask('build', function() {
-    return grunt.task.run(['compress', 'ionic:build:' + this.args.join()]);
+    return grunt.task.run(['init', 'ionic:build:' + this.args.join()]);
   });
 
   grunt.registerTask('init', [

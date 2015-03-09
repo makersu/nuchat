@@ -322,6 +322,14 @@ module.exports = function(app) {
           //console.log(outgoingMessage)
         });   
       });//end socket.on
+
+      //
+      // New File
+      //
+      socket.on('room:files:new', function(data) {
+        console.log('room:files:new')
+        console.log(data)
+      });//end socket.on  
       
 
 	  	socket.on('disconnect', function(){
