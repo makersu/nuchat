@@ -1,9 +1,8 @@
-function LBSocket($rootScope) {
-  var baseUrl = 'http://54.92.67.230:3333/';
-  // var baseUrl = 'http://localhost:3333/';
-  // For Android Development using genymotion.
-  // var baseUrl = 'http://192.168.56.1:3333/';
-  var socket = io.connect(baseUrl);
+function LBSocket($rootScope,ENV) {
+
+  console.log(ENV.BASE_URL)
+ 
+  var socket = io.connect(ENV.BASE_URL);
   return {
     on: function (eventName, callback) {
       socket.on(eventName, function () {  
