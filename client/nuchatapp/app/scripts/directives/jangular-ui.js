@@ -7,7 +7,7 @@
  *  1) Meta-Message
  */
 (function() {
-	var jangularUI = angular.module('jangular.ui', []);
+	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
 
 	var METATYPE = {
 		IMG:   	  0,
@@ -25,15 +25,23 @@
 		}
 	}
 
-	function isImg(content) {
-		if (content) {
-			var ext = content.substr(content.lastIndexOf('.'));
-			if ( ext.match(/jpg|jpeg|png|bmp|gif|tiff|tif|svg/) ) {
+	// function isImg(content) {
+	// 	if (content) {
+	// 		var ext = content.substr(content.lastIndexOf('.'));
+	// 		if ( ext.match(/jpg|jpeg|png|bmp|gif|tiff|tif|svg/) ) {
+	// 			return true;
+	// 		}
+	// 	}
+	// 	return false;
+	// }
+
+	function isImg(contentType) {
+		if (contentType && contentType.indexOf('image') != -1) {			
 				return true;
-			}
 		}
 		return false;
 	}
+
 
 	function isAudio(content) {
 		if (content) {
@@ -64,7 +72,7 @@
 	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
 	 * 4) Video: ogg|mp4|webm (HTML 5 Video supports)
 	 */
-	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView) {
+	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView, ENV) {
 		return {
 			restrict: 'EA',
 			scope: {
@@ -129,7 +137,7 @@
 							}, function(err) {
 								q.reject(err);
 							});
-					} else if ( isImg(scope.message) ) {
+					} else if ( isImg(scope.msg.type) ) { //
 						parseImg();
 					} else if ( isAudio(scope.message) ) {
 						parseAudio();
@@ -216,6 +224,9 @@
 				// Assuming the img uri provided.
 				function parseImg() {
 					scope.msg.isImg = true;
+					console.log(ENV.GRIDFS_BASE_URL)
+					scope.message = ENV.GRIDFS_BASE_URL+scope.message //
+					console.log(scope.message)
 					scope.message = '<img id="img'+scope.msg.id+'" src="'+scope.message+'">';
 				}
 
