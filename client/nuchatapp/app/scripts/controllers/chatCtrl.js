@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $gridMenu, $timeout, $cordovaCapture, METATYPE){
+            $ionicScrollDelegate, $gridMenu, $timeout, $cordovaCapture, METATYPE, $cordovaFile){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   /* Variables */
@@ -58,7 +58,7 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, RoomService, $loca
 
     //console.log($stateParams.roomId)
     //scope.input.room=$stateParams.roomId
-    $scope.input.room = $scope.room;
+    $scope.input.roomId = $scope.room.id;
     $scope.input.ownerId = $scope.currentUser.id;
     console.log($scope.input);
 
@@ -89,8 +89,59 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, RoomService, $loca
       function(results) {
         for (var i = 0; i < results.length; i++) {
           console.log('Image URI: ' + results[i]);
+          
           $scope.input.text = results[i];
-          $scope.sendMessage();
+          //$scope.sendMessage();
+
+          console.log(cordova.file.cacheDirectory)
+
+
+          //window.resolveLocalFileSystemURL(cordova.file.applicationDirectory + "www/index.html", gotFile, fail);
+
+          window.resolveLocalFileSystemURL(
+            results[i], 
+            function(fileEntry){
+              console.log(fileEntry)
+              
+              fileEntry.file(function(file) {
+                console.log(file)
+                var reader = new FileReader();
+
+                reader.onloadend = function(event) {
+                  console.log('onload')
+                  //console.log(event.target)
+                  console.log('room:files:new')
+                  var data={}
+                  data.roomId = $scope.room.id;
+                  data.ownerId = $scope.currentUser.id;
+                  data.file=event.target.result
+                  data.filename=file.name
+                  data.type=file.type
+                  data.size=file.size
+                  console.log(data)      
+     
+                  //LBSocket.emit('room:files:new', {image:event.target.result, room:$scope.room, ownerId: $scope.currentUser.id });
+                  LBSocket.emit('room:files:new', data);
+                  $scope.input={};
+
+                  if ($scope.metaMenu.isShown()) {
+                    $scope.closeMetaMenu();
+                  }
+
+                }
+
+                //reader.readAsDataURL(file);
+                reader.readAsArrayBuffer(file);
+
+
+              });
+            }, 
+            function(error){
+              console.log(error)
+            }
+          );//end resolveLocalFileSystemURL
+
+
         }
       }, function (error) {
         console.error('Error: ' + error);
