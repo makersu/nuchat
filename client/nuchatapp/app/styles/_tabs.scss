@@ -1,0 +1,13 @@
+.tabs-top,
+.platform-ios.platform-cordova:not(.fullscreen) {
+	.tabs-top {
+		&.directory {
+			& > .tabs {
+				top: $directoryCover_height;			
+			}
+		}
+	}
+	.has-tabs-top {
+		top: 49px;
+	}
+}

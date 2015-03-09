@@ -1,0 +1,36 @@
+<ion-view class="flip">
+	<div class="cover"><img src="images/dana.jpg"><div class="name">{{ room.name }}</div><a class="button button-clear icon ion-chatbubble-working" href="#/tab/room/{{ ::room.id }}"></a></div>
+	<ion-tabs class="tabs-striped tabs-royal tabs-top directory" delegate-handle="dirHandle">
+		<ion-tab href="#/tab/directory/{{ ::room.id }}/article" title="{{ ::'ARTICLE' | translate }}">
+			<ion-nav-view name="tab-article"></ion-nav-view>
+		</ion-tab>
+		<ion-tab href="#/tab/directory/{{ ::room.id }}/files" title="{{ ::'FILES' | translate }}">
+			<ion-nav-view name="tab-files"></ion-nav-view>
+		</ion-tab>
+		<ion-tab href="#/tab/directory/{{ ::room.id }}/links" title="{{ ::'LINKS' | translate }}">
+			<ion-nav-view name="tab-links"></ion-nav-view>
+		</ion-tab>
+		<ion-tab href="#/tab/directory/{{ ::room.id }}/calendar" title="{{ ::'CALENDAR' | translate }}">
+			<ion-nav-view name="tab-calendar"></ion-nav-view>
+		</ion-tab>
+	</ion-tabs>
+	<a class="button button-royal icon ion-plus button-float float-right float-bottom"></a>
+
+	<!-- <div class="tabs-striped tabs-royal tabs-top directory">
+		<div class="tabs">
+			<a class="tab-item" href="#/tab/directory/{{ ::room.id }}/article">
+				{{ ::'ARTICLE' | translate }}
+			</a>
+			<a class="tab-item" href="#">
+				{{ ::'FILES' | translate }}
+			</a>
+			<a class="tab-item" href="#">
+				{{ ::'LINKS' | translate }}
+			</a>
+			<a class="tab-item" href="#">
+				{{ ::'CALENDAR' | translate }}
+			</a>
+		</div>
+		<ion-nav-view name="tab-directory"></ion-nav-view>
+	</div> -->
+</ion-view>

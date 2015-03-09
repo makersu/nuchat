@@ -1,0 +1,26 @@
+.cover {
+	width: 100%;
+	height: $directoryCover_height;
+	position: relative;
+	overflow: hidden;
+	z-index: 17;
+	img {
+		width: 100%;
+		top: -15%;
+		position: absolute;
+		left: 0;
+	}
+	.name {
+		position: absolute;
+		padding: 5px 15px;
+		color: $cover_font_color;
+		font-size: $cover_font_size;
+		bottom: 0;
+		font-weight: 700;
+	}
+	.icon {
+		position: absolute;
+		top: 5%;
+		right: 10px;
+	}
+}
