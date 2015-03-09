@@ -4,6 +4,10 @@ var chtTranslate = function ($translateProvider) {
 		EDIT: '編輯',
 		COMPLETE: '完成',
 		CHAT: '聊天',
+		TODAY: '今天',
+		YESTERDAY: '昨天',
+		MORE: '更多',
+		LESS: '隱藏',
 
 		// Messages
 		SENT_IMG: '傳送了圖片',
@@ -13,5 +17,11 @@ var chtTranslate = function ($translateProvider) {
 		CAPTURE_PHOTO: '拍照上傳',
 		VOICE_MESSAGE: '語音訊息',
 		CAPTURE_VIDEO: '拍攝影片',
+
+		// Directory
+		ARTICLE: '文章',
+		FILES: '檔案',
+		LINKS: '連結',
+		CALENDAR: '行事曆'
 	});
 };

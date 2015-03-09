@@ -50,7 +50,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 			rooms[roomId].messages = [];
 		}	
 
-		console.log(rooms[roomId].messages);	
+		// console.log(rooms[roomId].messages);	
 
 		return rooms[roomId];
 
@@ -77,7 +77,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		var room = get(message.roomId);
 		console.log(room);
 		console.log(_currentRoomId)
-		if (room.id == _currentRoomId) {
+		if (room.id == _currentRoomId && !$rootScope.isInBackground) {
 			room.messages.push(message);
 			$rootScope.$broadcast('onNewMessage');
 		} else {

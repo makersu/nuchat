@@ -3,6 +3,7 @@ angular.module('Nuchatapp.services', [])
 .factory('FriendService', FriendService)
 .factory('LBSocket', LBSocket)
 .factory('RoomService', RoomService)
+.factory('$NUChatObject', ObjService)
 .factory('$localstorage', ['$window', function($window) {
   return {
     set: function(key, value) {

@@ -6,13 +6,8 @@ angular.module('Nuchatapp.controllers', [])
 .controller('RoomCtrl', RoomCtrl)
 .controller('ChatCtrl', ChatCtrl)
 .controller('FriendCtrl', FriendCtrl)
-// fitlers
-.filter('nl2br', ['$filter',
-  function($filter) {
-    return function(data) {
-    	console.log('data='+data)
-      if (!data) return data;
-      return data.replace(/\n\r?/g, '<br />');
-    };
-  }
-])
+.controller('DirectoryCtrl', DirectoryCtrl)
+.controller('DirArticleCtrl', DirArticleCtrl)
+.controller('DirFilesCtrl', DirFilesCtrl)
+.controller('DirLinksCtrl', DirLinksCtrl)
+.controller('DirCalendarCtrl', DirCalendarCtrl);

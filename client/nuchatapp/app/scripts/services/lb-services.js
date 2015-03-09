@@ -3,8 +3,8 @@
 // For Android Development using genymotion.
 // var urlBase = 'http://192.168.56.1:3333/api';
 var authHeader = 'authorization';
-// var urlBase = 'http://localhost:3333/api';
-var urlBase = 'http://54.92.67.230:3333/api';
+var urlBase = 'http://localhost:3333/api';
+// var urlBase = 'http://54.92.67.230:3333/api';
 
 /**
  * @ngdoc overview

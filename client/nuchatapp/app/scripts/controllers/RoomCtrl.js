@@ -1,4 +1,4 @@
-function RoomCtrl($scope, $location, User, LBSocket, RoomService){
+function RoomCtrl($scope, $state, $location, User, LBSocket, RoomService){
 	console.log('RoomCtrl');//
 
   $scope.availableRooms = RoomService.getAll();
@@ -24,6 +24,10 @@ function RoomCtrl($scope, $location, User, LBSocket, RoomService){
     LBSocket.emit('rooms:get',User.getCachedCurrent());//callback once getall?
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply()
+  };
+
+  $scope.goToRoom = function(roomId) {
+    $state.go('tab.chatRoom', { roomId: roomId }, { reload: true });
   };
 
   //TODO: refactoring move?

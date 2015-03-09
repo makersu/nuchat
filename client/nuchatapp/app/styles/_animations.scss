@@ -2,9 +2,9 @@
 .tabs-top, .platform-ios.platform-cordova:not(.fullscreen) .tabs-top {
 	& > .tabs {
 		&.slideout {
-			transition: all 0.5s linear;
+			transition: all 1.25s linear;
   		opacity: 0;
-  		top: -5px;
+  		top: -50px;
   	}
   }
 }
@@ -24,4 +24,30 @@
 .trigger-func.ng-enter.ng-enter-active {
   bottom: 25px;
   opacity: 1;
+  &.canvas {
+    bottom: 40px;
+  }
 }
+
+// Transitions
+// ion-nav-view[name="tab-chats"] {
+//   perspective: 1000;
+
+//   .flip {
+//     -webkit-transition-timing-function: 1.25s;
+//             transition-timing-function: 1.25s;
+//     transform-style: preserve-3d;
+//     &[nav-view="entering"],
+//     &[nav-view="leaving"] {
+//       transform: rotateY(180deg) !important;
+//       backface-visibility: hidden;
+//       z-index: 2;
+//     }
+//     &[nav-view="entering"] {
+//       z-index: 1;
+//     }
+//     &[nav-view="active"] {
+//       transform: rotateY(0) !important;
+//     }
+//   }
+// }

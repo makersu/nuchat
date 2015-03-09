@@ -7,7 +7,7 @@
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
-    'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate',
+    'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
     'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap'])
 .run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate, $ionicScrollDelegate, $timeout) {
   $ionicPlatform.ready(function() {
@@ -27,6 +27,10 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         .then(function() {
           console.log('OnResume: All local notifications have been canceled.');
         });
+      $rootScope.isInBackground = false;
+    });
+    document.addEventListener('pause', function() {
+      $rootScope.isInBackground = true;
     });
     // Listen to stateChangeSuccess event
     $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
@@ -36,7 +40,8 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         tabs = tabHandles[0].$tabsElement;
       }
       if (tabs) {
-        if (toState.name == 'tab.chatRoom') { // Remove tabs.
+        if (toState.name == 'tab.chatRoom' || toState.name.indexOf('tab.directory') == 0) { // Remove tabs.
+          console.log('remove tabs');
           $animate.addClass(tabs, 'slideout')
             .then(function() {
               // Shifting the message bubbles upward.
@@ -44,11 +49,9 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
               var scrollHandles = $filter('filter')($ionicScrollDelegate.$getByHandle('userMessageScroll')._instances, { $$delegateHandle: 'userMessageScroll' });
               if (scrollHandles.length) {
                 // console.log(scrollHandles);
-                scrollContent = scrollHandles[0].$element;
-              }
-              if (scrollContent) {
-                // console.log(scrollContent);
-                scrollContent.removeClass('has-tabs-top');
+                angular.forEach(scrollHandles, function(handle) {
+                  handle.$element.removeClass('has-tabs-top');
+                });
               }
             });
         } else {  // Re-add tabs.
@@ -89,11 +92,10 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     })
 
     // Each tab has its own nav history stack:
-
     .state('tab.friends', {
       url: '/friends',
       views: {
-        'tab-chats': {
+        'tab-friends': {
           templateUrl: 'templates/tab-friends.html',
           controller: 'FriendCtrl'
         }
@@ -130,7 +132,58 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       },
       onExit: function(RoomService) {
         RoomService.set(-1);
+      },
+      cache: false
+    })
+    // Directory
+    .state('tab.directory', {
+      url: '/directory/:roomId',
+      views: {
+        'tab-chats': {
+          templateUrl: 'templates/directory.html',
+          controller: 'DirectoryCtrl'
+        }
       }
+    })
+    .state('tab.directory.article', {
+      url: '/article',
+      views: {
+        'tab-article': {
+          templateUrl: 'templates/dir-article.html',
+          controller: 'DirArticleCtrl'
+        }
+      },
+      cache: false
+    })
+    .state('tab.directory.files', {
+      url: '/files',
+      views: {
+        'tab-files': {
+          templateUrl: 'templates/dir-files.html',
+          controller: 'DirFilesCtrl'
+        }
+      },
+      cache: false
+    })
+    .state('tab.directory.links', {
+      url: '/links',
+      views: {
+        'tab-links': {
+          templateUrl: 'templates/dir-links.html',
+          controller: 'DirLinksCtrl'
+        }
+      },
+      cache: false
+    })
+    .state('tab.directory.calendar', {
+      url: '/calendar',
+      views: {
+        'tab-calendar': {
+          templateUrl: 'templates/dir-calendar.html',
+          controller: 'DirCalendarCtrl'
+        }
+      },
+      cache: false
     })
 
     .state('tab.account', {

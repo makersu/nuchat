@@ -4,6 +4,10 @@ var enTranslate = function ($translateProvider) {
 		EDIT: 'Edit',
 		COMPLETE: 'Complete',
 		CHAT: 'Chat',
+		TODAY: 'Today',
+		YESTERDAY: 'Yesterday',
+		MORE: 'More',
+		LESS: 'Less',
 
 		// Messages
 		SENT_IMG: 'Sent an image',
@@ -13,5 +17,11 @@ var enTranslate = function ($translateProvider) {
 		CAPTURE_PHOTO: 'Capture a Photo',
 		VOICE_MESSAGE: 'Voice Message',
 		CAPTURE_VIDEO: 'Capture a Video',
+
+		// Directory
+		ARTICLE: 'Article',
+		FILES: 'Files',
+		LINKS: 'Links',
+		CALENDAR: 'Calendar'
 	});
 };

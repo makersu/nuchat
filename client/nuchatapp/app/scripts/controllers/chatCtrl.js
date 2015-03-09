@@ -1,5 +1,5 @@
-function ChatCtrl($scope, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $gridMenu, $timeout, $cordovaCapture, METATYPE){
+function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
+            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, METATYPE){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   /* Variables */
@@ -9,10 +9,12 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, RoomService, $loca
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
   $scope.input = {};
-  $scope.messageAudioOptions = { 
-    stop: { img: 'images/audiowave.png', icon: 'icon ion-play' }, 
-    play: { img: 'images/audiowave.gif', icon: 'icon ion-pause' }
-  }
+  $scope.messageOptions = {
+    audioSetting: { 
+      stop: { img: 'images/audiowave.png', icon: 'icon ion-play' }, 
+      play: { img: 'images/audiowave.gif', icon: 'icon ion-pause' }
+    }
+  };
   console.log($scope.currentUser);
 
   /* Methods */
@@ -85,44 +87,40 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, RoomService, $loca
   };
   /* Choose files from device or cloud drive? */
   $scope.choosePhoto = function() {
-    window.imagePicker.getPictures(
+    $NUChatObject.choosePhotos(
       function(results) {
         for (var i = 0; i < results.length; i++) {
           console.log('Image URI: ' + results[i]);
           $scope.input.text = results[i];
           $scope.sendMessage();
         }
-      }, function (error) {
-        console.error('Error: ' + error);
-      }, {
+      }, errorHandler, {
         width: 800
       }
     );
   };
   $scope.capturePhoto = function() {
-    $cordovaCapture.captureImage()
-      .then(function(imgData) {
-        $scope.input.text = imgData[0].fullPath;
-        $scope.sendMessage();
-      }, errorHandler);
+    $NUChatObject.capturePhoto(function(imgUri) {
+      $scope.input.text = imgUri;
+      $scope.sendMessage();
+    }, errorHandler);
   };
   $scope.captureVoice = function() {
-    $cordovaCapture.captureAudio()
-      .then(function(audioData) {
-        $scope.input.text = audioData[0].localURL;
-        $scope.sendMessage();
-      }, errorHandler);
+    $NUChatObject.captureAudio(function(audioUri) {
+      $scope.input.text = audioUri;
+      $scope.sendMessage();
+    }, errorHandler);
   };
   $scope.captureVideo = function() {
-    $cordovaCapture.captureVideo()
-      .then(function(videoData) {
-        console.log(videoData);
-        $scope.input.text = videoData[0].fullPath;
-        $scope.sendMessage();
-      }, errorHandler);
+    $NUChatObject.captureVideo(function(videoUri) {
+      $scope.input.text = videoUri;
+      $scope.sendMessage();
+    }, errorHandler)
   };
   // To edit the image message
   $scope.editImg = function(message) {
+    console.log(message.type);
+    console.log(message.type == METATYPE.IMG);
     $scope.editing = true;
     container = document.getElementById('msgContainer');
     $timeout(function() {
@@ -180,8 +178,15 @@ function ChatCtrl($scope, $stateParams, User, Room, LBSocket, RoomService, $loca
     }
   };
   // Message: audio configuration.
-  $scope.messageAudioOptions.stop.fn = stopAudio;
-  $scope.messageAudioOptions.play.fn = playAudio;
+  $scope.messageOptions.audioSetting.stop.fn = stopAudio;
+  $scope.messageOptions.audioSetting.play.fn = playAudio;
+
+  // Watchers
+  $scope.$watchCollection('room.messages', function(newVal, oldVal) {
+    $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
+      return $filter('amChatGrouping')(msg.created);
+    });
+  });
 
   // Register event listeners
   $scope.$on('onNewMessage', function() {

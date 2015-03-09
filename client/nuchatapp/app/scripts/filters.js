@@ -1,9 +1,24 @@
-function amChatCalendar(moment, amMoment, angularMomentConfig, $filter) {
+function amChatCalendar(moment, $filter) {
 	function amFilter(value, preprocess) {
 		moment.locale(moment.locale(), {
 			'calendar': {
 				'lastDay': $filter('translate')('YESTERDAY'),
 				'sameDay': 'hh:mm',
+				'sameElse': 'MM-DD'
+			}
+		});
+
+		return $filter('amCalendar')(value);
+	}
+	return amFilter;
+}
+
+function amChatGrouping(moment, $filter) {
+	function amFilter(value, preprocess) {
+		moment.locale(moment.locale(), {
+			'calendar': {
+				'lastDay': '['+$filter('translate')('YESTERDAY')+']',
+				'sameDay': '['+$filter('translate')('TODAY')+']',
 				'sameElse': 'MM-DD'
 			}
 		});
@@ -27,5 +42,15 @@ function brief($filter, $checkFormat) {
 }
 
 angular.module('Nuchatapp.filters', [])
-	.filter('amChatCalendar', ['moment', 'amMoment', 'angularMomentConfig', '$filter', amChatCalendar])
-	.filter('brief', ['$filter', '$checkFormat', brief]);
+	.filter('amChatCalendar', ['moment', '$filter', amChatCalendar])
+	.filter('amChatGrouping', ['moment', '$filter', amChatGrouping])
+	.filter('brief', ['$filter', '$checkFormat', brief])
+	.filter('nl2br', ['$filter',
+	  function($filter) {
+	    return function(data) {
+	    	console.log('data='+data)
+	      if (!data) return data;
+	      return data.replace(/\n\r?/g, '<br />');
+	    };
+	  }
+	]);

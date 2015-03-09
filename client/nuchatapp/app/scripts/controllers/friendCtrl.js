@@ -18,8 +18,8 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, User, LBSocket, Fr
         console.log($ionicHistory.backView())
         console.log($ionicHistory.currentView())
       	//$ionicHistory.currentView($ionicHistory.backView());
-      	//$state.go('tab.chatRoom',{roomId:room.id},{location: 'replace'});	
-        $location.path('/tab/room/'+room.id);
+      	$state.go('tab.chatRoom',{roomId:room.id},{location: 'replace'});	
+        // $location.path('/tab/room/'+room.id);
       }
 		});
 

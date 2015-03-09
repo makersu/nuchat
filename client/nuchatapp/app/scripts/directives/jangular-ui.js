@@ -5,6 +5,10 @@
  *
  *  Include:
  *  1) Meta-Message
+ *  2) WWW Trigger
+ *  3) Grid Menu
+ *  4) In View Window
+ *  5) Url(link) View
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', []);
@@ -18,6 +22,9 @@
 		FILE:     5, // Including documents?
 		UNKNOWN: -1,
 	};
+
+	var FOLDING_LINE_THRES = 5;
+	var FOLDING_CHAR_THRES = 256;
 
 	function getLinks(content) {
 		if (content) {
@@ -38,7 +45,7 @@
 	function isAudio(content) {
 		if (content) {
 			var ext = content.substr(content.lastIndexOf('.'));
-			if ( ext.match(/3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4/) ) {
+			if ( ext.match(/3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac/) ) {
 				return true;
 			}
 		}
@@ -64,21 +71,40 @@
 	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
 	 * 4) Video: ogg|mp4|webm (HTML 5 Video supports)
 	 */
-	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView) {
+	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate) {
 		return {
 			restrict: 'EA',
 			scope: {
 				msg: '=',
 				type: '=',
-				audioSetting: '=',
+				metaOption: '=',
+				scrollHandle: '@',
 			},
-			template: '<div ng-bind-html="message"></div>',
+			template: '<div class="content" ng-bind-html="message" id="{{ ::msg.id }}"></div>\
+								 <a class="extend" ng-if="hasMore && !extended" ng-click="extend()">...{{ ::\'MORE\' | translate }}</a>\
+								 <a class="extend" ng-if="extended" ng-click="hide()">...{{ ::\'LESS\' | translate }}</a>',
 			link: function(scope, elem, attrs) {
-				scope.message = scope.msg.text;
+				var _audioSetting = scope.metaOption.audioSetting || {};
+				var _foldingThres = scope.metaOption.foldingThres || FOLDING_LINE_THRES;
+				var _originMsg = scope.message = scope.msg.text;
+				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope.scrollHandle);
+
 				parse(scope.type)
 					.then(function(view) {
 						elem.append(view);
 					}, errorHandler);
+
+				scope.extend = function() {
+					scope.extended = true;
+					scope.message = $filter('nl2br')(_originMsg);
+				};
+				scope.hide = function() {
+					scope.extended = false;
+					scope.message = _originMsg;
+					parseText();
+		      $location.hash(scope.msg.id);
+		      _scrollHandle.$anchorScroll();
+				};
 
 				// Metatype parsing
 				function parse(type) {
@@ -135,6 +161,8 @@
 						parseAudio();
 					} else if ( isVideo(scope.message) ) {
 						parseVideo();
+					} else {
+						parseText();
 					}
 					return q.promise;
 				}
@@ -143,6 +171,7 @@
 				function parseLink(links) {
 					var q = $q.defer();
 					var cacheView = {};
+					scope.msg.type = METATYPE.LINK;
 					angular.forEach(links, function(link) {
 						if (link && link.match(/^http(s)?:\/\/.*/)) {
 							scope.message = scope.message.replace(link, '<a href="'+link+'">'+link+'</a>');
@@ -215,43 +244,59 @@
 
 				// Assuming the img uri provided.
 				function parseImg() {
+					scope.msg.type = METATYPE.IMG;
 					scope.msg.isImg = true;
 					scope.message = '<img id="img'+scope.msg.id+'" src="'+scope.message+'">';
 				}
 
 				// Assuming the audio uri provided.
 				function parseAudio() {
-					scope.msg.isAudio = true;
+					// TODO: if audioSetting is not set, throw the error message.
+					scope.msg.type = METATYPE.AUDIO;
 					var audioUrl = scope.message;
-					scope.message = '<img class="audio" src="'+scope.audioSetting.stop.img+'"><i class="icon ion-play"></i>';
+					scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
 					elem.bind('click', function() {
 						scope.msg.isPlaying = !scope.msg.isPlaying;
 						setView();
 						
 						if (scope.msg.isPlaying) {
-							scope.audioSetting.play.fn(audioUrl)
+							_audioSetting.play.fn(audioUrl)
 								.then(function() {
 									console.log('played');
 									scope.msg.isPlaying = false;
 									setView();
 								});
 						} else {
-							scope.audioSetting.stop.fn();
+							_audioSetting.stop.fn();
 						}
 
 						function setView() {
 							var img = elem.find('img');
-							img[0].src = scope.msg.isPlaying ? scope.audioSetting.play.img : scope.audioSetting.stop.img;
+							img[0].src = scope.msg.isPlaying ? _audioSetting.play.img : _audioSetting.stop.img;
 							var icon = elem.find('i');
-							icon[0].className = scope.msg.isPlaying ? scope.audioSetting.play.icon : scope.audioSetting.stop.icon;
+							icon[0].className = scope.msg.isPlaying ? _audioSetting.play.icon : _audioSetting.stop.icon;
 						}
 					});
 				}
 
 				function parseVideo() {
-					scope.msg.isVideo = true;
+					scope.msg.type = METATYPE.VIDEO;
 					var videoUrl = scope.message;
 					scope.message = '<video width="160" height="90"><source src="'+videoUrl+'"></video>';
+				}
+
+				function parseText() {
+					var lines = scope.message.split('\n');
+					if (lines.length > _foldingThres || scope.message.length > FOLDING_CHAR_THRES) {
+						var text = '';
+						for (var i = 0; i < lines.length && i < _foldingThres && text.length < FOLDING_CHAR_THRES; i++) {
+							text += lines[i]+'<br>';
+						}
+						text = text.substring(0, text.length-4);
+						if (text.length > FOLDING_CHAR_THRES) text = text.substr(0, FOLDING_CHAR_THRES);
+						scope.hasMore = true;
+						scope.message = text;
+					}
 				}
 
 				// Output error logs
@@ -465,6 +510,37 @@
 	});
 
 	/**
+	 *  In View Window
+	 *
+	 *  @description  Auto hide/show when element outside/inside the view window.
+	 *
+	 */
+	jangularUI.directive('inViewWindow', function() {
+		return {
+			restrict: 'A',
+			link: function(scope, elem, attrs) {
+				var winEl = angular.element(document.querySelector(attrs.inViewWindow));
+				var viewWin = verge.rectangle(winEl[0], 10);
+
+				function isInViewWindow() {
+					var elRect = verge.rectangle(elem[0]);
+					return (elRect.top > viewWin.top && elRect.top < viewWin.bottom || elRect.bottom > viewWin.top && elRect.bottom < viewWin.bottom)
+						&& (elRect.left > viewWin.left && elRect.left < viewWin.right || elRect.right > viewWin.left && elRect.right < viewWin.right);
+				}
+
+				winEl.on('scroll', _.debounce(function() {
+						if (isInViewWindow()) {
+							elem.css('visibility', 'visible');
+						} else {
+							elem.css('visibility', 'hidden');
+						}
+					}, 100)
+				);
+			}
+		};
+	});
+
+	/**
 	 * Drawing
 	 *
 	 * @description Enable drawing on canvas.
@@ -597,6 +673,45 @@
   	
   	return _self;
   });
+
+  // Filters
+  // Grouping by the property.
+  jangularUI.filter('groupBy', function ($filter) {
+		return function(collection, prop, ref) {
+			var groupList = [];
+			var sortedArr = collection;
+			if (!angular.isNumber(prop)) sortedArr = $filter('orderBy')(collection, prop);
+			var groupName = '_INVALID_GROUP_';
+			var rowNum = 0;
+			angular.forEach(sortedArr, function(item, index) {
+				var gName = '';
+				if (ref && !angular.isFunction(ref)) {
+					var pathNameArr = item[ref].split('/');
+					gName = pathNameArr[0];
+					if (pathNameArr.length > 2) {
+						gName = pathNameArr[pathNameArr.length-2];
+					}
+				} else if (ref) {	// If function
+					gName = ref(item);
+				} else {
+					if (angular.isNumber(prop)) {
+						if (index > 0 && (index % prop == 0) ) rowNum++;
+						gName = 'row'+rowNum;
+					} else {
+						gName = item[prop];
+					}
+				}
+				if (gName != groupName) {
+					var group = { name: gName, filename: gName, time: -1, size: -1, items: [] };
+					groupName = group.name;
+					groupList.push(group);
+				}
+				groupList[groupList.length-1].items.push(item);
+				// console.log(groupList[groupList.length-1]);
+			});
+			return groupList;
+		}
+	});
 
   // Constants
   jangularUI.constant('METATYPE', METATYPE);
