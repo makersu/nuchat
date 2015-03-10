@@ -29,13 +29,14 @@ function amChatGrouping(moment, $filter) {
 }
 
 function brief($filter, $checkFormat) {
-	function briefFilter(value) {
-		if (value) {
-			if ($checkFormat.isImg(value)) {
+	function briefFilter(valObj) {
+		if (valObj) {
+			if ($checkFormat.isImg(valObj.type)) {
 				return $filter('translate')('SENT_IMG');
 			}
+			return valObj.text;
 		}
-		return value;
+		return null;
 	}
 
 	return briefFilter;

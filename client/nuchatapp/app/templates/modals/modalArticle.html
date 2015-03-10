@@ -1,0 +1,22 @@
+<ion-modal-view>
+  <ion-header-bar class="bar-royal" align-title="left">
+    <h1 class="title">{{ ::'ADD_ARTICLE' | translate }}</h1>
+    <div class="buttons">
+      <button class="button-icon icon ion-close" ng-click="closeModal()"></button>
+      <button class="button-icon icon ion-checkmark"></button>
+    </div>
+  </ion-header-bar>
+  <ion-content class="editable">
+    <textarea ng-model="article.content" placeholder="{{ ::'WRITE_SOMETHING_HERE' | translate }}"></textarea>
+  </ion-content>
+  <ion-footer-bar>
+  	<div class="buttons">
+  		<button class="button-icon icon ion-happy"></button>
+  		<button class="button-icon icon ion-camera"></button>
+  		<button class="button-icon icon ion-film-marker"></button>
+  		<button class="button-icon icon ion-headphone"></button>
+  		<button class="button-icon icon ion-link"></button>
+  		<button class="button-icon icon ion-ios-location"></button>
+  	</div>
+	</ion-footer-bar>
+</ion-modal-view>

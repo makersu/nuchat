@@ -16,6 +16,19 @@ button {
 			}
 		}
 	}
+  .button-icon {
+    padding: 0 12px;
+    &.icon {
+      &:before {
+        font-size: $barButtonIcon_font_size;          
+      }
+    }
+  }
+  &.bar-footer {
+    .button-icon {
+      padding: 0 10px;
+    }
+  }
 }
 
 /* Float buttons */

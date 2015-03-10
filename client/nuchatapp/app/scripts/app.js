@@ -7,7 +7,7 @@
 // 'starter.services' is found in services.js
 // 'starter.controllers' is found in controllers.js
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
-    'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
+    'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
     'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap'])
 .run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate, $ionicScrollDelegate, $timeout) {
   $ionicPlatform.ready(function() {

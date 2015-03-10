@@ -1,10 +1,12 @@
-function DirectoryCtrl($scope, $state, $stateParams, RoomService, $timeout, $ionicNavBarDelegate) {
+function DirectoryCtrl($scope, $rootScope, $state, $stateParams, RoomService, $timeout, $ionicNavBarDelegate) {
 	/* Variables */
 	// Private
 
 	// Scope public
 
 	/* Methods */
+	// Global
+	$rootScope.addDir = {};
 	// Private
 	// Scope Public
 	$scope.hideNavBar = function() {

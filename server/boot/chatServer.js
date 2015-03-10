@@ -1,5 +1,8 @@
 module.exports = function(app) {
 	var _ = require('underscore');
+  //var mongodb=require('loopback-connector-mongodb').mongodb
+  var GridStore = require('mongodb').GridStore
+  var ObjectID = require('mongodb').ObjectID
 
   app.on('started', function() {
   	
@@ -296,6 +299,7 @@ module.exports = function(app) {
       // New Message
       //
       socket.on('room:messages:new', function(data) {
+        console.log('room:messages:new')
         console.log(data)
         app.models.message.create(data,function(err, obj){
           if(err){
@@ -328,7 +332,65 @@ module.exports = function(app) {
       //
       socket.on('room:files:new', function(data) {
         console.log('room:files:new')
-        console.log(data)
+        //console.log(data)
+        
+        var db = app.datasources.db.connector.db;
+        console.log(db)
+        db.safe = {w: 1};
+
+        //console.log(mongodb)
+        var gridStore = new GridStore(db, data.filename, "w",{
+          "content_type": data.type,
+          "chunk_size": 1024*4
+        });
+        //var gridStore = new moGridStore(db, new ObjectID(), "test_gs_getc_file", "w");
+        
+        var buffer = new Buffer(data.file);
+
+        gridStore.open(function(err, gridStore) {
+          gridStore.write(buffer, function(err, gridStore) {
+            gridStore.close(function(err, result) {
+              if(err){
+                console.log(err)
+              }
+              
+              console.log(result)
+
+              // Let's read the file using object Id
+              // GridStore.read(db, result._id, function(err, data) {
+              //   //test.equal('hello world!', data);
+              //   if(err){
+              //     console.log(err)
+              //   }
+                
+              //   //console.log(data)
+                
+              // });
+
+              var newMessage={}
+              
+              newMessage.roomId = data.roomId;
+              newMessage.ownerId = data.ownerId; 
+              newMessage.text = result._id
+              newMessage.type = data.type
+              console.log(newMessage)    
+
+              app.models.message.create(newMessage,function(err, obj){
+                if(err){
+                  console.log(err)
+                  return;
+                }
+                console.log('room:messages:new')
+                console.log(obj)
+                app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj);
+                
+              });
+
+            });
+          });
+        });
+
+
       });//end socket.on  
       
 

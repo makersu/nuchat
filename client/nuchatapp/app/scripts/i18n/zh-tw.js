@@ -20,6 +20,8 @@ var chtTranslate = function ($translateProvider) {
 
 		// Directory
 		ARTICLE: '文章',
+		ADD_ARTICLE: '新增文章',
+		WRITE_SOMETHING_HERE: '寫點什麼吧...',
 		FILES: '檔案',
 		LINKS: '連結',
 		CALENDAR: '行事曆'

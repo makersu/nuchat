@@ -20,6 +20,8 @@ var enTranslate = function ($translateProvider) {
 
 		// Directory
 		ARTICLE: 'Article',
+		ADD_ARTICLE: 'Add an Article',
+		WRITE_SOMETHING_HERE: 'Writing something here...',
 		FILES: 'Files',
 		LINKS: 'Links',
 		CALENDAR: 'Calendar'

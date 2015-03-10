@@ -11,7 +11,7 @@
  *  5) Url(link) View
  */
 (function() {
-	var jangularUI = angular.module('jangular.ui', []);
+	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
 
 	var METATYPE = {
 		IMG:   	  0,
@@ -32,34 +32,48 @@
 		}
 	}
 
-	function isImg(content) {
-		if (content) {
-			var ext = content.substr(content.lastIndexOf('.'));
-			if ( ext.match(/jpg|jpeg|png|bmp|gif|tiff|tif|svg/) ) {
+	// function isImg(content) {
+	// 	if (content) {
+	// 		var ext = content.substr(content.lastIndexOf('.'));
+	// 		if ( ext.match(/jpg|jpeg|png|bmp|gif|tiff|tif|svg/) ) {
+	// 			return true;
+	// 		}
+	// 	}
+	// 	return false;
+	// }
+
+	function checkType(toCheck, type) {
+		if (toCheck && toCheck.indexOf(type) != -1) {			
 				return true;
-			}
 		}
 		return false;
 	}
 
-	function isAudio(content) {
-		if (content) {
-			var ext = content.substr(content.lastIndexOf('.'));
-			if ( ext.match(/3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac/) ) {
-				return true;
-			}
-		}
-		return false;
+	function isImg(contentType) {
+		return checkType(contentType, 'image');
 	}
 
-	function isVideo(content) {
-		if (content) {
-			var ext = content.substr(content.lastIndexOf('.'));
-			if ( ext.match(/ogg|mp4|webm/) ) {
-				return true;
-			}
-		}
-		return false;
+
+	function isAudio(contentType) {
+		return checkType(contentType, 'audio');
+		// if (content) {
+		// 	var ext = content.substr(content.lastIndexOf('.'));
+		// 	if ( ext.match(/3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac/) ) {
+		// 		return true;
+		// 	}
+		// }
+		// return false;
+	}
+
+	function isVideo(contentType) {
+		return checkType(contentType, 'video');
+		// if (content) {
+		// 	var ext = content.substr(content.lastIndexOf('.'));
+		// 	if ( ext.match(/ogg|mp4|webm/) ) {
+		// 		return true;
+		// 	}
+		// }
+		// return false;
 	}
 
 	/**
@@ -71,7 +85,7 @@
 	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
 	 * 4) Video: ogg|mp4|webm (HTML 5 Video supports)
 	 */
-	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate) {
+	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce) {
 		return {
 			restrict: 'EA',
 			scope: {
@@ -86,6 +100,7 @@
 			link: function(scope, elem, attrs) {
 				var _audioSetting = scope.metaOption.audioSetting || {};
 				var _foldingThres = scope.metaOption.foldingThres || FOLDING_LINE_THRES;
+				var _remoteSrv = scope.metaOption.remote || ''; // Empty if use the local file for development...
 				var _originMsg = scope.message = scope.msg.text;
 				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope.scrollHandle);
 
@@ -155,11 +170,11 @@
 							}, function(err) {
 								q.reject(err);
 							});
-					} else if ( isImg(scope.message) ) {
+					} else if ( isImg(scope.msg.type) ) { //
 						parseImg();
-					} else if ( isAudio(scope.message) ) {
+					} else if ( isAudio(scope.msg.type) ) {
 						parseAudio();
-					} else if ( isVideo(scope.message) ) {
+					} else if ( isVideo(scope.msg.type) ) {
 						parseVideo();
 					} else {
 						parseText();
@@ -244,16 +259,18 @@
 
 				// Assuming the img uri provided.
 				function parseImg() {
-					scope.msg.type = METATYPE.IMG;
+					// scope.msg.type = METATYPE.IMG;
 					scope.msg.isImg = true;
+					scope.message = _remoteSrv+scope.message //
+					// console.log(scope.message);
 					scope.message = '<img id="img'+scope.msg.id+'" src="'+scope.message+'">';
 				}
 
 				// Assuming the audio uri provided.
 				function parseAudio() {
 					// TODO: if audioSetting is not set, throw the error message.
-					scope.msg.type = METATYPE.AUDIO;
-					var audioUrl = scope.message;
+					// scope.msg.type = METATYPE.AUDIO;
+					var audioUrl = _remoteSrv+scope.message;
 					scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
 					elem.bind('click', function() {
 						scope.msg.isPlaying = !scope.msg.isPlaying;
@@ -280,9 +297,11 @@
 				}
 
 				function parseVideo() {
-					scope.msg.type = METATYPE.VIDEO;
-					var videoUrl = scope.message;
-					scope.message = '<video width="160" height="90"><source src="'+videoUrl+'"></video>';
+					// scope.msg.type = METATYPE.VIDEO;
+					var videoUrl = _remoteSrv+scope.message;
+					scope.message = $sce.trustAsHtml('<video width="200" height="120" controls><source src="'+videoUrl+'"></video>');
+					console.log('parsing video');
+					console.log(scope.message);
 				}
 
 				function parseText() {
@@ -670,6 +689,8 @@
   	var _self = this;
 
   	_self.isImg = isImg;
+  	_self.isAudio = isAudio;
+  	_self.isVideo = isVideo;
   	
   	return _self;
   });

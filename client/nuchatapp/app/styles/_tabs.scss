@@ -8,6 +8,8 @@
 		}
 	}
 	.has-tabs-top {
-		top: 49px;
+		&:not(.has-header) {
+			top: 49px;			
+		}
 	}
 }

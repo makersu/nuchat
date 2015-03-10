@@ -1,0 +1,33 @@
+.modal {
+	&.active {
+		display: block;
+	}
+	.bar {
+		&.bar-header {
+			.title {
+				left: 0 !important;
+				text-align: left !important;
+			}
+		}
+	}
+	ion-content {
+		&.scroll-content {
+			&.ionic-scroll {
+				&.has-header {
+					&.has-footer {
+						height: auto !important;
+					}
+				}
+			}
+		}
+		&.editable {
+			.scroll {
+				height: 100%;
+				textarea {
+					height: 100%;
+					padding: 10px;
+				}
+			}
+		}
+	}
+}

@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, METATYPE){
+            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, METATYPE, ENV){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   /* Variables */
@@ -13,7 +13,8 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
     audioSetting: { 
       stop: { img: 'images/audiowave.png', icon: 'icon ion-play' }, 
       play: { img: 'images/audiowave.gif', icon: 'icon ion-pause' }
-    }
+    },
+    remote: ENV.GRIDFS_BASE_URL,
   };
   console.log($scope.currentUser);
 
@@ -60,7 +61,7 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
 
     //console.log($stateParams.roomId)
     //scope.input.room=$stateParams.roomId
-    $scope.input.room = $scope.room;
+    $scope.input.roomId = $scope.room.id;
     $scope.input.ownerId = $scope.currentUser.id;
     console.log($scope.input);
 
@@ -89,11 +90,65 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
   $scope.choosePhoto = function() {
     $NUChatObject.choosePhotos(
       function(results) {
-        for (var i = 0; i < results.length; i++) {
-          console.log('Image URI: ' + results[i]);
-          $scope.input.text = results[i];
-          $scope.sendMessage();
+        if ($scope.metaMenu.isShown()) {
+          $scope.closeMetaMenu();
         }
+        // for (var i = 0; i < results.length; i++) {
+        //   console.log('Image URI: ' + results[i]);
+          
+        //   // $scope.input.text = results[i];
+        //   //$scope.sendMessage();
+
+        //   console.log(cordova.file.cacheDirectory)
+
+
+        //   //window.resolveLocalFileSystemURL(cordova.file.applicationDirectory + "www/index.html", gotFile, fail);
+
+        //   window.resolveLocalFileSystemURL(
+        //     results[i], 
+        //     function(fileEntry){
+        //       console.log(fileEntry)
+              
+        //       fileEntry.file(function(file) {
+        //         console.log(file)
+        //         var reader = new FileReader();
+
+        //         reader.onloadend = function(event) {
+        //           console.log('onload')
+        //           //console.log(event.target)
+        //           console.log('room:files:new')
+        //           var data={}
+        //           data.roomId = $scope.room.id;
+        //           data.ownerId = $scope.currentUser.id;
+        //           data.file=event.target.result
+        //           data.filename=file.name
+        //           data.type=file.type
+        //           data.size=file.size
+        //           console.log(data)      
+     
+        //           //LBSocket.emit('room:files:new', {image:event.target.result, room:$scope.room, ownerId: $scope.currentUser.id });
+        //           LBSocket.emit('room:files:new', data);
+        //           $scope.input={};
+
+        //           if ($scope.metaMenu.isShown()) {
+        //             $scope.closeMetaMenu();
+        //           }
+
+        //         }
+
+        //         //reader.readAsDataURL(file);
+        //         reader.readAsArrayBuffer(file);
+
+
+        //       });
+        //     }, 
+        //     function(error){
+        //       console.log(error)
+        //     }
+        //   );//end resolveLocalFileSystemURL
+
+
+        // }
       }, errorHandler, {
         width: 800
       }
@@ -101,26 +156,35 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
   };
   $scope.capturePhoto = function() {
     $NUChatObject.capturePhoto(function(imgUri) {
-      $scope.input.text = imgUri;
-      $scope.sendMessage();
+      // $scope.input.text = imgUri;
+      // $scope.sendMessage();
+      if ($scope.metaMenu.isShown()) {
+        $scope.closeMetaMenu();
+      }
     }, errorHandler);
   };
   $scope.captureVoice = function() {
     $NUChatObject.captureAudio(function(audioUri) {
-      $scope.input.text = audioUri;
-      $scope.sendMessage();
+      // $scope.input.text = audioUri;
+      // $scope.sendMessage();
+      if ($scope.metaMenu.isShown()) {
+        $scope.closeMetaMenu();
+      }
     }, errorHandler);
   };
   $scope.captureVideo = function() {
     $NUChatObject.captureVideo(function(videoUri) {
-      $scope.input.text = videoUri;
-      $scope.sendMessage();
+      // $scope.input.text = videoUri;
+      // $scope.sendMessage();
+      if ($scope.metaMenu.isShown()) {
+        $scope.closeMetaMenu();
+      }
     }, errorHandler)
   };
   // To edit the image message
   $scope.editImg = function(message) {
     console.log(message.type);
-    console.log(message.type == METATYPE.IMG);
+    // console.log(message.type == METATYPE.IMG);
     $scope.editing = true;
     container = document.getElementById('msgContainer');
     $timeout(function() {
@@ -156,6 +220,9 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
   RoomService.set($stateParams.roomId);
   $scope.room = RoomService.get();
+
+  // Initializing NUChatObject service
+  $NUChatObject.init($scope.room, $scope.currentUser);
 
   // Reading unread messages from storage(or TODO: DB?)
   var unreadMessages = $localstorage.getObject($scope.room.id);
