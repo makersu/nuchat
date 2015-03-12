@@ -400,8 +400,9 @@ module.exports = function(app) {
           options.chunk_size = 1024*512
         }
 
+        console.log(thumbnailFilePath)
         //for thumbnail file
-        var gridStore = new GridStore(db, "thumbnail.png", "w", {"content_type": "image/png"});
+        var gridStore = new GridStore(db, null, "w", {"content_type": "image/png"});
         gridStore.open(function(err, gridStore) {
           gridStore.writeFile(thumbnailFilePath, function(err, gridStore) {
             gridStore.close(function(err, result) {
@@ -413,6 +414,7 @@ module.exports = function(app) {
               var thumbnailFileId = result._id
               
               //for orginal file
+              //TODO: meta thumbnail?
               gridStore = new GridStore(db, data.filename, "w",options);
               gridStore.open(function(err, gridStore) {
                 gridStore.write(new Buffer(data.file), function(err, gridStore) {
@@ -455,7 +457,8 @@ module.exports = function(app) {
         gm(data.file)
         .options({imageMagick: true})
         .resize(160, 160)
-        .noProfile()
+        //.quality(90) //
+        .noProfile() //
         .write(thumbnailFilePath, function (err) {
           var end1=moment()//
           console.log("gm.resize moment end1.diff(start)="+end1.diff(start))//
