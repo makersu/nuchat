@@ -402,7 +402,7 @@ module.exports = function(app) {
 
         console.log(thumbnailFilePath)
         //for thumbnail file
-        var gridStore = new GridStore(db, null, "w", {"content_type": "image/png"});
+        var gridStore = new GridStore(db, new ObjectID(), "w", {"content_type": "image/png"});
         gridStore.open(function(err, gridStore) {
           gridStore.writeFile(thumbnailFilePath, function(err, gridStore) {
             gridStore.close(function(err, result) {
