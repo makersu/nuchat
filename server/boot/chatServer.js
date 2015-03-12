@@ -1,5 +1,11 @@
 module.exports = function(app) {
+
 	var _ = require('underscore');
+  var fs = require('fs');
+  var ffmpeg = require('fluent-ffmpeg');
+  var gm = require('gm');
+  var moment = require('moment')
+
   //var mongodb=require('loopback-connector-mongodb').mongodb
   var GridStore = require('mongodb').GridStore
   var ObjectID = require('mongodb').ObjectID
@@ -119,6 +125,7 @@ module.exports = function(app) {
       socket.on('room:join', function(id, fn) {
         console.log('room:join')
         console.log(id)
+
         app.models.room.findById(id,function(err, room) {
           if (err) {
                 // Oh shit
@@ -130,7 +137,7 @@ module.exports = function(app) {
               return;
           }
           console.log(room)
-          console.log("socket.join id="+id)
+          
           socket.join(id);
           // Send back Room meta to client
           if (fn) {
@@ -146,15 +153,12 @@ module.exports = function(app) {
       });//socket.on
 
       //
-      // Join Room
+      // Join Room With Friend
       //
       socket.on('friend:join', function(data, fn) {
-        // data.name='private room'
-        // data.type='private'
-        // data.ownerId=data.user
-        // console.log(data)
+        console.log('friend:join')
+        console.log(data)
 
-        // app.models.room.find({ownerId:data.user},function(err,room){
         var filter={
           "where": { 
             "or" : [
@@ -164,6 +168,7 @@ module.exports = function(app) {
           }
         }
 
+        //TODO
         app.models.room.findOne(filter,function(err,room){ 
           if(err){
             console.log(err)
@@ -221,76 +226,6 @@ module.exports = function(app) {
 
         })
 
-
-        // app.models.user.findById(data.user,function(err, user) {
-        //   if(err){
-        //     console.log(err)
-        //     return;
-        //   }
-        //   console.log(user)
-        //   user.rooms.create(data,function(err,room){
-        //     if(err){
-        //       console.log(err)
-        //       return;
-        //     }
-        //     console.log(room)
-        //     socket.join(room.id);
-        //   });
-
-        // })
-        
-        // app.models.room.findById(id,function(err, room) {
-        //   if (err) {
-        //         // Oh shit
-        //         console.log(err)
-        //         return;
-        //   }
-        //   if (!room) {
-        //       // No room bro
-        //       return;
-        //   }
-        //   console.log(room)
-        //   console.log("socket.join id="+id)
-        //   socket.join(id);
-        //   // Send back Room meta to client
-        //   if (fn) {
-        //       fn({
-        //           id: room._id,
-        //           name: room.name,
-        //           description: room.description
-        //       });
-        //   }
-
-        // });//app.models.room.findById
-        // console.log('*app.models.user')
-        // console.log(app.models.user)
-        // console.log('*app.models.user')
-
-        
-        // app.models.Person.messages({}, function(err, room) {
-        //   if(err){
-        //     console.log(err)
-        //   }
-        //   console.log(room)
-        // });
-
-
-
-        // var privateRoom = app.models.user.rooms.build(data);
-        // console.log(privateRoom)
-
-        // app.models.user.room.create(data, function(err, room) {
-        //   if(err){
-        //     console.log(err)
-        //   }
-        //   else
-        //   {
-        //     console.log(room)
-        //   }
-  
-        // });
-
-
             
       });//socket.on
 
@@ -307,23 +242,9 @@ module.exports = function(app) {
             return;
           }
           console.log(obj)
-          /*
-          var outgoingMessage = {
-            id: obj._id,
-            //owner: obj.owner,
-            //avatar: hash.md5(userData.email),
-            //name: userData.displayName,
-            text: obj.text,
-            posted: obj.posted,
-            room: obj.room
-          }
-          */
-
-          //console.log("obj.room="+obj.room)
-
-          //console.log(app.sio.sockets.in(obj.roomId))
+          
           app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj);
-          //console.log(outgoingMessage)
+          
         });   
       });//end socket.on
 
@@ -332,18 +253,121 @@ module.exports = function(app) {
       //
       socket.on('room:files:new', function(data) {
         console.log('room:files:new')
-        //console.log(data)
-        
-        var db = app.datasources.db.connector.db;
-        console.log(db)
-        db.safe = {w: 1};
+        console.log(data.filename)
 
-        //console.log(mongodb)
+        //var savePath = '/tmp/arrow.301.hdtv-lol.mp4'
+        //var savePath = '/tmp/'+data.filename
+
+        // fs.writeFile(savePath, data.file, function(err) {
+        //   if(err){
+        //     console.log(err)
+        //   }
+        //   console.log(data.type)
+          //var thumbnailFilename = Math.random().toString(36).substring(7)+'.png';
+          //var thumbnailFilePath = '/tmp/'+thumbnailFilename
+
+          if(data.type.indexOf('image')!=-1){
+            createRoomImageMessage(data)
+
+          }
+          else if(data.type.indexOf('video')!=-1){
+            createRoomVideoMessage(data)
+            // var proc = ffmpeg(savePath)
+            // .on('filenames', function(filenames) {
+            //   console.log('Will generate ' + filenames.join(', '))
+            // })
+            // .on('end', function() {
+            //   console.log('Screenshots taken');
+            //   writeFileWithThumbnailToGridStore(data,thumbnailFilePath,function(err,thumbnailFileId){
+            //     if(err){
+            //       console.log(err)
+            //       return
+            //     }
+            //     var newMessage={}
+            //     newMessage.roomId = data.roomId;
+            //     newMessage.ownerId = data.ownerId; 
+            //     newMessage.text = thumbnailFileId
+            //     newMessage.type = data.type
+            //     console.log(newMessage)
+
+            //     createRoomMessage(newMessage)
+
+            //   })
+
+            // })
+            // .on('error', function(err) {
+            //   console.log('an error happened: ' + err.message);
+            // })
+            // .screenshots({
+            //   timestamps: ['00:00:01.500'],
+            //   filename: thumbnailFilename,
+            //   folder: '/tmp',
+            //   size: '50%'
+            // });
+
+          }
+          else if(data.type.indexOf('audio')!=-1){
+            createRoomAudioMessage(data)  
+          }  
+
+
+
+        //});//fs.writeFile
+        
+        // var db = app.datasources.db.connector.db;
+        // //console.log(db)
+        // db.safe = {w: 1};//
+
+        // var gridStore = new GridStore(db, data.filename, "w",{
+        //   "content_type": data.type,
+        //   "chunk_size": 1024*4
+        // });
+        
+        // var buffer = new Buffer(data.file);
+
+        // gridStore.open(function(err, gridStore) {
+        //   gridStore.write(buffer, function(err, gridStore) {
+        //     gridStore.close(function(err, result) {
+        //       if(err){
+        //         console.log(err)
+        //         return;
+        //       }
+              
+        //       console.log(result)
+
+        //       var newMessage={}
+              
+        //       newMessage.roomId = data.roomId;
+        //       newMessage.ownerId = data.ownerId; 
+        //       newMessage.text = result._id//
+        //       newMessage.type = data.type
+        //       console.log(newMessage)    
+
+        //       app.models.message.create(newMessage,function(err, obj){
+        //         if(err){
+        //           console.log(err)
+        //           return;
+        //         }
+        //         console.log('room:messages:new')
+        //         console.log(obj)
+        //         app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj);  
+        //       });
+
+        //     });
+        //   });
+        // });
+
+
+      });//end socket.on
+
+      var writeFileToGridStore = function(data,cb){
+        var db = app.datasources.db.connector.db;
+        //console.log(db)
+        db.safe = {w: 1};//
+
         var gridStore = new GridStore(db, data.filename, "w",{
-          "content_type": data.type,
-          "chunk_size": 1024*4
+          "content_type": data.type
         });
-        //var gridStore = new moGridStore(db, new ObjectID(), "test_gs_getc_file", "w");
         
         var buffer = new Buffer(data.file);
 
@@ -352,47 +376,201 @@ module.exports = function(app) {
             gridStore.close(function(err, result) {
               if(err){
                 console.log(err)
+                cb(err)
               }
-              
               console.log(result)
+              cb(err,result._id)
+            });//close
+          });//write
+        });//open      
 
-              // Let's read the file using object Id
-              // GridStore.read(db, result._id, function(err, data) {
-              //   //test.equal('hello world!', data);
-              //   if(err){
-              //     console.log(err)
-              //   }
-                
-              //   //console.log(data)
-                
-              // });
+      }  
 
-              var newMessage={}
+      var writeFileWithThumbnailToGridStore = function(data,thumbnailFilePath,cb){
+
+        var db = app.datasources.db.connector.db;
+        //console.log(db)
+        db.safe = {w: 1};//
+
+        //TODO
+        var options={
+          "content_type": data.type
+        }
+        if(data.type.indexOf('video')!=-1){
+          options.chunk_size = 1024*512
+        }
+
+        //for thumbnail file
+        var gridStore = new GridStore(db, "thumbnail.png", "w", {"content_type": "image/png"});
+        gridStore.open(function(err, gridStore) {
+          gridStore.writeFile(thumbnailFilePath, function(err, gridStore) {
+            gridStore.close(function(err, result) {
+              if(err){
+                console.log(err)
+                cb(err)
+              }
+              console.log(result)
+              var thumbnailFileId = result._id
               
-              newMessage.roomId = data.roomId;
-              newMessage.ownerId = data.ownerId; 
-              newMessage.text = result._id
-              newMessage.type = data.type
-              console.log(newMessage)    
+              //for orginal file
+              gridStore = new GridStore(db, data.filename, "w",options);
+              gridStore.open(function(err, gridStore) {
+                gridStore.write(new Buffer(data.file), function(err, gridStore) {
+                  gridStore.close(function(err, result) {
+                    if(err){
+                      console.log(err)
+                      cb(err)
+                    }
+                    console.log(result)
+                    cb(null, result._id, thumbnailFileId)
+                  });//close
+                });//write    
+              });//open
+            });//close
+          });//writeFile
+        });//open
 
-              app.models.message.create(newMessage,function(err, obj){
-                if(err){
-                  console.log(err)
-                  return;
-                }
-                console.log('room:messages:new')
-                console.log(obj)
-                app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj);
-                
-              });
+      };//writeFileWithThumbnailToGridStore
 
-            });
-          });
+      var createRoomMessage = function(newMessage){
+        app.models.message.create(newMessage,function(err, obj){
+          if(err){
+            console.log(err)
+            return;
+          }
+          console.log('room:messages:new')
+          console.log(obj)
+          app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj); 
+        });
+      };//createRoomMessage
+
+      var createRoomImageMessage = function(data){
+
+        console.log(data.type)
+
+        var thumbnailFilename = Math.random().toString(36).substring(7)+'.png';
+        var thumbnailFilePath = '/tmp/'+thumbnailFilename//TODO
+
+        var start=moment()//
+        gm(data.file)
+        .options({imageMagick: true})
+        .resize(160, 160)
+        .noProfile()
+        .write(thumbnailFilePath, function (err) {
+          var end1=moment()//
+          console.log("gm.resize moment end1.diff(start)="+end1.diff(start))//
+
+          if(err){
+            console.log(err)
+          }
+          
+          end1=moment()//
+          writeFileWithThumbnailToGridStore(data,thumbnailFilePath,function(err,originalFileId, thumbnailFileId){
+            if(err){
+              console.log(err)
+              return
+            }
+            var end2=moment()
+            console.log("image writeFileWithThumbnailToGridStore moment end2.diff(end1)="+end2.diff(end1))
+
+            var newMessage={}
+            newMessage.roomId = data.roomId;
+            newMessage.ownerId = data.ownerId; 
+            newMessage.originalFileId = originalFileId
+            newMessage.thumbnailFileId = thumbnailFileId
+            newMessage.type = data.type
+            console.log(newMessage)
+
+            createRoomMessage(newMessage)
+
+          })//end writeFileWithThumbnailToGridStore
+
         });
 
+      };//createRoomImageMessage
 
-      });//end socket.on  
+
+
+      var createRoomVideoMessage = function(data){
+        var savePath = '/tmp/'+data.filename
+
+        var start=moment()//
+        fs.writeFile(savePath, data.file, function(err) {
+          var end1=moment()//
+          console.log("fs.writeFile moment end1.diff(start)="+end1.diff(start))//
+
+          if(err){
+            console.log(err)
+            return
+          }
+          console.log(data.type)
+
+          var thumbnailFilename = Math.random().toString(36).substring(7)+'.png';
+          var thumbnailFilePath = '/tmp/'+thumbnailFilename//
+
+          end1=moment()//
+          var proc = ffmpeg(savePath)
+            .on('filenames', function(filenames) {
+              console.log('Will generate ' + filenames.join(', '))
+            })
+            .on('end', function() {
+              var end2=moment()//
+              console.log("ffmpeg moment end2.diff(end1)="+end2.diff(end1))//
+
+              console.log('Screenshots taken');
+              end2=moment()//
+              writeFileWithThumbnailToGridStore(data,thumbnailFilePath,function(err, originalFileId, thumbnailFileId){
+                var end3=moment()//
+                console.log("video writeFileWithThumbnailToGridStore moment end3.diff(end2)="+end3.diff(end2))//
+                if(err){
+                  console.log(err)
+                  return
+                }
+                var newMessage={}
+                newMessage.roomId = data.roomId;
+                newMessage.ownerId = data.ownerId; 
+                newMessage.originalFileId = originalFileId
+                newMessage.thumbnailFileId = thumbnailFileId
+                newMessage.type = data.type
+                console.log(newMessage)
+
+                createRoomMessage(newMessage)
+
+              })
+
+            })
+            .on('error', function(err) {
+              console.log('an error happened: ' + err.message);
+            })
+            .screenshots({
+              timestamps: ['00:00:01.001'],
+              filename: thumbnailFilename,
+              folder: '/tmp',
+              size: '50%'
+            });//proc
+
+        });//fs.writeFile  
+
+      };//createRoomVideoMessage
       
+      var createRoomAudioMessage = function(data){
+        writeFileToGridStore(data,function(err,originalFileId){
+          if(err){
+            console.log(err)
+            return
+          }
+          var newMessage={}
+          newMessage.roomId = data.roomId;
+          newMessage.ownerId = data.ownerId; 
+          newMessage.originalFileId = originalFileId
+          newMessage.type = data.type
+          console.log(newMessage)
+
+          createRoomMessage(newMessage)
+
+        });
+       
+      };//createRoomAudioMessage
 
 	  	socket.on('disconnect', function(){
 	  		console.log('user disconnected');
