@@ -415,7 +415,7 @@ module.exports = function(app) {
               
               //for orginal file
               //TODO: meta thumbnail?
-              gridStore = new GridStore(db, data.filename, "w",options);
+              gridStore = new GridStore(db, new ObjectID(), "w",options);
               gridStore.open(function(err, gridStore) {
                 gridStore.write(new Buffer(data.file), function(err, gridStore) {
                   gridStore.close(function(err, result) {
