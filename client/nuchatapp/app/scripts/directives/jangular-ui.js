@@ -261,8 +261,7 @@
 				function parseImg() {
 					// scope.msg.type = METATYPE.IMG;
 					scope.msg.isImg = true;
-					scope.message = _remoteSrv+scope.message //
-					// console.log(scope.message);
+					scope.message = _remoteSrv+scope.msg.thumbnailFileId//
 					scope.message = '<img id="img'+scope.msg.id+'" src="'+scope.message+'">';
 				}
 
@@ -270,7 +269,8 @@
 				function parseAudio() {
 					// TODO: if audioSetting is not set, throw the error message.
 					// scope.msg.type = METATYPE.AUDIO;
-					var audioUrl = _remoteSrv+scope.message;
+					var audioUrl = _remoteSrv+scope.msg.originalFileId;//
+
 					scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
 					elem.bind('click', function() {
 						scope.msg.isPlaying = !scope.msg.isPlaying;
@@ -298,7 +298,7 @@
 
 				function parseVideo() {
 					// scope.msg.type = METATYPE.VIDEO;
-					var videoUrl = _remoteSrv+scope.message;
+					var videoUrl = _remoteSrv+scope.msg.originalFileId;//
 					scope.message = $sce.trustAsHtml('<video width="200" height="120" controls><source src="'+videoUrl+'"></video>');
 					console.log('parsing video');
 					console.log(scope.message);
