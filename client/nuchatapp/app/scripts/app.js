@@ -42,18 +42,18 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       if (tabs) {
         if (toState.name == 'tab.chatRoom' || toState.name.indexOf('tab.directory') == 0) { // Remove tabs.
           console.log('remove tabs');
-          $animate.addClass(tabs, 'slideout')
-            .then(function() {
-              // Shifting the message bubbles upward.
-              var scrollContent = null;
-              var scrollHandles = $filter('filter')($ionicScrollDelegate.$getByHandle('userMessageScroll')._instances, { $$delegateHandle: 'userMessageScroll' });
-              if (scrollHandles.length) {
-                // console.log(scrollHandles);
-                angular.forEach(scrollHandles, function(handle) {
-                  handle.$element.removeClass('has-tabs-top');
-                });
-              }
-            });
+          $animate.addClass(tabs, 'slideout');
+            // Shifting the message bubbles upward.
+          $timeout(function() {
+            var scrollContent = null;
+            var scrollHandles = $filter('filter')($ionicScrollDelegate.$getByHandle('userMessageScroll')._instances, { $$delegateHandle: 'userMessageScroll' });
+            if (scrollHandles.length) {
+              // console.log(scrollHandles);
+              angular.forEach(scrollHandles, function(handle) {
+                handle.$element.removeClass('has-tabs-top');
+              });
+            }
+          });
         } else {  // Re-add tabs.
           $animate.removeClass(tabs, 'slideout');
         }

@@ -56,6 +56,7 @@
     "https://github.com/wymsee/cordova-imagePicker.git",
     "org.apache.cordova.media-capture",
     "org.apache.cordova.media",
-    "org.apache.cordova.file"
+    "org.apache.cordova.file",
+    "de.appplant.cordova.plugin.local-notification@0.8.0"
   ]
 }

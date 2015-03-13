@@ -88,11 +88,8 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 			room.unreadMessages = unreadMessages;
 			// Sending the local notification.
 			$cordovaLocalNotification.add({
-	      id: 'newMsg',
-	  		message: message.text,
+	  		text: message.text,
 	  		title: FriendService.get(message.ownerId).username,
-	  		date: message.created,
-	  		autoCancel: true
 	    }).then(function () {
 	      if (DEBUG) console.log('New message notification has been added.');
 	    });
