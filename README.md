@@ -36,3 +36,11 @@
 lb-ng server/server.js client/nuchatapp/app/scripts/services/lb-services.js
 var urlBase = 'http://localhost:3333/api';
 ```
+#Env
+```
+sudo apt-get install imagemagick
+
+sudo apt-add-repository ppa:jon-severinsson/ffmpeg
+sudo apt-get update
+sudo apt-get install ffmpeg
+```
