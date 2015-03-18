@@ -1,5 +1,14 @@
 <ion-view>
-	<ion-content>
-		Calendar
-	</ion-content>
+	<fa-app>
+		<fa-scroll-view fa-pipe-from="scrollEventHandler" id="calendarScrollView">
+			<fa-view>
+				<fa-modifier fa-size="[undefined, faTrue.height('.item-link')]">
+					<fa-surface fa-pipe-to="scrollEventHandler" class="item-link">
+						<!-- Article View -->
+						CALENDAR VIEW
+					</fa-surface>
+				</fa-modifier>
+			</fa-view>
+		</fa-scroll-view>
+	</fa-app>
 </ion-view>

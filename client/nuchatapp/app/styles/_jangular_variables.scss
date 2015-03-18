@@ -4,16 +4,26 @@
  */
 
 /* Colors */
+// Url View
 $urlView_bg_color: #fff;
 $urlView_border_color: #bdbdbd;
 $urlViewTitle_font_color: #444;
 $urlViewDescript_font_color: #767676;
 $urlViewComment_font_color: #a1a1a1;
 
+// Grid Menu
 $gridMenu_bg_color: rgba(136, 106, 234, 0.7);
 $gridMenuTab_font_color: #fff;
+
+// Collapse Buttons
+$collapseBtnHover_bg_color: #886aea;
 
 /* Font Size */
 
 /* Layouts */
+// Url View
 $urlViewImg_width: 100%;
+$urlViewLeftImg_width: 100px;
+
+// Collapse Buttons
+$collapseBtnPos_offset: 70px;

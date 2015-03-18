@@ -57,6 +57,7 @@
     "org.apache.cordova.media-capture",
     "org.apache.cordova.media",
     "org.apache.cordova.file",
-    "de.appplant.cordova.plugin.local-notification@0.8.0"
+    "org.apache.cordova.device",
+    "de.appplant.cordova.plugin.local-notification"
   ]
 }

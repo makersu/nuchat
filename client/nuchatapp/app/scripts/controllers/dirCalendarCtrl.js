@@ -1,4 +1,4 @@
-function DirCalendarCtrl($scope, $state, $timeout) {
+function DirCalendarCtrl($scope, $scrolls) {
 	/* Variables */
 	// Private
 
@@ -7,5 +7,5 @@ function DirCalendarCtrl($scope, $state, $timeout) {
 	/* Methods */
 
 	/* Onload */
-	$scope.hideNavBar();
+	$scrolls.reset();
 }

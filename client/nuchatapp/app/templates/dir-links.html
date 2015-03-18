@@ -1,5 +1,19 @@
-<ion-view>
+<ion-view class="has-tabs-top">
+	<!-- <fa-app> -->
 	<ion-content>
-		Links
+		<div class="item-link" collection-repeat="link in linkList track by link.id"
+			item-height="160"
+			item-width="98%">
+		<!-- <fa-scroll-view fa-pipe-from="scrollEventHandler" id="linkScrollView">
+			<fa-view ng-repeat="link in linkList track by link.id">
+				<fa-modifier fa-size="[undefined, faTrue.height('.item-link')]">
+					<fa-surface fa-pipe-to="scrollEventHandler" class="item-link"> -->
+						<url-view class="img-left" content-obj="link.linkView" max-length="56" linkinapp></url-view>
+					<!-- </fa-surface>
+				</fa-modifier>
+			</fa-view>
+		</fa-scroll-view> -->
+		</div>
 	</ion-content>
+	<!-- </fa-app> -->
 </ion-view>

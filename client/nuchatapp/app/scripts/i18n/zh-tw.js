@@ -11,6 +11,8 @@ var chtTranslate = function ($translateProvider) {
 
 		// Messages
 		SENT_IMG: '傳送了圖片',
+		SENT_AUDIO: '傳送了聲音',
+		SENT_VIDEO: '傳送了影片',
 
 		// Meta Menu
 		SEND_PHOTO: '傳送圖片',

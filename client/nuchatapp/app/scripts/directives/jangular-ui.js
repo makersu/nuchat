@@ -9,18 +9,19 @@
  *  3) Grid Menu
  *  4) In View Window
  *  5) Url(link) View
+ *  6) Collapse Buttons
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
 
 	var METATYPE = {
-		IMG:   	  0,
-		LINK:  	  1,
-		MAP:      2,
-		AUDIO:    3,
-		VIDEO:    4,
-		FILE:     5, // Including documents?
-		UNKNOWN: -1,
+		LINK:  	  'link',
+		IMG: 			'image',
+		AUDIO:    'audio',
+		VIDEO:    'video',
+		MAP:      'map',
+		FILE:     'file', // Including documents?
+		UNKNOWN:  'unknown',
 	};
 
 	var FOLDING_LINE_THRES = 5;
@@ -52,7 +53,6 @@
 	function isImg(contentType) {
 		return checkType(contentType, 'image');
 	}
-
 
 	function isAudio(contentType) {
 		return checkType(contentType, 'audio');
@@ -129,6 +129,7 @@
 							parseLink()
 								.then(function(linkView) {
 									$urlView.setContentObj(linkView);
+									scope.msg.linkView = linkView;
 									q.resolve($compile('<url-view></url-view>')(scope));
 								}, function(err) {
 									q.reject(err);
@@ -166,6 +167,8 @@
 						parseLink(links)
 							.then(function(linkView) {
 								$urlView.setContentObj(linkView);
+								console.log('set Link view back');
+								scope.msg.linkView = linkView;
 								q.resolve($compile('<url-view></url-view>')(scope));
 							}, function(err) {
 								q.reject(err);
@@ -185,7 +188,7 @@
 				// Appending the summary block after the links.
 				function parseLink(links) {
 					var q = $q.defer();
-					var cacheView = {};
+					var cacheView = { id: scope.msg.id };
 					scope.msg.type = METATYPE.LINK;
 					angular.forEach(links, function(link) {
 						if (link && link.match(/^http(s)?:\/\/.*/)) {
@@ -204,6 +207,14 @@
 											}
 										}
 									});
+									if (!cacheView.url) {
+										cacheView.url = link;
+									}
+									if (!cacheView.image) {
+										cacheView.image = cacheView.url+'/favicon.ico';
+									} else if (cacheView.image.indexOf('/') == 0) {
+										cacheView.image = cacheView.url+cacheView.image;
+									}
 									q.resolve(cacheView);
 								}, function(err) {
 									q.reject(err);
@@ -643,29 +654,141 @@
 	});
 
 	/**
+	 * Collapse Buttons
+	 *
+	 * @description  Floating buttons with collapse/expand animations.
+	 *
+	 */
+	jangularUI.directive('collapseButtons', function($compile, $timeout) {
+		return {
+			restrict: 'E',
+			transclude: true,
+			template: '<div class="buttons-wrapper" ng-transclude></div>',
+			link: function(scope, elem, attrs) {
+				var classes = attrs.class;
+				var floatOptions = attrs.float ? attrs.float.split(' ') : ['bottom', 'right'];
+				scope.isExpanded = false;
+
+				var wrapper = elem.find('div');
+				var actionBtns = wrapper.children();
+				var mainBtn = angular.element('<a class="button button-float icon fa fa-cogs"></a>');
+
+				// Assigning the custom classes.
+				if (classes) {
+					elem.addClass('collapse-buttons '+classes);
+					mainBtn.addClass(classes);
+				}
+				// Assigning the float option classes. DEFAULT: float bottom and right
+				angular.forEach(floatOptions, function(opt) {
+					elem.addClass('float-'+opt);
+				});
+				// Initializing the action buttons.
+				angular.forEach(actionBtns, function(btn) {
+					var btnElm = angular.element(btn);
+					btnElm.attr('ng-if', 'isExpanded');
+					$compile(btnElm)(scope);
+				});
+
+				// Binding the expand function to the main button.
+				mainBtn.on('click', function(event) {
+					event.stopPropagation();
+					if (!scope.isExpanded) {
+						expanding();
+					} else {
+						collapsing();
+					}
+				});
+				// Binding the click event to collapse the buttons.
+				elem.on('click', function() {
+					collapsing();
+				});
+
+				// Adding the main button into the view.
+				wrapper.append(mainBtn);
+
+				function assignExpand(opt) {
+					switch (opt) {
+						case 'bottom':
+							animateTo('top');
+							break;
+						case 'right':
+							animateTo('left');
+							break;
+						case 'top':
+							animateTo('bottom');
+							break;
+						case 'left':
+							animateTo('right');
+							break;
+					}
+				}
+				function animateTo(dir) {
+					var btns = elem[0].querySelectorAll('.button-float[expand-to="'+dir+'"]');
+					angular.forEach(btns, function(btn, idx) {
+						if (scope.isExpanded) {
+							angular.element(btn).addClass('expand expand-'+dir+'-'+(idx+1) );
+						} else {
+							angular.element(btn).removeClass('expand expand-'+dir+'-'+(idx+1) );
+						}
+					});
+				}
+				function expanding() {
+					scope.isExpanded = true;
+					scope.$apply();
+					$timeout(function() {
+						angular.forEach(floatOptions, function(opt) {
+							assignExpand(opt);
+							elem.css({'width':'100%', 'height':'100%'});
+						});
+					}, 10);
+				}
+				function collapsing() {
+					scope.isExpanded = false;
+					elem.css({'width':'initial', 'height':'initial'});
+					angular.forEach(floatOptions, function(opt) {
+						assignExpand(opt);
+					});
+					$timeout(function() {
+						scope.$apply();
+					}, 190);
+				}
+			}
+		};
+	});
+
+	/**
 	 * Url View
    *
    */
-  jangularUI.directive('urlView', function($urlView, $compile) {
+  jangularUI.directive('urlView', function($urlView, $timeout, $rootScope) {
   	return {
   		restrict: 'EA',
   		scope: {
   			contentObj: '=',
+  			maxLength: '=',
   		},
   		template: '<a class="url-view" href="{{ ::content.url }}">'+
+  								'<div class="content">'+
   								'<img src="{{ ::content.image }}" ng-if="::content.image">'+
-  								'<h5 class="title" ng-bind-html="::content.title"></h5>'+
-  								'<p class="descript" ng-bind-html="::content.description"></p>'+
+  								'<div class="info"><h5 class="title" ng-bind-html="::content.title"></h5>'+
+  								'<p class="descript" ng-bind-html="::content.description"></p></div>'+
+  								'</div>'+
   								'<div class="comment">{{ ::content.comment }}</div>'+
 	  						'</a>',
   		link: function(scope, elem, attrs) {
-  			scope.content = scope.contentObj || $urlView.getContentObj();
-  			var noScheme = scope.content.url.replace(/(http|ftp|https):\/\//gi, '');
-  			if (noScheme.lastIndexOf('/') >= 0) {
-  				scope.content.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
-  			} else {
-  				scope.content.comment = noScheme;
-  			}
+  			$timeout(function() {
+  				scope.content = scope.contentObj || $urlView.getContentObj();
+  				if (scope.maxLength && scope.content.description && scope.content.description.length > scope.maxLength) {
+  					scope.content.description = scope.content.description.substr(0, scope.maxLength)+'...';
+  				}
+	  			var noScheme = scope.content.url.replace(/(http|ftp|https):\/\//gi, '');
+	  			if (noScheme.lastIndexOf('/') >= 0) {
+	  				scope.content.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
+	  			} else {
+	  				scope.content.comment = noScheme;
+	  			}
+	  			$rootScope.$broadcast('urlViewLoaded');
+  			});
   		}
   	}
   });

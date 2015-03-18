@@ -24,7 +24,7 @@
 			<accordion-group heading="{{ ::group.name }}" ng-repeat="group in room.groupedMessages" is-open="$last">
 				<div ng-repeat="message in group.items track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" in-view-window="message in #msgContainer">
 
-					<div ng-if="currentUser.id !== message.ownerId">
+					<div ng-if="::currentUser.id !== message.ownerId">
 						<img ng-click="viewProfile(message)" class="profile-pic left" 
 						ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" />
 						<div class="chat-bubble left">
@@ -33,13 +33,13 @@
 							<div class="message-detail">
 								<!-- <span ng-click="viewProfile(message)" 
 								class="bold">{{toUser.username}}</span>, -->
-								<span am-time-ago="message.created"></span>
-								<a href="javascript:" ng-if="message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a>
+								<span am-time-ago="::message.created"></span>
+								<a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a>
 							</div>
 						</div>
 					</div>
 
-					<div ng-if="currentUser.id === message.ownerId">
+					<div ng-if="::currentUser.id === message.ownerId">
 						<!-- <img ng-click="viewProfile(message)" class="profile-pic right" 
 						ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" /> -->
 						<div class="chat-bubble right">
@@ -48,8 +48,8 @@
 							<div class="message-detail">
 								<!-- <span ng-click="viewProfile(message)" 
 								class="bold">{{currentUser.username}}</span>,  -->
-								<span am-time-ago="message.created"></span>
-								<a href="javascript:" ng-if="message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a>
+								<span am-time-ago="::message.created"></span>
+								<a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a>
 							</div>
 						</div>
 					</div>

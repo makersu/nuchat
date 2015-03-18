@@ -11,6 +11,8 @@ var enTranslate = function ($translateProvider) {
 
 		// Messages
 		SENT_IMG: 'Sent an image',
+		SENT_AUDIO: 'Send an Audio',
+		SENT_VIDEO: 'Send a Video',
 
 		// Meta Menu
 		SEND_PHOTO: 'Send Photos',

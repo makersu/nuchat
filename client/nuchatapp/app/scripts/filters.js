@@ -30,9 +30,14 @@ function amChatGrouping(moment, $filter) {
 
 function brief($filter, $checkFormat) {
 	function briefFilter(valObj) {
+		console.log(valObj);
 		if (valObj) {
 			if ($checkFormat.isImg(valObj.type)) {
 				return $filter('translate')('SENT_IMG');
+			} else if ($checkFormat.isAudio(valObj.type)) {
+				return $filter('translate')('SENT_AUDIO');
+			} else if ($checkFormat.isVideo(valObj.type)) {
+				return $filter('translate')('SENT_VIDEO');
 			}
 			return valObj.text;
 		}

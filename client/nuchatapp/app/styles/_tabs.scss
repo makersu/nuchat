@@ -9,7 +9,10 @@
 	}
 	.has-tabs-top {
 		&:not(.has-header) {
-			top: 49px;			
+			top: 49px;
+			.scroll-content {
+				top: 0;
+			}
 		}
 	}
 }

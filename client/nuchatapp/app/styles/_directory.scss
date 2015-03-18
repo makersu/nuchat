@@ -5,10 +5,12 @@
 	overflow: hidden;
 	z-index: 17;
 	img {
-		width: 100%;
-		top: -15%;
+		width: 120%;
+		top: -20px;
+		left: -20px;
+		bottom: -20px;
+		right: -20px;
 		position: absolute;
-		left: 0;
 	}
 	.name {
 		position: absolute;
@@ -20,7 +22,19 @@
 	}
 	.icon {
 		position: absolute;
-		top: 5%;
+		top: 5px;
 		right: 10px;
 	}
+}
+.directory {
+	.scroll-content {
+		height: 65%;
+	}
+}
+
+/* Articles */
+
+/* Links */
+.item-link {
+	margin: 5px 4px;
 }

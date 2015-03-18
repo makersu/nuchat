@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, METATYPE, ENV){
+            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, METATYPE, ENV){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   /* Variables */
@@ -200,7 +200,7 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
         context.drawImage(imgObj, 0, 0, imgObj.width, imgObj.height,
                                   0, 0, container.offsetWidth, container.offsetHeight);
       }
-      imgObj.src = message.text;
+      imgObj.src = ENV.GRIDFS_BASE_URL+message.thumbnailFileId;
     });
   };
   $scope.completeEdit = function() {
@@ -260,11 +260,18 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
     $timeout(function() {
       // Scrolling to the latest message.
       scrollHandle.scrollBottom();
-      $timeout(function() {
-        // For the late loading...
-        scrollHandle.scrollBottom();
-      }, 1000);
+      // $timeout(function() {
+      //   // For the late loading...
+      //   $NUChatDirectory.saveToDirectory($scope.room.messages[$scope.room.messages.length-1]);
+      //   scrollHandle.scrollBottom();
+      // }, 1000);
     }, 500);
+  });
+  $scope.$on('urlViewLoaded', function() {
+    console.log('urlViewLoaded');
+    // Saving the message into the Directory by type.
+    $NUChatDirectory.saveToDirectory($scope.room.messages[$scope.room.messages.length-1]);
+    scrollHandle.scrollBottom();
   });
 
     //this.sendMessage = function(message) {

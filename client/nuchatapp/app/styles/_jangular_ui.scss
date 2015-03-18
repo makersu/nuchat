@@ -9,6 +9,10 @@
 	text-decoration: none;
 	display: block;
 
+	&:hover, &:active {
+		text-decoration: none;
+	}
+
 	img {
 		width: $urlViewImg_width;
 	}
@@ -23,6 +27,31 @@
 	}
 	h5, p, .comment {
 		padding: 0 2px;
+	}
+}
+// Left Image
+.img-left {
+	.url-view {
+		.content {
+			display: flex;
+		}
+		img {
+			flex: 1;
+			height: 100%;
+			margin: 5px 5px 0 2px;
+		}
+		.info {
+			flex: 2;
+			h5 {
+				margin-bottom: 5px;
+			}
+			p {
+				margin: 0;
+			}
+		}
+		.comment {
+			margin-top: 5px;
+		}
 	}
 }
 
@@ -74,4 +103,76 @@ grid-menu {
 .grid-menu.ng-enter.ng-enter-active {
   top: 0;
   opacity: 1;
+}
+
+/* Collapse Buttons */
+.collapse-buttons {
+	position: fixed;
+	z-index: 96;
+	&.float-bottom {
+		bottom: 15px;
+		.button-float {
+			bottom: 0;
+		}
+	}
+	&.float-right {
+		right: 15px;
+		.button-float {
+			right: 0;
+		}
+	}
+	&.float-top {
+		top: 15px;
+		.button-float {
+			top: 0;
+		}
+	}
+	&.float-left {
+		left: 15px;
+		.button-float {
+			left: 0;
+		}
+	}
+	.buttons-wrapper {
+		position: relative;
+		width: 100%;
+		height: 100%;
+	}
+	.button-float {
+		position: absolute;
+		@include border-radius(50%);
+		@include box-shadow( 0 2px 5px 0 rgba(0, 0, 0, 0.26) );
+	  @include translate3d(0, 0, 0);
+	  @include transition(0.2s ease-out);
+	  @include transition-property(transform, all);
+	  &:hover {
+	  	@include translate3d(0, -1px, 0);
+	  	@include box-shadow( 0 4px 8px 0 rgba(0, 0, 0, 0.4) );
+	    background: darken($collapseBtnHover_bg_color, 10%);
+	  }
+		&.expand {
+	    @include rotate3d(0, 0, 1, 360deg);
+	    z-index: 99;
+	    @for $i from 1 through 4 {
+	    	&.expand-left-#{$i} {
+			    right: $collapseBtnPos_offset * $i;
+	    	}
+	    }
+			@for $i from 1 through 4 {
+				&.expand-top-#{$i} {
+			    bottom: $collapseBtnPos_offset * $i
+			  }
+			}
+			@for $i from 1 through 4 {
+				&.expand-right-#{$i} {
+			    left: $collapseBtnPos_offset * $i
+			  }
+			}
+			@for $i from 1 through 4 {
+				&.expand-bottom-#{$i} {
+			    top: $collapseBtnPos_offset * $i
+			  }
+			}
+		}
+	}
 }

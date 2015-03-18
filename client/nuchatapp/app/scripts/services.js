@@ -4,6 +4,10 @@ angular.module('Nuchatapp.services', [])
 .factory('LBSocket', LBSocket)
 .factory('RoomService', RoomService)
 .factory('$NUChatObject', ObjService)
+.factory('$NUChatLinks', LinkService)
+.factory('$NUChatDirectory', DirectoryService)
+.factory('$scrolls', ScrollService)
+.factory('$imageFilters', ImageFilterService)
 .factory('$localstorage', ['$window', function($window) {
   return {
     set: function(key, value) {

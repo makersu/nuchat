@@ -1,11 +1,16 @@
-function DirLinksCtrl($scope, $state, $timeout) {
+function DirLinksCtrl($scope, $NUChatLinks, $scrolls, $timeout, $filter) {
 	/* Variables */
 	// Private
 
 	// Scope public
 
 	/* Methods */
+	// Private
 
 	/* Onload */
-	$scope.hideNavBar();
+	$scope.linkList = $filter('orderBy')($NUChatLinks.getLinks(), '-created');
+	// Events
+	$timeout(function() {
+		$scrolls.bindScrollToFixed('.directory .scroll-content', '.flip');
+	});
 }

@@ -3,11 +3,11 @@
     <h1 class="title">{{ ::'ADD_ARTICLE' | translate }}</h1>
     <div class="buttons">
       <button class="button-icon icon ion-close" ng-click="closeModal()"></button>
-      <button class="button-icon icon ion-checkmark"></button>
+      <button class="button-icon icon ion-checkmark" ng-click="saveArticle()"></button>
     </div>
   </ion-header-bar>
   <ion-content class="editable">
-    <textarea ng-model="article.content" placeholder="{{ ::'WRITE_SOMETHING_HERE' | translate }}"></textarea>
+    <div ng-model="article.content" contenteditable></div>
   </ion-content>
   <ion-footer-bar>
   	<div class="buttons">

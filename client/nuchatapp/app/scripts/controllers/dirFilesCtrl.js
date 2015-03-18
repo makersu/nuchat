@@ -1,4 +1,4 @@
-function DirFilesCtrl($scope, $state, $timeout) {
+function DirFilesCtrl($scope, $scrolls, $timeout) {
 	/* Variables */
 	// Private
 
@@ -7,5 +7,7 @@ function DirFilesCtrl($scope, $state, $timeout) {
 	/* Methods */
 
 	/* Onload */
-	$scope.hideNavBar();
+	$timeout(function() {
+    $scrolls.bindScrollToFixed('.directory .scroll-content', '.flip');
+  });
 }

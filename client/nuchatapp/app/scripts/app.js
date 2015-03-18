@@ -8,14 +8,14 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
-    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap'])
-.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate, $ionicScrollDelegate, $timeout) {
+    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap', 'famous.angular'])
+.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate, $ionicScrollDelegate, $timeout, $ionicNavBarDelegate) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
-    if(window.cordova && window.cordova.plugins.Keyboard) {
-      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-    }
+    // if(window.cordova && window.cordova.plugins.Keyboard) {
+    //   cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+    // }
     if(window.StatusBar) {
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
@@ -23,10 +23,10 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
 
     // Registering app/activity events.
     document.addEventListener('resume', function() {
-      $cordovaLocalNotification.cancelAll()
-        .then(function() {
-          console.log('OnResume: All local notifications have been canceled.');
-        });
+      cordova.plugins.notification.local.getTriggeredIds(function(ids) {
+        console.log('OnResume: All triggered local notifications will be cleared.');
+        cordova.plugins.notification.local.clear(ids);
+      });
       $rootScope.isInBackground = false;
     });
     document.addEventListener('pause', function() {
@@ -54,6 +54,11 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
               });
             }
           });
+          if (toState.name.indexOf('tab.directory') == 0) {
+            $timeout(function() {
+              $ionicNavBarDelegate.showBar(false);
+            });
+          }
         } else {  // Re-add tabs.
           $animate.removeClass(tabs, 'slideout');
         }
