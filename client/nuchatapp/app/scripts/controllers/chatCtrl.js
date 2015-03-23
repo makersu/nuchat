@@ -2,6 +2,24 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
             $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, METATYPE, ENV){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
+
+  var data = {}
+  data.roomId=$stateParams.roomId
+  var lastMessage= RoomService.getLastMessage($stateParams.roomId)
+  if(lastMessage && lastMessage.id){
+   data.messageId = lastMessage.id
+  }
+  console.log(data)
+
+  LBSocket.emit('room:messages:get', data , function(messages){
+    console.log('room:messages:get')
+    //console.log(messages)
+    console.log(messages.messages.length)
+    for(var i=0;i<messages.messages.length;i++){
+     RoomService.addMessage(messages.messages[i])
+    }
+  });
+    
   /* Variables */
   // Private
   var audioPlayer = null;
@@ -219,18 +237,21 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
   /* OnLoad */
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
   RoomService.set($stateParams.roomId);
-  $scope.room = RoomService.get();
+  $scope.room = RoomService.get();//todo
+  console.log($scope.room)//
 
   // Initializing NUChatObject service
   $NUChatObject.init($scope.room, $scope.currentUser);
+  console.log($scope.room)//
 
   // Reading unread messages from storage(or TODO: DB?)
-  var unreadMessages = $localstorage.getObject($scope.room.id);
-  if (unreadMessages) {
-    $scope.room.messages = $scope.room.messages.concat(unreadMessages);
-    $scope.room.unreadMessages = [];
-    $localstorage.setObject($scope.room.id, []);
-  }
+  // var unreadMessages = $localstorage.getObject($scope.room.id);
+  // console.log(unreadMessages)//
+  // if (unreadMessages) {
+  //   $scope.room.messages = $scope.room.messages.concat(unreadMessages);
+  //   $scope.room.unreadMessages = [];
+  //   $localstorage.setObject($scope.room.id, []);
+  // }
 
 
 	//

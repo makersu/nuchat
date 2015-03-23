@@ -11,9 +11,9 @@
       <ion-item class="item-avatar" ng-repeat="room in availableRooms track by $index" type="item-text-wrap" ng-click="goToRoom(room.id)">
         <img src="{{ room.profile || 'images/profile.png' }}">
         {{room.name}}
-        <p>{{ room.unreadMessages[room.unreadMessages.length-1] || room.messages[room.messages.length-1] | brief }}</p>
-        <span class="timestamp">{{ room.unreadMessages[room.unreadMessages.length-1].created || room.messages[room.messages.length-1].created | amChatCalendar }}</span>
-        <span class="badge badge-assertive" ng-if="room.unreadMessages.length">{{ room.unreadMessages.length }}</span>
+        <p>{{ room.latestMessage | brief }}</p>
+        <span class="timestamp">{{ room.latestMessage.created | amChatCalendar }}</span>
+        <span class="badge badge-assertive" ng-if="room.unread">{{ room.unread }}</span>
       </ion-item>
     </ion-list>
   </ion-content>
