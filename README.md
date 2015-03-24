@@ -17,7 +17,7 @@
 
 #ROOM
 ##~~create room~~
-##get rooms joined
+##~~get rooms joined~~
 ##add room member
 ##show room members
 
@@ -29,6 +29,7 @@
 ##add address(map view)
 ##add pic
 ##add file
+##add event/invitation(calendar view)
 ##message notification
 
 #Dev
