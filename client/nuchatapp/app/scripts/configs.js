@@ -2,9 +2,9 @@
 angular.module('Nuchatapp.configs', [])
 
 .constant("ENV", {
-  "BASE_URL": "http://54.92.67.230:3333/",
   // "BASE_URL": "http://10.0.0.102:3333/",
-  "GRIDFS_BASE_URL": "http://54.92.67.230/gridfs/"
+  "BASE_URL": "http://140.123.4.17:3001/",//
+  "GRIDFS_BASE_URL": "http://140.123.4.17:3002/nuchat/"//
 })
 
 ;

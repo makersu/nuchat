@@ -740,7 +740,7 @@
 							assignExpand(opt);
 							elem.css({'width':'100%', 'height':'100%'});
 						});
-					}, 10);
+					}, 50);
 				}
 				function collapsing() {
 					scope.isExpanded = false;

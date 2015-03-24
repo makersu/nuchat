@@ -1,10 +1,10 @@
 (function(window, angular, undefined) {'use strict';
 
 var authHeader = 'authorization';
-var urlBase = 'http://54.92.67.230:3333/api';
 // var urlBase = 'http://10.0.0.102:3333/api';
 // For Android Development using genymotion.
 // var urlBase = 'http://192.168.56.1:3333/api';
+var urlBase = 'http://140.123.4.17:3001/api';//
 
 /**
  * @ngdoc overview
