@@ -128,9 +128,9 @@
 						case METATYPE.LINK:
 							parseLink()
 								.then(function(linkView) {
-									$urlView.setContentObj(linkView);
 									scope.msg.linkView = linkView;
-									q.resolve($compile('<url-view></url-view>')(scope));
+									// $urlView.setContentObj(scope.msg);
+									q.resolve($compile('<url-view content-obj="msg"></url-view>')(scope));
 								}, function(err) {
 									q.reject(err);
 								});
@@ -166,10 +166,10 @@
 					if (links) {
 						parseLink(links)
 							.then(function(linkView) {
-								$urlView.setContentObj(linkView);
-								console.log('set Link view back');
 								scope.msg.linkView = linkView;
-								q.resolve($compile('<url-view></url-view>')(scope));
+								// $urlView.setContentObj(scope.msg);
+								// console.log('set Link view back');
+								q.resolve($compile('<url-view content-obj="msg"></url-view>')(scope));
 							}, function(err) {
 								q.reject(err);
 							});
@@ -187,6 +187,7 @@
 
 				// Appending the summary block after the links.
 				function parseLink(links) {
+					console.log(links);
 					var q = $q.defer();
 					var cacheView = { id: scope.msg.id };
 					scope.msg.type = METATYPE.LINK;
@@ -767,27 +768,32 @@
   			contentObj: '=',
   			maxLength: '=',
   		},
-  		template: '<a class="url-view" href="{{ ::content.url }}">'+
+  		template: '<a class="url-view" href="{{ ::view.url }}">'+
   								'<div class="content">'+
-  								'<img src="{{ ::content.image }}" ng-if="::content.image">'+
-  								'<div class="info"><h5 class="title" ng-bind-html="::content.title"></h5>'+
-  								'<p class="descript" ng-bind-html="::content.description"></p></div>'+
+	  								'<img ng-src="{{ ::view.image }}" ng-if="::view.image">'+
+	  								'<div class="info">'+
+		  								'<h5 class="title" ng-bind-html="::view.title"></h5>'+
+		  								'<p class="descript" ng-bind-html="::view.description"></p>'+
+		  								'<div class="comment">{{ ::view.comment }}</div>'+
+		  								'<div class="tags"><span class="badge" ng-repeat="tag in content.tags | limitTo:5">{{ tag }}</span><span ng-if="content.tags.length > 5">...</span></div>'+
+		  							'</div>'+
   								'</div>'+
-  								'<div class="comment">{{ ::content.comment }}</div>'+
 	  						'</a>',
   		link: function(scope, elem, attrs) {
   			$timeout(function() {
   				scope.content = scope.contentObj || $urlView.getContentObj();
-  				if (scope.maxLength && scope.content.description && scope.content.description.length > scope.maxLength) {
-  					scope.content.description = scope.content.description.substr(0, scope.maxLength)+'...';
+  				scope.view = scope.content.linkView;
+  				console.log(scope.view);
+  				if (scope.maxLength && scope.view.description && scope.view.description.length > scope.maxLength) {
+  					scope.view.description = scope.view.description.substr(0, scope.maxLength)+'...';
   				}
-	  			var noScheme = scope.content.url.replace(/(http|ftp|https):\/\//gi, '');
+	  			var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
 	  			if (noScheme.lastIndexOf('/') >= 0) {
-	  				scope.content.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
+	  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
 	  			} else {
-	  				scope.content.comment = noScheme;
+	  				scope.view.comment = noScheme;
 	  			}
-	  			$rootScope.$broadcast('urlViewLoaded');
+	  			$rootScope.$broadcast('urlViewLoaded', {id: scope.content.id});
   			});
   		}
   	}

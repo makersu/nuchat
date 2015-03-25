@@ -24,6 +24,7 @@
 	}
 	.comment {
 		color: $urlViewComment_font_color;
+		font-size: $urlViewComment_font_size;
 	}
 	h5, p, .comment {
 		padding: 0 2px;
@@ -41,9 +42,11 @@
 			margin: 5px 5px 0 2px;
 		}
 		.info {
-			flex: 2;
+			flex: 4;
 			h5 {
+				margin-top: 5px;
 				margin-bottom: 5px;
+				font-weight: 700;
 			}
 			p {
 				margin: 0;

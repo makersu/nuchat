@@ -1,6 +1,7 @@
 function DirectoryService($NUChatLinks, $checkFormat, METATYPE) {
 	/* Methods */
 	function saveToDir(item) {
+		console.log(item);
 		switch (item.type) {
 			case METATYPE.LINK:
 				$NUChatLinks.push(item);

@@ -7,7 +7,7 @@ function ObjService($cordovaCapture, LBSocket) {
 		_currentOwner = user;
 	}
 
-	function choosePhotos(success, error, options) {
+	function choosePhotosUpload(success, error, options) {
 		window.imagePicker.getPictures(
       function(results) {
         success.call(this, results);
@@ -18,7 +18,7 @@ function ObjService($cordovaCapture, LBSocket) {
         });
       }, error, options);
 	}
-	function capturePhoto(success, error) {
+	function capturePhotoUpload(success, error) {
 		$cordovaCapture.captureImage()
       .then(function(imgData) {
         success.call(this, imgData[0].fullPath);
@@ -26,7 +26,7 @@ function ObjService($cordovaCapture, LBSocket) {
         uploadFile(imgData[0].fullPath);
       }, error);
 	}
-	function captureAudio(success, error) {
+	function captureAudioUpload(success, error) {
 		$cordovaCapture.captureAudio()
       .then(function(audioData) {
         success.call(this, audioData[0].localURL);
@@ -34,7 +34,7 @@ function ObjService($cordovaCapture, LBSocket) {
         uploadFile(audioData[0].localURL);
       }, error);
 	}
-	function captureVideo(success, error) {
+	function captureVideoUpload(success, error) {
 		$cordovaCapture.captureVideo()
       .then(function(videoData) {
         success.call(this, videoData[0].fullPath);
@@ -80,10 +80,10 @@ function ObjService($cordovaCapture, LBSocket) {
 
 	var _service = {
 		init: init,
-		choosePhotos: choosePhotos,
-		capturePhoto: capturePhoto,
-		captureAudio: captureAudio,
-		captureVideo: captureVideo,
+		choosePhotosUpload: choosePhotosUpload,
+		capturePhotoUpload: capturePhotoUpload,
+		captureAudioUpload: captureAudioUpload,
+		captureVideoUpload: captureVideoUpload,
 	};
 
 	return _service;

@@ -13,6 +13,10 @@ var enTranslate = function ($translateProvider) {
 		SENT_IMG: 'Sent an image',
 		SENT_AUDIO: 'Send an Audio',
 		SENT_VIDEO: 'Send a Video',
+		// Tags
+		TAGS: 'Tags',
+		MANAGE_TAGS: 'Manage Tags',
+		SEARCH_OR_ADD_TAGS: 'Search/Add Tags',
 
 		// Meta Menu
 		SEND_PHOTO: 'Send Photos',

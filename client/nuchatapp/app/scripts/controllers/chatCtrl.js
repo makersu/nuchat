@@ -1,7 +1,26 @@
-function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, METATYPE, ENV){
+function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
+            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatTags, METATYPE, ENV,
+            $ionicModal){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
+
+  var data = {}
+  data.roomId=$stateParams.roomId
+  var lastMessage= RoomService.getLastMessage($stateParams.roomId)
+  if(lastMessage && lastMessage.id){
+   data.messageId = lastMessage.id
+  }
+  console.log(data)
+
+  LBSocket.emit('room:messages:get', data , function(messages){
+    console.log('room:messages:get')
+    //console.log(messages)
+    console.log(messages.messages.length)
+    for(var i=0;i<messages.messages.length;i++){
+     RoomService.addMessage(messages.messages[i])
+    }
+  });
+    
   /* Variables */
   // Private
   var audioPlayer = null;
@@ -88,7 +107,7 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
   };
   /* Choose files from device or cloud drive? */
   $scope.choosePhoto = function() {
-    $NUChatObject.choosePhotos(
+    $NUChatObject.choosePhotosUpload(
       function(results) {
         if ($scope.metaMenu.isShown()) {
           $scope.closeMetaMenu();
@@ -155,7 +174,7 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
     );
   };
   $scope.capturePhoto = function() {
-    $NUChatObject.capturePhoto(function(imgUri) {
+    $NUChatObject.capturePhotoUpload(function(imgUri) {
       // $scope.input.text = imgUri;
       // $scope.sendMessage();
       if ($scope.metaMenu.isShown()) {
@@ -164,7 +183,7 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
     }, errorHandler);
   };
   $scope.captureVoice = function() {
-    $NUChatObject.captureAudio(function(audioUri) {
+    $NUChatObject.captureAudioUpload(function(audioUri) {
       // $scope.input.text = audioUri;
       // $scope.sendMessage();
       if ($scope.metaMenu.isShown()) {
@@ -173,7 +192,7 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
     }, errorHandler);
   };
   $scope.captureVideo = function() {
-    $NUChatObject.captureVideo(function(videoUri) {
+    $NUChatObject.captureVideoUpload(function(videoUri) {
       // $scope.input.text = videoUri;
       // $scope.sendMessage();
       if ($scope.metaMenu.isShown()) {
@@ -206,6 +225,7 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
   $scope.completeEdit = function() {
     $scope.editing = false;
   };
+
   /* Trigger functions */
   $scope.viewCalendar = function(callback) {
     $scope.selectTime = true;
@@ -219,18 +239,21 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
   /* OnLoad */
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
   RoomService.set($stateParams.roomId);
-  $scope.room = RoomService.get();
+  $scope.room = RoomService.get();//todo
+  console.log($scope.room)//
 
   // Initializing NUChatObject service
   $NUChatObject.init($scope.room, $scope.currentUser);
+  console.log($scope.room)//
 
   // Reading unread messages from storage(or TODO: DB?)
-  var unreadMessages = $localstorage.getObject($scope.room.id);
-  if (unreadMessages) {
-    $scope.room.messages = $scope.room.messages.concat(unreadMessages);
-    $scope.room.unreadMessages = [];
-    $localstorage.setObject($scope.room.id, []);
-  }
+  // var unreadMessages = $localstorage.getObject($scope.room.id);
+  // console.log(unreadMessages)//
+  // if (unreadMessages) {
+  //   $scope.room.messages = $scope.room.messages.concat(unreadMessages);
+  //   $scope.room.unreadMessages = [];
+  //   $localstorage.setObject($scope.room.id, []);
+  // }
 
 
 	//
@@ -269,8 +292,11 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
   });
   $scope.$on('urlViewLoaded', function() {
     console.log('urlViewLoaded');
+    // console.log(RoomService.get());
+    // console.log($stateParams.roomId);
+    // console.log(data.roomId);
     // Saving the message into the Directory by type.
-    $NUChatDirectory.saveToDirectory($scope.room.messages[$scope.room.messages.length-1]);
+    $NUChatDirectory.saveToDirectory(RoomService.getLastMessage(data.roomId));
     scrollHandle.scrollBottom();
   });
 

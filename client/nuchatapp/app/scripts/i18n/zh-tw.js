@@ -13,6 +13,10 @@ var chtTranslate = function ($translateProvider) {
 		SENT_IMG: '傳送了圖片',
 		SENT_AUDIO: '傳送了聲音',
 		SENT_VIDEO: '傳送了影片',
+		// Tags
+		TAGS: '標籤',
+		MANAGE_TAGS: '管理標籤',
+		SEARCH_OR_ADD_TAGS: '搜尋/新增標籤',
 
 		// Meta Menu
 		SEND_PHOTO: '傳送圖片',

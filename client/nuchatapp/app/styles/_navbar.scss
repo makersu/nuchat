@@ -9,6 +9,19 @@
         }
       }
 		}
+    &.item-input-inset {
+      height: $inputBar_height;
+      .item-input-wrapper {
+        input {
+          height: $searchInput_height;
+        }
+        & + .button-icon {
+          margin-left: 5px;
+          padding-left: 5px;
+          line-height: 40px;
+        }
+      }
+    }
 	}
 }
 
@@ -24,5 +37,24 @@
   textarea {
     resize: none;
     height: 25px;
+  }
+}
+
+.platform-ios {
+  &.platform-cordova:not(.fullscreen) {
+    .bar-header:not(.bar-subheader) {
+      &.item-input-inset {
+        .item-input-wrapper {
+          margin: 5px !important;
+        }
+      }
+      .button {
+        margin-top: 0;
+        margin-left: 0;
+        &.button-icon {
+          line-height: initial;
+        }
+      }
+    }
   }
 }

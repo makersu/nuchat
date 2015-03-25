@@ -6,6 +6,7 @@ angular.module('Nuchatapp.services', [])
 .factory('$NUChatObject', ObjService)
 .factory('$NUChatLinks', LinkService)
 .factory('$NUChatDirectory', DirectoryService)
+.factory('$NUChatTags', TagService)
 .factory('$scrolls', ScrollService)
 .factory('$imageFilters', ImageFilterService)
 .factory('$localstorage', ['$window', function($window) {

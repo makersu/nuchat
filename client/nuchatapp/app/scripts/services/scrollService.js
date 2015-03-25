@@ -1,4 +1,4 @@
-function ScrollService($famous, $imageFilters, $ionicScrollDelegate) {
+function ScrollService($imageFilters, $ionicScrollDelegate) {
 	var FIXED_TO_TOP_OFFSET = 105;
 	var CONTAINER_INIT_HEIGHT = 65;
 	var CONTAINER_FIXED_HEIGHT = 84;
@@ -11,16 +11,16 @@ function ScrollService($famous, $imageFilters, $ionicScrollDelegate) {
 	var _lastY;
 	var _cummulatedDiff = 0;
 
-	function getScrollView(selector) {
-		if (selector) {
-			return $famous.find(selector)[0].renderNode;
-		}
-		return null;
-	}
-	function getFamousScrollPosition(selector) {
-		var scrollView = getScrollView(selector);
-		return scrollView.getPosition();
-	}
+	// function getScrollView(selector) {
+	// 	if (selector) {
+	// 		return $famous.find(selector)[0].renderNode;
+	// 	}
+	// 	return null;
+	// }
+	// function getFamousScrollPosition(selector) {
+	// 	var scrollView = getScrollView(selector);
+	// 	return scrollView.getPosition();
+	// }
 	function setContainerHeight(h) {
 		angular.element(_container).css('height', h+'%');
 	}
@@ -115,8 +115,8 @@ function ScrollService($famous, $imageFilters, $ionicScrollDelegate) {
 	}
 
 	var _service = {
-		getScrollView: getScrollView,
-		getFamousScrollPosition: getFamousScrollPosition,
+		// getScrollView: getScrollView,
+		// getFamousScrollPosition: getFamousScrollPosition,
 		getCoverHeight: getCoverHeight,
 		setCoverHeight: setCoverHeight,
 		scrollToFixed: scrollToFixed,

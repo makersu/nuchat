@@ -8,8 +8,9 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
-    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap', 'famous.angular'])
-.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate, $ionicScrollDelegate, $timeout, $ionicNavBarDelegate) {
+    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap'])
+.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate,
+    $ionicScrollDelegate, $timeout, $ionicNavBarDelegate, $ionicModal, $NUChatTags) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -20,6 +21,33 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
     }
+
+    // Modal: To edit the tags of the message
+    $rootScope.search = {};
+    $ionicModal.fromTemplateUrl('templates/modals/modalTags.html', {
+      scope: $rootScope
+    }).then(function(modal) {
+      $rootScope.tagModal = modal;
+    });
+    function clearSearchTags() {
+      $rootScope.search = {};
+    }
+    $rootScope.editTags = function(message) {
+      $rootScope.currentMsg = message;
+      $rootScope.tagModal.show();
+    };
+    $rootScope.addTag = function() {
+      $NUChatTags.add($rootScope.currentMsg, $rootScope.search.tag);
+      clearSearchTags();
+    };
+    $rootScope.removeTag = function(idx) {
+      $NUChatTags.remove($rootScope.currentMsg, idx);
+      clearSearchTags();
+    };
+    $rootScope.closeTagsModal = function() {
+      $rootScope.search = {};
+      $rootScope.tagModal.hide();
+    };
 
     // Registering app/activity events.
     document.addEventListener('resume', function() {

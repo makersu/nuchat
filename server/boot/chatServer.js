@@ -104,7 +104,7 @@ module.exports = function(app) {
           }
         }
 
-        console.log(filter)
+        console.log(JSON.stringify(filter))
 
         app.models.room.find(filter,function(err,rooms){
       		if(err){
@@ -136,13 +136,14 @@ module.exports = function(app) {
               // No room bro
               return;
           }
+          console.log('app.models.room.findById')
           console.log(room)
-          
+     
           socket.join(id);
           // Send back Room meta to client
           if (fn) {
               fn({
-                  id: room._id,
+                  id: room.id,
                   name: room.name,
                   description: room.description
               });
@@ -231,21 +232,92 @@ module.exports = function(app) {
 
 
       //
+      // Get Latest Message
+      //
+      socket.on('room:messages:latest', function(data,cb) {
+        console.log('room:messages:latest')
+        console.log(data)
+        var filter =  { "where":{
+                          roomId: data.roomId
+                        },
+                        order: 'created DESC',
+                        limit: 1,
+                      }
+
+        console.log(filter)
+        var latestMessage={}
+        app.models.message.find(filter,function(err,objs){
+          console.log(objs)
+          latestMessage=objs[0];
+          var total=0
+          app.models.message.count(function(err,count){
+            console.log(count)
+            var last={"message":latestMessage,total:count}
+            console.log(latestMessage)
+            cb(last)
+          }); 
+        });
+
+        
+
+      });
+
+      //
+      // Get Messages
+      //
+      socket.on('room:messages:get', function(data,cb) {
+        console.log('room:messages:get')
+        console.log(data)
+        //var today=new Date()
+        //data.since = data.since || new Date(today).setDate(today.getDate() - 7);
+        // var filter =  { "where":{
+        //                   roomId: data.roomId,
+        //                   created: {gt: data.since }
+        //                 } 
+        //               }
+        //data.messageId = data.messageId || 0 ;
+        var filter =  { "where":{
+                          roomId: data.roomId
+                        },
+                        order: 'created ASC',
+                        //limit: 10,
+                      }
+
+        if(data.messageId){
+          filter.where.id={ gt:data.messageId }
+        }
+        console.log(filter)
+        app.models.message.find(filter,function(err,objs){
+          console.log(objs)
+          if(cb){
+            //fn(objs)//
+            cb({"messages":objs})
+          }
+          
+        });
+
+
+      });
+       
+
+
+      //
       // New Message
       //
       socket.on('room:messages:new', function(data) {
         console.log('room:messages:new')
         console.log(data)
-        app.models.message.create(data,function(err, obj){
-          if(err){
-            console.log(err)
-            return;
-          }
-          console.log(obj)
+        // app.models.message.create(data,function(err, obj){
+        //   if(err){
+        //     console.log(err)
+        //     return;
+        //   }
+        //   console.log(obj)
           
-          app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj);
+        //   app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj);
           
-        });   
+        // });   
+        createRoomMessage(data);
       });//end socket.on
 
       //
@@ -253,116 +325,22 @@ module.exports = function(app) {
       //
       socket.on('room:files:new', function(data) {
         console.log('room:files:new')
-        console.log(data.filename)
-
-        //var savePath = '/tmp/arrow.301.hdtv-lol.mp4'
-        //var savePath = '/tmp/'+data.filename
-
-        // fs.writeFile(savePath, data.file, function(err) {
-        //   if(err){
-        //     console.log(err)
-        //   }
-        //   console.log(data.type)
-          //var thumbnailFilename = Math.random().toString(36).substring(7)+'.png';
-          //var thumbnailFilePath = '/tmp/'+thumbnailFilename
-
-          if(data.type.indexOf('image')!=-1){
-            createRoomImageMessage(data)
-
-          }
-          else if(data.type.indexOf('video')!=-1){
-            createRoomVideoMessage(data)
-            // var proc = ffmpeg(savePath)
-            // .on('filenames', function(filenames) {
-            //   console.log('Will generate ' + filenames.join(', '))
-            // })
-            // .on('end', function() {
-            //   console.log('Screenshots taken');
-            //   writeFileWithThumbnailToGridStore(data,thumbnailFilePath,function(err,thumbnailFileId){
-            //     if(err){
-            //       console.log(err)
-            //       return
-            //     }
-            //     var newMessage={}
-            //     newMessage.roomId = data.roomId;
-            //     newMessage.ownerId = data.ownerId; 
-            //     newMessage.text = thumbnailFileId
-            //     newMessage.type = data.type
-            //     console.log(newMessage)
-
-            //     createRoomMessage(newMessage)
-
-            //   })
-
-            // })
-            // .on('error', function(err) {
-            //   console.log('an error happened: ' + err.message);
-            // })
-            // .screenshots({
-            //   timestamps: ['00:00:01.500'],
-            //   filename: thumbnailFilename,
-            //   folder: '/tmp',
-            //   size: '50%'
-            // });
-
-          }
-          else if(data.type.indexOf('audio')!=-1){
-            createRoomAudioMessage(data)  
-          }  
-
-
-
-        //});//fs.writeFile
-        
-        // var db = app.datasources.db.connector.db;
-        // //console.log(db)
-        // db.safe = {w: 1};//
-
-        // var gridStore = new GridStore(db, data.filename, "w",{
-        //   "content_type": data.type,
-        //   "chunk_size": 1024*4
-        // });
-        
-        // var buffer = new Buffer(data.file);
-
-        // gridStore.open(function(err, gridStore) {
-        //   gridStore.write(buffer, function(err, gridStore) {
-        //     gridStore.close(function(err, result) {
-        //       if(err){
-        //         console.log(err)
-        //         return;
-        //       }
-              
-        //       console.log(result)
-
-        //       var newMessage={}
-              
-        //       newMessage.roomId = data.roomId;
-        //       newMessage.ownerId = data.ownerId; 
-        //       newMessage.text = result._id//
-        //       newMessage.type = data.type
-        //       console.log(newMessage)    
-
-        //       app.models.message.create(newMessage,function(err, obj){
-        //         if(err){
-        //           console.log(err)
-        //           return;
-        //         }
-        //         console.log('room:messages:new')
-        //         console.log(obj)
-        //         app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj);  
-        //       });
-
-        //     });
-        //   });
-        // });
-
+        console.log(data.type)
+        if(data.type.indexOf('image')!=-1){
+          createRoomImageMessage(data)
+        }
+        else if(data.type.indexOf('video')!=-1){
+          createRoomVideoMessage(data)
+        }
+        else if(data.type.indexOf('audio')!=-1){
+          createRoomAudioMessage(data)  
+        }  
 
       });//end socket.on
 
+      //
       var writeFileToGridStore = function(data,cb){
         var db = app.datasources.db.connector.db;
-        //console.log(db)
         db.safe = {w: 1};//
 
         var gridStore = new GridStore(db, data.filename, "w",{
@@ -386,18 +364,18 @@ module.exports = function(app) {
 
       }  
 
+      //
       var writeFileWithThumbnailToGridStore = function(data,thumbnailFilePath,cb){
-
         var db = app.datasources.db.connector.db;
-        //console.log(db)
         db.safe = {w: 1};//
 
         //TODO
         var options={
           "content_type": data.type
         }
+
         if(data.type.indexOf('video')!=-1){
-          options.chunk_size = 1024*512
+          options.chunk_size = 1024*1024
         }
 
         console.log(thumbnailFilePath)
@@ -434,15 +412,37 @@ module.exports = function(app) {
 
       };//writeFileWithThumbnailToGridStore
 
+      // var createRoomMessage = function(newMessage){
+      //   app.models.message.create(newMessage,function(err, obj){
+      //     if(err){
+      //       console.log(err)
+      //       return;
+      //     }
+      //     console.log('room:messages:new')
+      //     console.log(obj)
+      //     var data={}
+      //     data.message=obj
+      //     app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
+      //   });
+      // };//createRoomMessage
+
       var createRoomMessage = function(newMessage){
         app.models.message.create(newMessage,function(err, obj){
           if(err){
             console.log(err)
             return;
           }
-          console.log('room:messages:new')
           console.log(obj)
-          app.sio.sockets.in(obj.roomId).emit('room:messages:new', obj); 
+          var data={}
+          data.message=obj
+          app.models.message.count(function(err,count){
+            console.log(count)
+            data.total=count
+            console.log(data)
+            console.log('room:messages:new')
+            app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
+          }); 
+          
         });
       };//createRoomMessage
 
@@ -491,8 +491,6 @@ module.exports = function(app) {
         });
 
       };//createRoomImageMessage
-
-
 
       var createRoomVideoMessage = function(data){
         var savePath = '/tmp/'+data.filename
