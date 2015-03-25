@@ -247,14 +247,14 @@ module.exports = function(app) {
         console.log(filter)
         var latestMessage={}
         app.models.message.find(filter,function(err,objs){
-          console.log(objs)
+          //console.log(objs)
           latestMessage=objs[0];
           var total=0
-          app.models.message.count(function(err,count){
-            console.log(count)
-            var last={"message":latestMessage,total:count}
-            console.log(latestMessage)
-            cb(last)
+          app.models.message.count({roomId: data.roomId},function(err,count){
+            //console.log(count)
+            var latestMessageInfo={"message":latestMessage,total:count}
+            console.log(latestMessageInfo)
+            cb(latestMessageInfo)
           }); 
         });
 
@@ -435,7 +435,7 @@ module.exports = function(app) {
           console.log(obj)
           var data={}
           data.message=obj
-          app.models.message.count(function(err,count){
+          app.models.message.count({roomId: obj.roomId},function(err,count){
             console.log(count)
             data.total=count
             console.log(data)
