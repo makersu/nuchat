@@ -759,6 +759,36 @@
 	});
 
 	/**
+	 * Flip Item
+	 *
+	 * @description  item container with the front/back faces switched by custom event.
+	 *
+	 */
+	jangularUI.directive('flipItem', function($ionicGesture) {
+		return {
+			restrict: 'E',
+			replace: true,
+			transclude: true,
+			template: '<div class="flip-container">'+
+									'<div class="flip-item" ng-class="{\'flipped\': isFlipped}" ng-transclude></div>'+
+								'</div>',
+			link: function(scope, elem, attrs) {
+				scope.isFlipped = false;
+				var flipEvent = attrs.flipEvent || 'hold';
+				var $flipItem = angular.element(elem[0].querySelector('.flip-item'));
+				var flipping = function(event) {
+					scope.$apply(function() {
+						scope.isFlipped = !scope.isFlipped;
+					});
+				};
+
+				if (!ionic) throw 'Flip Item requires the Ionic framework!!';
+				$ionicGesture.on(flipEvent, flipping, $flipItem);
+			}
+		};
+	});
+
+	/**
 	 * Url View
    *
    */
@@ -783,21 +813,25 @@
   		link: function(scope, elem, attrs) {
   			$timeout(function() {
   				scope.content = scope.contentObj || $urlView.getContentObj();
-  				scope.view = scope.content.linkView;
-  				console.log(scope.view);
-  				if (scope.maxLength && scope.view.description && scope.view.description.length > scope.maxLength) {
-  					scope.view.description = scope.view.description.substr(0, scope.maxLength)+'...';
+  				if (scope.content) {
+  					scope.view = scope.content.linkView;
+	  				// console.log(scope.view);
+	  				if (scope.maxLength && scope.view.description && scope.view.description.length > scope.maxLength) {
+	  					scope.view.description = scope.view.description.substr(0, scope.maxLength)+'...';
+	  				}
+		  			var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
+		  			if (noScheme.lastIndexOf('/') >= 0) {
+		  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
+		  			} else {
+		  				scope.view.comment = noScheme;
+		  			}
+		  			var params = {};
+		  			params[scope.content.id] = true;
+		  			$rootScope.$broadcast('urlViewLoaded', params);
   				}
-	  			var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
-	  			if (noScheme.lastIndexOf('/') >= 0) {
-	  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
-	  			} else {
-	  				scope.view.comment = noScheme;
-	  			}
-	  			$rootScope.$broadcast('urlViewLoaded', {id: scope.content.id});
   			});
   		}
-  	}
+  	};
   });
   // Service of url-view
   jangularUI.factory('$urlView', function() {

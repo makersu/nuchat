@@ -1,4 +1,4 @@
-function DirLinksCtrl($scope, $NUChatLinks, $scrolls, $timeout, $filter) {
+function DirLinksCtrl($scope, $NUChatLinks, $scrolls, $timeout, $filter, RoomService) {
 	/* Variables */
 	// Private
 

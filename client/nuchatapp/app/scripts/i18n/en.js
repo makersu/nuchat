@@ -2,12 +2,14 @@ var enTranslate = function ($translateProvider) {
 	$translateProvider.translations('en', {
 		// Global
 		EDIT: 'Edit',
+		DELETE: 'Delete',
 		COMPLETE: 'Complete',
 		CHAT: 'Chat',
 		TODAY: 'Today',
 		YESTERDAY: 'Yesterday',
 		MORE: 'More',
 		LESS: 'Less',
+		SHARE: 'Share',
 
 		// Messages
 		SENT_IMG: 'Sent an image',

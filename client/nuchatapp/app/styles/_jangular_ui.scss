@@ -33,7 +33,6 @@
 // Left Image
 .img-left {
 	.url-view {
-		height: 100%;
 		.content {
 			display: flex;
 		}
@@ -176,6 +175,62 @@ grid-menu {
 				&.expand-bottom-#{$i} {
 			    top: $collapseBtnPos_offset * $i
 			  }
+			}
+		}
+	}
+}
+
+/* Flip Item */
+.flip-container {
+	position: relative;
+	@include perspective(800px);
+	width: 100%;
+	height: 100%;
+	.flip-item {
+		position: absolute;
+		width: 100%;
+		height: 100%;
+		@include transition(transform 0.5s);
+		@include transform-style(preserve-3d);
+		&.flipped {
+			@include rotateX(-180deg);
+			.front {
+				z-index: 0;
+			}
+			.back {
+				z-index: 2;
+			}
+		}
+		.face {
+			position: absolute;
+			width: 100%;
+			height: 100%;
+			@include backface-visibility(hidden);
+			&.front {
+				z-index: 2;
+			}
+			&.back {
+				@include rotateX(-180deg);
+				color: $flipItemBackFace_font_color;
+				background-color: $flipItemBackFace_bg_color;
+				z-index: 0;
+			}
+		}
+		// Tabs
+		.tabs {
+			&.tabs-icon-top {
+				.tab-item {
+					height: auto;
+					margin: auto;
+					font-size: $flipItemTab_font_size;
+					&.activated {
+						margin-top: auto;
+						border-bottom: 0;
+					}
+					.icon {
+						margin-bottom: 10px;
+					}
+				}
 			}
 		}
 	}

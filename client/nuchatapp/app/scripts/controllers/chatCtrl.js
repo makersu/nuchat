@@ -299,6 +299,9 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
     $NUChatDirectory.saveToDirectory(RoomService.getLastMessage(data.roomId));
     scrollHandle.scrollBottom();
   });
+  $scope.$on('modal.hidden', function() {
+    scrollHandle.scrollBottom();
+  });
 
     //this.sendMessage = function(message) {
     //    self.socket.emit('room:messages:new', message);

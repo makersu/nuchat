@@ -1,4 +1,4 @@
-function LinkService($filter) {
+function LinkService($filter, METATYPE) {
   var _list = [];
 
   function push(link) {
@@ -20,7 +20,11 @@ function LinkService($filter) {
     }
   }
 
-  function getLinks() {
+  function getLinks(msgList) {
+    // console.log(msgList);
+    // console.log(METATYPE.LINK);
+    // _list = $filter('filter')(msgList, {type: METATYPE.LINK});
+    // console.log(_list);
     return _list;
   }
 

@@ -1,17 +1,20 @@
 angular.module('Nuchatapp.directives', [])
-	.directive('linkinapp', function($timeout, $jmTools) {
+	.directive('linkinapp', function($jmTools, $timeout) {
 		return {
 			restrict: 'A',
 			link: function(scope, elem, attrs) {
-				var phase = parseInt(attrs.linkinapp) || 1;
+				var id = null;
 				$timeout(function() {
-					$jmTools.parseATagUsingInAppBrowser(elem[0].children);
-					if (phase > 1) {
-						$timeout(function() {
+					id = attrs.linkinapp;
+				});
+				scope.$on('urlViewLoaded', function(event, args) {
+					$timeout(function() {
+						if (args[id]) {
+							// console.log('parsing linkinapp');
 							$jmTools.parseATagUsingInAppBrowser(elem[0].children);
-						}, 1000);
-					}
-				}, 500);
+						}
+					});
+				});
 			}
 		}
 	})

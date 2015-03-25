@@ -6,7 +6,10 @@
 
 		// Using the Cordova inappbrowser plugin instead the direct click through A tag.
 		_self.parseATagUsingInAppBrowser = function(elemArr) {
-			console.warn('Don\'t forget to include the cordova InAppBrowser plugin');
+			// console.warn('Don\'t forget to include the cordova InAppBrowser plugin');
+			if (!cordova || !window.open) {
+				throw 'Cordova and the plugin, InAppBrowser, are required.';
+			}
 			angular.forEach(elemArr, function(elem) {
 				if (elem.tagName == 'A') {
 					if (elem.href) {

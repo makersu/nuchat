@@ -28,7 +28,7 @@
 						<img ng-click="viewProfile(message)" class="profile-pic left" 
 						ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" />
 						<div class="chat-bubble left">
-							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll" linkinapp="2">
+							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll" linkinapp="{{ ::message.id }}">
 							</meta-msg>
 							<div class="message-detail">
 								<!-- <span ng-click="viewProfile(message)" 
@@ -44,7 +44,7 @@
 						<!-- <img ng-click="viewProfile(message)" class="profile-pic right" 
 						ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" /> -->
 						<div class="chat-bubble right">
-							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll" linkinapp="2">
+							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll" linkinapp="{{ ::message.id }}">
 							</meta-msg>
 							<div class="message-detail">
 								<!-- <span ng-click="viewProfile(message)" 
