@@ -33,6 +33,7 @@
 // Left Image
 .img-left {
 	.url-view {
+		height: 100%;
 		.content {
 			display: flex;
 		}
@@ -45,7 +46,7 @@
 			flex: 4;
 			h5 {
 				margin-top: 5px;
-				margin-bottom: 5px;
+				margin-bottom: 2px;
 				font-weight: 700;
 			}
 			p {
@@ -53,7 +54,7 @@
 			}
 		}
 		.comment {
-			margin-top: 5px;
+			margin: 3px 0 5px;
 		}
 	}
 }

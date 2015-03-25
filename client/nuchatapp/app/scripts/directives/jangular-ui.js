@@ -10,6 +10,7 @@
  *  4) In View Window
  *  5) Url(link) View
  *  6) Collapse Buttons
+ *  7) Flip Item
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);

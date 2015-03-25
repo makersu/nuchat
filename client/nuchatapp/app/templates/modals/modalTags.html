@@ -9,12 +9,12 @@
     <div class="bar bar-header item-input-inset">
       <label class="item-input-wrapper">
         <i class="icon ion-ios-search placeholder-icon"></i>
-        <input type="search" placeholder="{{ ::'SEARCH_OR_ADD_TAGS' | translate }}" ng-model="search.tag">
+        <input type="search" placeholder="{{ ::'SEARCH_OR_ADD_TAGS' | translate }}" ng-model="search.tag" ng-minlength="1">
       </label>
       <button class="button button-clear button-icon icon ion-plus" ng-click="addTag()"></button>
     </div>
     <ion-list show-delete="true">
-      <ion-item collection-repeat="tag in currentMsg.tags">
+      <ion-item collection-repeat="tag in currentMsg.tags | filter:search.tag">
         <ion-delete-button class="ion-minus-circled" ng-click="removeTag($index)"></ion-delete-button>
         {{ tag }}
       </ion-item>
