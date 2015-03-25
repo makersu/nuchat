@@ -1,37 +1,31 @@
-function RoomCtrl($scope, $state, $location, User, LBSocket, RoomService){
+function RoomCtrl($scope, $state, $location, RoomService){
 	console.log('RoomCtrl');//
 
-  $scope.availableRooms = RoomService.getAll();
-  console.log($scope.availableRooms);//
-
-  $scope.newRoom={};
+  $scope.availableRooms = RoomService.getAvailableRooms();
+  console.log($scope.availableRooms);
 
 	$scope.goToCreateRoom = function () {
-    console.log('goToCreateRoom')
+    console.log('goToCreateRoom');
     $location.path('/tab/createRoom');
   };
  
+  $scope.newRoom={};
   $scope.createRoom = function() {
     console.log('createRoom');//
-    $scope.newRoom.type='group'
-    LBSocket.emit('rooms:create', $scope.newRoom)
-    $location.path('/tab/chats')
+    $scope.newRoom.type='group';
+    RoomService.createRoom($scope.newRoom);
+    $location.path('/tab/chats');
   };
 
    $scope.doRefresh = function() {
     console.log('doRefresh');//
-    console.log('rooms:get');//
-    LBSocket.emit('rooms:get',User.getCachedCurrent());//callback once getall?
+    $scope.availableRooms = RoomService.getAvailableRooms();
     $scope.$broadcast('scroll.refreshComplete');
-    $scope.$apply()
+    $scope.$apply();
   };
 
   $scope.goToRoom = function(roomId) {
     $state.go('tab.chatRoom', { roomId: roomId }, { reload: true });
   };
-
-  //TODO: refactoring move?
-  console.log('rooms:get');
-  LBSocket.emit('rooms:get',User.getCachedCurrent());//callback once getall?
 
 }

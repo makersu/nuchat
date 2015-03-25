@@ -1,24 +1,25 @@
-function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
+function ChatCtrl($scope, $state, $stateParams, User, RoomService, $localstorage, $q, $filter,
             $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, METATYPE, ENV){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
+  RoomService.getRoomMessages($stateParams.roomId)
 
-  var data = {}
-  data.roomId=$stateParams.roomId
-  var lastMessage= RoomService.getLastMessage($stateParams.roomId)
-  if(lastMessage && lastMessage.id){
-   data.messageId = lastMessage.id
-  }
-  console.log(data)
+  // var data = {}
+  // data.roomId=$stateParams.roomId
+  // var lastMessage= RoomService.getLastMessage($stateParams.roomId)
+  // if(lastMessage && lastMessage.id){
+  //  data.messageId = lastMessage.id
+  // }
+  // console.log(data)
 
-  LBSocket.emit('room:messages:get', data , function(messages){
-    console.log('room:messages:get')
-    //console.log(messages)
-    console.log(messages.messages.length)
-    for(var i=0;i<messages.messages.length;i++){
-     RoomService.addMessage(messages.messages[i])
-    }
-  });
+  // LBSocket.emit('room:messages:get', data , function(messages){
+  //   console.log('room:messages:get')
+  //   //console.log(messages)
+  //   console.log(messages.messages.length)
+  //   for(var i=0;i<messages.messages.length;i++){
+  //    RoomService.addMessage(messages.messages[i])
+  //   }
+  // });
     
   /* Variables */
   // Private
@@ -67,13 +68,13 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
     }
   };
   // Scope Public
-  $scope.joinRoom = function(id, switchRoom) {
-    console.log(id)
-    LBSocket.emit('room:join', id, function(room) {
-      console.log(room)
-      //LBSocket.emit('room:messages:get', id);
-    });
-  };
+  // $scope.joinRoom = function(id, switchRoom) {
+  //   console.log(id)
+  //   LBSocket.emit('room:join', id, function(room) {
+  //     console.log(room)
+  //     //LBSocket.emit('room:messages:get', id);
+  //   });
+  // };
   $scope.sendMessage=function(sendMessageForm){
     console.log('sendMessage');
 
@@ -83,7 +84,9 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
     $scope.input.ownerId = $scope.currentUser.id;
     console.log($scope.input);
 
-    LBSocket.emit('room:messages:new', $scope.input);
+    //LBSocket.emit('room:messages:new', $scope.input);
+    RoomService.createMessage($scope.input)
+
     $scope.input={};
 
     if ($scope.metaMenu.isShown()) {
@@ -236,8 +239,8 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
 
   /* OnLoad */
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
-  RoomService.set($stateParams.roomId);
-  $scope.room = RoomService.get();//todo
+  RoomService.setCurrentRoom($stateParams.roomId);
+  $scope.room = RoomService.getCurrentRoom();
   console.log($scope.room)//
 
   // Initializing NUChatObject service
@@ -257,7 +260,7 @@ function ChatCtrl($scope, $state, $stateParams, User, Room, LBSocket, RoomServic
 	//
   // Chat actions
   //
-	$scope.joinRoom($stateParams.roomId);
+	//$scope.joinRoom($stateParams.roomId);
   // Triggers configuration.
   $scope.triggerOptions = {
     when: {

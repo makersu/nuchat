@@ -131,7 +131,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         }
       },
       onExit: function(RoomService) {
-        RoomService.set(-1);
+        RoomService.setCurrentRoom(-1);
       },
       cache: false
     })

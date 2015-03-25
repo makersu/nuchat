@@ -2,6 +2,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 	var DEBUG = false;
 	console.log('RoomService');
 
+	//when get new room
 	LBSocket.on('rooms:new', function(room) {	
     console.log('rooms:new');
 		console.log(room);
@@ -13,68 +14,55 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
     		room.name=FriendService.get(room.friend).username
     	}
     }
-		console.log(room);
+		//console.log(room);
     addRoom(room);
-    //join room
-    
+
+    //join room 
 		LBSocket.emit('room:join', room.id, function(joinedRoom) {
     	console.log('room:join callback')
 			console.log(joinedRoom)
 			var data = {}
 			data.roomId=joinedRoom.id
-
-			var room = get(joinedRoom.id);
-			console.log(room)
-			// if(room){
-			// 	if(room.messages){
-			// 		var lastMessage= room.messages[room.messages.length-1]
-			// 		console.log(lastMessage)
-			// 		if(lastMessage){
-			// 			data.messageId = lastMessage.id
-			// 		}
-			// 	}
-			// }			
-			
 			console.log(data)
-			// LBSocket.emit('room:messages:get', data , function(messages){
-			// 	console.log('room:messages:get')
-			// 	//console.log(messages)
-			// 	console.log(messages.messages.length)
-			// 	for(var i=0;i<messages.messages.length;i++){
-			// 		addMessage(messages.messages[i])
-			// 	}
-
-			// });
-			LBSocket.emit('room:messages:latest', data , function(data){
+			//get latest message of room
+			LBSocket.emit('room:messages:latest', data , function(latestMessageInfo){
 				console.log('room:messages:latest')
-				console.log(data)
-				updateLatestInfo(data)
+				console.log(latestMessageInfo)
+				updateLatestMessageInfo(latestMessageInfo)
 			});//room:messages:last
 
 		});//room:join
 
-  });
+  });//rooms:new
 
-  LBSocket.on('room:messages:new', function(data) {
+	//when get new message
+  LBSocket.on('room:messages:new', function(newMessageInfo) {
   	console.log('room:messages:new');
-  	console.log(data);
-  	updateLatestInfo(data)
-  	//addMessage(message);
-  	if (data.message.roomId == _currentRoomId && !$rootScope.isInBackground) {
-  		syncMessage(data.message)
+  	console.log(newMessageInfo);
+  	updateLatestMessageInfo(newMessageInfo);
+  	if (newMessageInfo.message.roomId == _currentRoomId && !$rootScope.isInBackground) {
+  		// syncMessage(data.message)
+  		addMessage(newMessageInfo.message)
   	}
-		
-    
+  	else{
+  		var message=newMessageInfo.message
+			// Sending the local notification.
+			$cordovaLocalNotification.add({
+	      id: 'newMsg',
+	  		message: message.text,
+	  		title: FriendService.get(message.ownerId).username,
+	  		date: message.created,
+	  		autoCancel: true
+	    }).then(function () {
+	      if (DEBUG) console.log('New message notification has been added.');
+	    });
+	  }  
   });
 
-  //sync message from server?
-  function syncMessage(message){
-  	console.log('syncMessage')
-  	console.log(message)
-
+  function getRoomMessages(roomId){
   	var data = {}
-  	
-  	var lastMessage= getLastMessage(message.roomId)
+  	data.roomId=roomId
+  	var lastMessage= getLastMessage(roomId)
   	if(lastMessage && lastMessage.id){
   		data.messageId = lastMessage.id
   	}
@@ -85,39 +73,81 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 	    //console.log(messages)
 	    console.log(messages.messages.length)
 	    for(var i=0;i<messages.messages.length;i++){
-	    	addMessage(messages.messages[i])
+	    	addMessage(messages.messages[i])//updateLatestMessageInfo?
 	    }
-  	});
+	  });
+  }
 
-	}//syncMessage
+  //TODO:?
+  function addMessage(message) {
+  	console.log('addMessage');
+		console.log(message);
+		var room = getRoom(message.roomId);
+		console.log(room);
+		room.messages[message.id]=message
+		console.log(room.messages)
+		$rootScope.$broadcast('onNewMessage');
+  }
+
+
+
+  //sync message from server?
+ //  function syncMessage(message){
+ //  	console.log('syncMessage')
+ //  	console.log(message)
+
+ //  	var data = {}
+  	
+ //  	var lastMessage= getLastMessage(message.roomId)
+ //  	if(lastMessage && lastMessage.id){
+ //  		data.messageId = lastMessage.id
+ //  	}
+ //  	console.log(data)
+
+ //  	LBSocket.emit('room:messages:get', data , function(messages){
+ //  		console.log('room:messages:get')
+	//     //console.log(messages)
+	//     console.log(messages.messages.length)
+	//     for(var i=0;i<messages.messages.length;i++){
+	//     	addMessage(messages.messages[i])
+	//     }
+ //  	});
+
+	// }//syncMessage
  
 
 	var rooms = {};
 	var _unreadMessages = [];
 	var _currentRoomId = -1;
 	
-	function getAll() {
-		console.log('getAll');
+	function getAvailableRooms() {
+		console.log('getAvailableRooms');
+		getAllRooms();
 		return rooms;
 	}
 
-	function get(roomId) {
-		if (angular.isUndefined(roomId)){
-			roomId = _currentRoomId;
-		}
-		console.log(roomId);
-		
-		// if(!rooms[roomId]){
-		// 	rooms[roomId]={}
-		// 	rooms[roomId].messages = [];
-		// }
+	//get all rooms related to user
+	function getAllRooms(){
+    console.log('rooms:get');
+    LBSocket.emit('rooms:get',User.getCachedCurrent());
+	}
 
+	function createRoom(newRoom){
+		console.log('createRoom')
+		console.log(newRoom)
+		LBSocket.emit('rooms:create', newRoom)
+	}
+	
+	function getRoom(roomId) {
 		return rooms[roomId];
 	}
 
-	//TODO
-	function set(roomId) {
+	function setCurrentRoom(roomId) {
 		_currentRoomId = roomId;
+	}
+
+	function getCurrentRoom() {
+		return rooms[_currentRoomId];
 	}
 
 	function addRoom(room) {
@@ -131,83 +161,87 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		}
 	}
 
-	function updateLatestInfo(data){
+	function updateLatestMessageInfo(data){
 		console.log('updateLatestMessage')
 		console.log(data)
-		var room = get(data.message.roomId)
-		room.latestMessage=data.message
-		room.total=data.total
-		// console.log(room.messages.length)
-		// room.unread=data.total-room.messages.length
-		console.log(Object.keys(room.messages).length)//
-		room.unread=data.total-Object.keys(room.messages).length
-		
+		if(data.message){
+			var room = getRoom(data.message.roomId)
+			room.latestMessage=data.message
+			room.total=data.total
+			console.log(Object.keys(room.messages).length)//
+			room.unread=data.total-Object.keys(room.messages).length
+		}
 	}
 
 	//TODO:?
-	function addMessage(message) {
-		console.log('addMessage');
-		console.log(message);
-		var room = get(message.roomId);
-		console.log(room);
-		console.log(_currentRoomId)
-		if (room.id == _currentRoomId && !$rootScope.isInBackground) {
-			//room.messages.push(message);
-			room.messages[message.id]=message
-			console.log(room.messages)
-			$rootScope.$broadcast('onNewMessage');
-		} else {
-			// var unreadMessages = $localstorage.getObject(room.id);
-			// if (!unreadMessages) unreadMessages = [];
-			// unreadMessages.push(message);
-			// $localstorage.setObject(room.id, unreadMessages);
-			// room.unreadMessages = unreadMessages;
+	// function addMessage(message) {
+	// 	console.log('addMessage');
+	// 	console.log(message);
+	// 	var room = getRoom(message.roomId);
+	// 	console.log(room);
+	// 	console.log(_currentRoomId)
+	// 	if (room.id == _currentRoomId && !$rootScope.isInBackground) {
+	// 		//room.messages.push(message);
+	// 		room.messages[message.id]=message
+	// 		console.log(room.messages)
+	// 		$rootScope.$broadcast('onNewMessage');
+	// 	} else {
+	// 		// var unreadMessages = $localstorage.getObject(room.id);
+	// 		// if (!unreadMessages) unreadMessages = [];
+	// 		// unreadMessages.push(message);
+	// 		// $localstorage.setObject(room.id, unreadMessages);
+	// 		// room.unreadMessages = unreadMessages;
 			
-			// console.log(message.ownerId)
-			// console.log(FriendService.get(message.ownerId))
+	// 		// console.log(message.ownerId)
+	// 		// console.log(FriendService.get(message.ownerId))
 
-			if(message.ownerId === User.getCachedCurrent().id){
-				return;
-			}
-			else{
-			// Sending the local notification.
-				$cordovaLocalNotification.add({
-		      id: 'newMsg',
-		  		message: message.text,
-		  		title: FriendService.get(message.ownerId).username,
-		  		date: message.created,
-		  		autoCancel: true
-		    }).then(function () {
-		      if (DEBUG) console.log('New message notification has been added.');
-		    });
-		  }  
-		}
-	}
+	// 		if(message.ownerId === User.getCachedCurrent().id){
+	// 			return;
+	// 		}
+	// 		else{
+	// 		// Sending the local notification.
+	// 			$cordovaLocalNotification.add({
+	// 	      id: 'newMsg',
+	// 	  		message: message.text,
+	// 	  		title: FriendService.get(message.ownerId).username,
+	// 	  		date: message.created,
+	// 	  		autoCancel: true
+	// 	    }).then(function () {
+	// 	      if (DEBUG) console.log('New message notification has been added.');
+	// 	    });
+	// 	  }  
+	// 	}
+	// }
 
 	//TODO:?
 	function getLastMessage(roomId) {
 		console.log('getLastMessage')
 		console.log(roomId)
-		var room = get(roomId);
+		var room = getRoom(roomId);
 		var lastMessage={}
 		if(room.messages){
-			var lastkey=Object.keys(room.messages).length - 1
-			console.log(lastkey)
+			var lastKeyIndex=Object.keys(room.messages).length - 1
+			console.log(lastKeyIndex)
 
-			lastMessage= room.messages[Object.keys(room.messages)[lastkey]]
+			lastMessage= room.messages[Object.keys(room.messages)[lastKeyIndex]]
 			console.log(lastMessage)
 		}
 		return lastMessage;	
 	}
 
+	function createMessage(newMessage){
+		console.log('room:messages:new')
+		LBSocket.emit('room:messages:new', newMessage);
+	}
+
 
 	var service = {
-		getAll: getAll,
-		get: get,
-		set: set,
-		addRoom: addRoom,
-		addMessage: addMessage,
-		getLastMessage: getLastMessage
+		getAvailableRooms: getAvailableRooms,
+		createRoom: createRoom,
+		setCurrentRoom: setCurrentRoom,
+		getCurrentRoom: getCurrentRoom,
+		getRoomMessages: getRoomMessages,
+		createMessage: createMessage
 	};
 
 	return service;
