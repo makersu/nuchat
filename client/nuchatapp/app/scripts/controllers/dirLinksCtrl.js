@@ -6,6 +6,10 @@ function DirLinksCtrl($scope, $NUChatLinks, $scrolls, $timeout, $filter, RoomSer
 
 	/* Methods */
 	// Private
+	// Scope public
+	$scope.delLink = function(link) {
+
+	}
 
 	/* Onload */
 	$scope.linkList = $filter('orderBy')($NUChatLinks.getLinks(), '-created');

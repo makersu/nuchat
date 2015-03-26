@@ -21,7 +21,8 @@
 	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll">
 
 		<accordion close-others="false">
-			<accordion-group heading="{{ ::group.name }}" ng-repeat="group in room.groupedMessages" is-open="$last">
+			<accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}">
+				<accordion-heading>{{ ::group.name }}<i class="icon" ng-class="{'ion-chevron-down': !group.open, 'ion-chevron-up': group.open}"></i></accordion-heading>
 				<div ng-repeat="message in group.items track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" in-view-window="message in #msgContainer">
 
 					<div ng-if="::currentUser.id !== message.ownerId">
@@ -59,6 +60,7 @@
 					<div class="cf"></div>
 
 				</div>
+				<a class="accordion-toggle" ng-if="group.open" ng-click="collapseGroup(group)"><i class="icon ion-chevron-up"></i></a>
 			</accordion-group>
 		</accordion>
 	</ion-content>

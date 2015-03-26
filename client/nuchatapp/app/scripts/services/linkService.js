@@ -4,7 +4,7 @@ function LinkService($filter, METATYPE) {
   function push(link) {
     if (link) {
       var dups = $filter('filter')(_list, { id: link.id });
-      console.log(link);
+      // console.log(link);
       if (dups.length === 0) {
         _list.push(link);
       }
@@ -15,7 +15,7 @@ function LinkService($filter, METATYPE) {
     var links = $filter('filter')(_list, { id: id });
     if (links.length > 0) {
       var idx = _list.indexOf(links);
-      consol.elog(idx);
+      consol.log(idx);
       _list.splice(idx, 1);
     }
   }
@@ -24,7 +24,7 @@ function LinkService($filter, METATYPE) {
     // console.log(msgList);
     // console.log(METATYPE.LINK);
     // _list = $filter('filter')(msgList, {type: METATYPE.LINK});
-    // console.log(_list);
+    console.log(_list);
     return _list;
   }
 

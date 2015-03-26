@@ -1,25 +1,27 @@
 function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
             $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatTags, METATYPE, ENV,
-            $ionicModal){
+            $ionicModal, $location) {
+
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
+  RoomService.getRoomMessages($stateParams.roomId)
 
-  var data = {}
-  data.roomId=$stateParams.roomId
-  var lastMessage= RoomService.getLastMessage($stateParams.roomId)
-  if(lastMessage && lastMessage.id){
-   data.messageId = lastMessage.id
-  }
-  console.log(data)
+  // var data = {}
+  // data.roomId=$stateParams.roomId
+  // var lastMessage= RoomService.getLastMessage($stateParams.roomId)
+  // if(lastMessage && lastMessage.id){
+  //  data.messageId = lastMessage.id
+  // }
+  // console.log(data)
 
-  LBSocket.emit('room:messages:get', data , function(messages){
-    console.log('room:messages:get')
-    //console.log(messages)
-    console.log(messages.messages.length)
-    for(var i=0;i<messages.messages.length;i++){
-     RoomService.addMessage(messages.messages[i])
-    }
-  });
+  // LBSocket.emit('room:messages:get', data , function(messages){
+  //   console.log('room:messages:get')
+  //   //console.log(messages)
+  //   console.log(messages.messages.length)
+  //   for(var i=0;i<messages.messages.length;i++){
+  //    RoomService.addMessage(messages.messages[i])
+  //   }
+  // });
     
   /* Variables */
   // Private
@@ -68,13 +70,13 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
     }
   };
   // Scope Public
-  $scope.joinRoom = function(id, switchRoom) {
-    console.log(id)
-    LBSocket.emit('room:join', id, function(room) {
-      console.log(room)
-      //LBSocket.emit('room:messages:get', id);
-    });
-  };
+  // $scope.joinRoom = function(id, switchRoom) {
+  //   console.log(id)
+  //   LBSocket.emit('room:join', id, function(room) {
+  //     console.log(room)
+  //     //LBSocket.emit('room:messages:get', id);
+  //   });
+  // };
   $scope.sendMessage=function(sendMessageForm){
     console.log('sendMessage');
 
@@ -84,12 +86,21 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
     $scope.input.ownerId = $scope.currentUser.id;
     console.log($scope.input);
 
-    LBSocket.emit('room:messages:new', $scope.input);
+    //LBSocket.emit('room:messages:new', $scope.input);
+    RoomService.createMessage($scope.input)
+
     $scope.input={};
 
     if ($scope.metaMenu.isShown()) {
       $scope.closeMetaMenu();
     }
+  };
+
+  // Grouping
+  $scope.collapseGroup = function(group) {
+    group.open = false;
+    $location.hash(group.name);
+    scrollHandle.anchorScroll();
   };
 
   /* Grid Menu */
@@ -112,62 +123,6 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
         if ($scope.metaMenu.isShown()) {
           $scope.closeMetaMenu();
         }
-        // for (var i = 0; i < results.length; i++) {
-        //   console.log('Image URI: ' + results[i]);
-          
-        //   // $scope.input.text = results[i];
-        //   //$scope.sendMessage();
-
-        //   console.log(cordova.file.cacheDirectory)
-
-
-        //   //window.resolveLocalFileSystemURL(cordova.file.applicationDirectory + "www/index.html", gotFile, fail);
-
-        //   window.resolveLocalFileSystemURL(
-        //     results[i], 
-        //     function(fileEntry){
-        //       console.log(fileEntry)
-              
-        //       fileEntry.file(function(file) {
-        //         console.log(file)
-        //         var reader = new FileReader();
-
-        //         reader.onloadend = function(event) {
-        //           console.log('onload')
-        //           //console.log(event.target)
-        //           console.log('room:files:new')
-        //           var data={}
-        //           data.roomId = $scope.room.id;
-        //           data.ownerId = $scope.currentUser.id;
-        //           data.file=event.target.result
-        //           data.filename=file.name
-        //           data.type=file.type
-        //           data.size=file.size
-        //           console.log(data)      
-     
-        //           //LBSocket.emit('room:files:new', {image:event.target.result, room:$scope.room, ownerId: $scope.currentUser.id });
-        //           LBSocket.emit('room:files:new', data);
-        //           $scope.input={};
-
-        //           if ($scope.metaMenu.isShown()) {
-        //             $scope.closeMetaMenu();
-        //           }
-
-        //         }
-
-        //         //reader.readAsDataURL(file);
-        //         reader.readAsArrayBuffer(file);
-
-
-        //       });
-        //     }, 
-        //     function(error){
-        //       console.log(error)
-        //     }
-        //   );//end resolveLocalFileSystemURL
-
-
-        // }
       }, errorHandler, {
         width: 800
       }
@@ -238,8 +193,8 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
 
   /* OnLoad */
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
-  RoomService.set($stateParams.roomId);
-  $scope.room = RoomService.get();//todo
+  RoomService.setCurrentRoom($stateParams.roomId);
+  $scope.room = RoomService.getCurrentRoom();
   console.log($scope.room)//
 
   // Initializing NUChatObject service
@@ -259,7 +214,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
 	//
   // Chat actions
   //
-	$scope.joinRoom($stateParams.roomId);
+	//$scope.joinRoom($stateParams.roomId);
   // Triggers configuration.
   $scope.triggerOptions = {
     when: {
@@ -276,6 +231,10 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
     $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
       return $filter('amChatGrouping')(msg.created);
     });
+    // Open the latest group.
+    if ($scope.room.groupedMessages.length > 0) {
+      $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].open = true;
+    }
   });
 
   // Register event listeners
@@ -290,17 +249,23 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
       // }, 1000);
     }, 500);
   });
-  $scope.$on('urlViewLoaded', function() {
+  $scope.$on('urlViewLoaded', function(event, args) {
     console.log('urlViewLoaded');
+    angular.forEach(args, function(val, id) {
+      if (val) {
+        var msg = $scope.room.messages[id];
+        if (msg) {
+          $NUChatDirectory.saveToDirectory(msg);
+        }
+      }
+    })
     // console.log(RoomService.get());
     // console.log($stateParams.roomId);
     // console.log(data.roomId);
     // Saving the message into the Directory by type.
-    $NUChatDirectory.saveToDirectory(RoomService.getLastMessage(data.roomId));
     scrollHandle.scrollBottom();
   });
   $scope.$on('modal.hidden', function() {
-    scrollHandle.scrollBottom();
   });
 
     //this.sendMessage = function(message) {

@@ -1,17 +1,30 @@
 <ion-view class="has-tabs-top">
 	<!-- <fa-app> -->
-	<ion-content>
-		<flip-item class="item-link" collection-repeat="link in linkList track by link.id"
+	<ion-content delegate-handle="dirScrollHandle">
+		<flip-item class="item-link" collection-repeat="link in linkList"
 			item-height="120"
 			item-width="98%">
 		<!-- <fa-scroll-view fa-pipe-from="scrollEventHandler" id="linkScrollView">
 			<fa-view ng-repeat="link in linkList track by link.id">
 				<fa-modifier fa-size="[undefined, faTrue.height('.item-link')]">
 					<fa-surface fa-pipe-to="scrollEventHandler" class="item-link"> -->
-						<url-view class="img-left face front" content-obj="link" max-length="30" linkinapp="{{ ::link.id }}"></url-view>
+						<!-- <url-view class="img-left face front" content-obj="link" max-length="30" linkinapp="{{ ::link.id }}"></url-view> -->
+						<div class="img-left face front">
+							<a class="url-view" ng-click="openInappbrowser(link.linkView.url)">
+								<div class="content">
+  								<img ng-src="{{ link.linkView.image }}" ng-if="link.linkView.image">
+  								<div class="info">
+	  								<h5 class="title" ng-bind-html="link.linkView.title"></h5>
+	  								<p class="descript" ng-bind-html="link.linkView.description | limitTo:30"></p>
+	  								<div class="comment">{{ link.linkView.comment }}</div>
+	  								<div class="tags"><span class="badge" ng-repeat="tag in link.tags | limitTo:5">{{ tag }}</span><span ng-if="link.tags.length > 5">...</span></div>
+	  							</div>
+								</div>
+  						</a>
+						</div>
 						<div class="tabs tabs-icon-top face back">
 							<a class="tab-item" ng-click="editTags(link)"><i class="icon ion-pricetags"></i>{{ ::'TAGS' | translate }}</a>
-							<a class="tab-item" ng-click="delLink($index)"><i class="icon ion-trash-a"></i>{{ ::'DELETE' | translate }}</a>
+							<a class="tab-item" ng-click="delLink(link)"><i class="icon ion-trash-a"></i>{{ ::'DELETE' | translate }}</a>
 							<a class="tab-item" ng-click="shareLink(link)"><i class="icon ion-android-share-alt"></i>{{ ::'SHARE' | translate }}</a>
 						</div>
 					<!-- </fa-surface>

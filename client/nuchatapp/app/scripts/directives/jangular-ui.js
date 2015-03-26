@@ -811,25 +811,38 @@
   								'</div>'+
 	  						'</a>',
   		link: function(scope, elem, attrs) {
-  			$timeout(function() {
-  				scope.content = scope.contentObj || $urlView.getContentObj();
-  				if (scope.content) {
-  					scope.view = scope.content.linkView;
-	  				// console.log(scope.view);
-	  				if (scope.maxLength && scope.view.description && scope.view.description.length > scope.maxLength) {
-	  					scope.view.description = scope.view.description.substr(0, scope.maxLength)+'...';
+  			function applyView() {
+  				$timeout(function() {
+	  				scope.content = scope.contentObj || $urlView.getContentObj();
+	  				// console.log(scope.content);
+	  				if (scope.content) {
+	  					scope.view = scope.content.linkView;
+		  				// console.log(scope.view);
+		  				if (scope.maxLength && scope.view.description && scope.view.description.length > scope.maxLength) {
+		  					scope.view.description = scope.view.description.substr(0, scope.maxLength)+'...';
+		  				}
+			  			var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
+			  			if (noScheme.lastIndexOf('/') >= 0) {
+			  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
+			  			} else {
+			  				scope.view.comment = noScheme;
+			  			}
+			  			var params = {};
+			  			params[scope.content.id] = true;
+			  			$rootScope.$broadcast('urlViewLoaded', params);
 	  				}
-		  			var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
-		  			if (noScheme.lastIndexOf('/') >= 0) {
-		  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
-		  			} else {
-		  				scope.view.comment = noScheme;
-		  			}
-		  			var params = {};
-		  			params[scope.content.id] = true;
-		  			$rootScope.$broadcast('urlViewLoaded', params);
-  				}
-  			});
+	  			});
+  			}
+  			
+				applyView();
+				
+  			// scope.$watch('contentObj', function(newVal, oldVal) {
+  			// 	if (newVal && newVal !== oldVal) {
+  			// 		console.log('urlView: ');
+  			// 		console.log(scope.contentObj);
+  			// 		applyView();
+  			// 	}
+  			// });
   		}
   	};
   });

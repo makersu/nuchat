@@ -1,7 +1,7 @@
-function ScrollService($imageFilters, $ionicScrollDelegate) {
+function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $rootScope) {
 	var FIXED_TO_TOP_OFFSET = 105;
-	var CONTAINER_INIT_HEIGHT = 65;
-	var CONTAINER_FIXED_HEIGHT = 84;
+	var CONTAINER_INIT_HEIGHT;
+	var CONTAINER_FIXED_HEIGHT;
 	var _cover = null;
 	var _coverOriginalHeight = 0;
 	var _dirTabs = null;
@@ -22,7 +22,14 @@ function ScrollService($imageFilters, $ionicScrollDelegate) {
 	// 	return scrollView.getPosition();
 	// }
 	function setContainerHeight(h) {
-		angular.element(_container).css('height', h+'%');
+		angular.element(_container).css('height', h+'px');
+		var scrollHandles = $filter('filter')($ionicScrollDelegate._instances, {$$delegateHandle: 'dirScrollHandle'});
+		if (scrollHandles.length) {
+			var dirScrollHandle = scrollHandles[0];
+			// console.log(dirScrollHandle);
+			// console.log($ionicScrollDelegate.$getByHandle('dirScrollHandle'));
+			dirScrollHandle.resize();
+		}
 	}
 	function getScrollTop() {
 		return $ionicScrollDelegate.getScrollPosition().top;
@@ -41,6 +48,12 @@ function ScrollService($imageFilters, $ionicScrollDelegate) {
 			_coverImg = document.querySelector('.cover img');
 		}
 		return _coverImg;
+	}
+	function getDirTabsHeight() {
+		if (!_dirTabs) {
+			_dirTabs = document.querySelector('.directory .tabs');
+		}
+		return _dirTabs.offsetHeight;
 	}
 	function getDirTabsTop() {
 		if (!_dirTabs) {
@@ -93,11 +106,18 @@ function ScrollService($imageFilters, $ionicScrollDelegate) {
 		setDirTabsTop(_dirTabsOriginalTop);
 		// Un-Blur effects
 		$imageFilters.cssBlur(coverImg, 0);
+
+		if (!CONTAINER_INIT_HEIGHT) {
+			// console.log('compute init content height');
+			CONTAINER_INIT_HEIGHT = verge.viewportH()-_coverOriginalHeight-getDirTabsHeight();
+			CONTAINER_FIXED_HEIGHT = CONTAINER_INIT_HEIGHT+FIXED_TO_TOP_OFFSET;
+		}
 		setContainerHeight(CONTAINER_INIT_HEIGHT);
 	}
 	function bindScrollToFixed(containerSelector, viewSelector) {
 		_container = document.querySelector(containerSelector);
 		var view = angular.element(document.querySelector(viewSelector));
+		reset();
 		view.on('touchmove', function(e) {
 			var currentY = e.touches[0].clientY;
 	    if (currentY > _lastY) {

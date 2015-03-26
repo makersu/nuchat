@@ -1,10 +1,11 @@
 function amChatCalendar(moment, $filter) {
 	function amFilter(value, preprocess) {
 		moment.locale(moment.locale(), {
-			'calendar': {
-				'lastDay': $filter('translate')('YESTERDAY'),
-				'sameDay': 'hh:mm',
-				'sameElse': 'MM-DD'
+			calendar: {
+				lastDay: '['+$filter('translate')('YESTERDAY')+']',
+				lastWeek: 'MM-DD',
+				sameDay: 'hh:mm',
+				sameElse: 'MM-DD'
 			}
 		});
 
@@ -16,13 +17,15 @@ function amChatCalendar(moment, $filter) {
 function amChatGrouping(moment, $filter) {
 	function amFilter(value, preprocess) {
 		moment.locale(moment.locale(), {
-			'calendar': {
-				'lastDay': '['+$filter('translate')('YESTERDAY')+']',
-				'sameDay': '['+$filter('translate')('TODAY')+']',
-				'sameElse': 'MM-DD'
+			calendar: {
+				lastDay: '['+$filter('translate')('YESTERDAY')+']',
+				lastWeek: 'MM-DD ddd',
+				sameDay: '['+$filter('translate')('TODAY')+']',
+				sameElse: 'MM-DD'
 			}
 		});
 
+		// console.log(moment($filter('amCalendar')(value)).format('MM-DD'));
 		return $filter('amCalendar')(value);
 	}
 	return amFilter;

@@ -27,6 +27,23 @@
   margin-bottom: 10px;
 }
 
+/* Grouping */
+.panel-heading {
+  padding: 0;
+}
+.panel-body {
+  padding: 0;
+}
+.accordion-toggle {
+  width: 100%;
+  display: block;
+  padding: 10px 15px;
+  i {
+    float: right;
+    margin-bottom: 5px;
+  }
+}
+
 /* User */
 .user-messages-top-icon {
   font-size: 28px;

@@ -14,12 +14,17 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
-    // if(window.cordova && window.cordova.plugins.Keyboard) {
-    //   cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
-    // }
+    if(window.cordova && window.cordova.plugins.Keyboard) {
+      cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+    }
     if(window.StatusBar) {
       // org.apache.cordova.statusbar required
       StatusBar.styleDefault();
+    }
+
+    // InAppBrowser
+    $rootScope.openInappbrowser = function(link, useSys) {
+      window.open(link, useSys ? '_system' : '_blank', 'location=no,enableViewportScale=yes')
     }
 
     // Modal: To edit the tags of the message
@@ -164,7 +169,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         }
       },
       onExit: function(RoomService) {
-        RoomService.set(-1);
+        RoomService.setCurrentRoom(-1);
       },
       cache: false
     })
