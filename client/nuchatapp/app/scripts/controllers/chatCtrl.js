@@ -1,8 +1,9 @@
 function ChatCtrl($scope, $state, $stateParams, User, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, METATYPE, ENV){
+            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, METATYPE, ENV, FriendService){
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   RoomService.getRoomMessages($stateParams.roomId)
+  $scope.friends=FriendService.getAll();
 
   // var data = {}
   // data.roomId=$stateParams.roomId
@@ -27,6 +28,7 @@ function ChatCtrl($scope, $state, $stateParams, User, RoomService, $localstorage
   var audioInterval = null;
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
+  console.log($scope.currentUser)//
   $scope.input = {};
   $scope.messageOptions = {
     audioSetting: { 

@@ -26,7 +26,7 @@
 
 					<div ng-if="currentUser.id !== message.ownerId">
 						<img ng-click="viewProfile(message)" class="profile-pic left" 
-						ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" />
+						src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="onProfilePicError(this)" />
 						<div class="chat-bubble left">
 							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll" linkinapp="2">
 							</meta-msg>

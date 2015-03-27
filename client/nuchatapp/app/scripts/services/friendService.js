@@ -1,4 +1,4 @@
-function FriendService(User, LBSocket) {
+function FriendService(User, LBSocket, ENV) {
 	console.log('FriendService');
 
 	var currentUser = User.getCachedCurrent();
@@ -11,9 +11,20 @@ function FriendService(User, LBSocket) {
 		console.log(currentUser);//
 		if( friend.id != currentUser.id){
 			console.log('addFriend');
+			updateAvatar(friend)
 			friends[friend.id]=friend;
 		}
 	});
+
+	function updateAvatar(friend){
+    if(friend.avatarThumbnail){
+      friend.avatarThumbnail=ENV.GRIDFS_BASE_URL+friend.avatarThumbnail
+    }
+    else{
+    	friend.avatarThumbnail='images/profile.png'
+    }
+    console.log(friend.avatarThumbnail)
+  }
 
 	function getAll(){
 		return friends;
