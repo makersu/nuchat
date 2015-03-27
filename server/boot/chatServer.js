@@ -44,6 +44,22 @@ module.exports = function(app) {
         socket.join(userId);
       });
 
+      //
+      // update profile avatar
+      //
+      socket.on('user:profile:avatar', function (data, cb) {
+        console.log('user:profile:avatar')
+        console.log(data)
+        updateAvatar(data,cb)
+
+      });
+
+      //
+      // update profile
+      //
+      socket.on('user:profile', function (profile) {
+        console.log('user:profile')
+      });
 
       //
       // UserList request
@@ -63,7 +79,9 @@ module.exports = function(app) {
             console.log('friends:new')
             socket.emit('friends:new', {
               id: friend.id,
-              username: friend.username
+              username: friend.username,
+              avatarThumbnail: friend.avatarThumbnail,
+              avatarOriginal: friend.avatarOriginal
             });
           });//_.each
 
@@ -446,6 +464,65 @@ module.exports = function(app) {
         });
       };//createRoomMessage
 
+      //updateAvatar
+      var updateAvatar = function(data,cb){
+
+        console.log(data.type)
+
+        var thumbnailFilename = Math.random().toString(36).substring(7)+'.png';
+        var thumbnailFilePath = '/tmp/'+thumbnailFilename//TODO
+
+        var start=moment()//
+        gm(data.file)
+        .options({imageMagick: true})
+        .resize(80, 80)
+        //.quality(90) //
+        .noProfile() //
+        .write(thumbnailFilePath, function (err) {
+          var end1=moment()//
+          console.log("gm.resize moment end1.diff(start)="+end1.diff(start))//
+          if(err){
+            console.log(err)
+          }
+          end1=moment()//
+          writeFileWithThumbnailToGridStore(data,thumbnailFilePath,function(err,originalFileId, thumbnailFileId){
+            if(err){
+              console.log(err)
+              return
+            }
+            var end2=moment()
+            console.log("image writeFileWithThumbnailToGridStore moment end2.diff(end1)="+end2.diff(end1))
+
+            var profile={}
+            profile.id=data.userId
+            profile.avatarThumbnail=thumbnailFileId
+            profile.avatarOriginal=originalFileId
+            //cb(profile)//
+            updateUserAvatar(profile,cb)//
+
+          })//end writeFileWithThumbnailToGridStore
+        });//end write
+      };//end updateAvatar
+
+      var updateUserAvatar =function(profile,cb){
+        console.log('updateUserAvatar')
+        console.log(profile)
+        if(profile.id){
+          app.models.user.updateAll({id:profile.id},profile, function(err,obj){
+            if(err){
+              console.log(err)
+            }
+            console.log(obj)
+            if(obj){
+              cb(err, profile);//
+            }
+          });
+        }
+        
+
+      }
+
+      //createRoomImageMessage
       var createRoomImageMessage = function(data){
 
         console.log(data.type)
