@@ -1,11 +1,84 @@
-function ObjService($cordovaCapture, LBSocket) {
+function ObjService($cordovaCapture, LBSocket, AccountService) {
 	var _currentRoom = null;
 	var _currentOwner = null;
-
+  var user=AccountService.user
+  // updateAvatar();
+  
 	function init(room, user) {
 		_currentRoom = room;
 		_currentOwner = user;
 	}
+
+  function chooseAvatar(success, error, options) {
+    console.log('chooseAvatar')
+    window.imagePicker.getPictures(
+      function(results) {
+        success.call(this, results);
+        // Uploading all the files.
+        angular.forEach(results, function(photo) {
+          console.log('Image URI: ' + photo);
+          uploadAvatar(photo);
+        });
+      }, error, options);
+  }
+
+  function captureAvatar(success, error) {
+    $cordovaCapture.captureImage()
+      .then(function(imgData) {
+        success.call(this, imgData[0].fullPath);
+        // Uploading the captured.
+        uploadAvatar(imgData[0].fullPath);
+      }, error);
+  }
+
+  function uploadAvatar(localUri) {
+    console.log('uploadAvatar')
+    window.resolveLocalFileSystemURL(
+      localUri, 
+      function(fileEntry){
+        // console.log(fileEntry);
+        fileEntry.file(function(file) {
+          //console.log(file)
+          var reader = new FileReader();
+
+          reader.onloadend = function(event) {
+            console.log('onload')
+            var data = {};
+            // console.log(User.getCachedCurrent())
+            data.userId = user.id;
+            data.file = event.target.result;
+            data.type = file.type;
+            //console.log(data);
+            console.log('user:profile:avatar')
+            LBSocket.emit('user:profile:avatar', data , function(err,profile){
+              console.log(profile)
+              if(profile){
+                // user.avatarOriginal=profile.avatarOriginal
+                // user.avatarThumbnail=profile.avatarThumbnail
+                AccountService.updateAvatar(profile)
+              }
+            });
+          }//onloadend
+
+          reader.readAsArrayBuffer(file);
+        });
+      }, 
+      function(error){
+        console.error(error)
+      }
+    );//end resolveLocalFileSystemURL
+  }
+
+  // function updateAvatar(profile){
+  //   if(profile){
+  //     user.avatarOriginal=profile.avatarOriginal
+  //     user.avatarThumbnail=profile.avatarThumbnail
+  //   }
+  //   if(user.avatarThumbnail){
+  //     user.avatarThumbnail=ENV.GRIDFS_BASE_URL+user.avatarThumbnail
+  //     console.log(user.avatarThumbnail)
+  //   }
+  // }
 
 	function choosePhotos(success, error, options) {
 		window.imagePicker.getPictures(
@@ -48,7 +121,7 @@ function ObjService($cordovaCapture, LBSocket) {
       function(fileEntry){
         // console.log(fileEntry);
         fileEntry.file(function(file) {
-          console.log(file)
+          //console.log(file)
           var reader = new FileReader();
 
           reader.onloadend = function(event) {
@@ -84,6 +157,7 @@ function ObjService($cordovaCapture, LBSocket) {
 		capturePhoto: capturePhoto,
 		captureAudio: captureAudio,
 		captureVideo: captureVideo,
+    chooseAvatar: chooseAvatar
 	};
 
 	return _service;
