@@ -1,10 +1,11 @@
-function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket, RoomService, $localstorage, $q, $filter,
+function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, RoomService, $localstorage, $q, $filter,
             $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatTags, METATYPE, ENV,
-            $ionicModal, $location) {
+            $ionicModal, $location, FriendService) {
 
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   RoomService.getRoomMessages($stateParams.roomId)
+  $scope.friends=FriendService.getAll();
 
   // var data = {}
   // data.roomId=$stateParams.roomId
@@ -29,6 +30,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
   var audioInterval = null;
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
+  console.log($scope.currentUser)//
   $scope.input = {};
   $scope.messageOptions = {
     audioSetting: { 

@@ -5,7 +5,7 @@
 				Account details
 			</div>
 			<div class="item item-thumbnail-left">
-				<img ng-src="{{currentUser.avatar}}"/>
+				<img src="{{ currentUser.avatarThumbnail || 'images/profile.png' }}" ng-click="openMetaMenu()">
 				<p>Username: {{currentUser.username}}</p>
 				<p>Email: {{currentUser.email}}</p>
 				<p>Created: {{currentUser.created | date:'medium'}}</p>
@@ -15,4 +15,12 @@
 			Logout
 		</button>
 	</ion-content>
+	<script id="metamenu.html" type="text/ng-template">
+	<grid-menu>
+	<div class="row">
+	<div class="col tab-item" ng-click="chooseAvatar()"><i class="icon ion-image"></i>{{ ::'SEND_PHOTO' | translate }}</div>
+	<div class="col tab-item" ng-click="captureAvatar()"><i class="icon ion-camera"></i>{{ ::'CAPTURE_PHOTO' | translate }}</div>
+	</div>
+	</grid-menu>
+	</script>
 </ion-view>
