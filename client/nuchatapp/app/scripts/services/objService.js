@@ -1,4 +1,4 @@
-function ObjService($cordovaCapture, LBSocket, AccountService) {
+function ObjService($cordovaCapture, $cordovaCamera, LBSocket, AccountService) {
 	var _currentRoom = null;
 	var _currentOwner = null;
   var user=AccountService.user
@@ -10,16 +10,20 @@ function ObjService($cordovaCapture, LBSocket, AccountService) {
 	}
 
   function chooseAvatar(success, error, options) {
-    console.log('chooseAvatar')
-    window.imagePicker.getPictures(
-      function(results) {
-        success.call(this, results);
-        // Uploading all the files.
-        angular.forEach(results, function(photo) {
-          console.log('Image URI: ' + photo);
-          uploadAvatar(photo);
-        });
-      }, error, options);
+    console.log('chooseAvatar');
+    var cameraOptions = { sourceType: Camera.PictureSourceType.PHOTOLIBRARY,
+                          correctOrientation: true, allowEdit: true,
+                          mediaType: Camera.MediaType.PICTURE };
+    angular.forEach(options, function(value, opt) {
+      cameraOptions[opt] = value;
+    });
+    $cordovaCamera.getPicture(cameraOptions)
+      .then(function(result) {
+        success.call(this, result);
+        // Uploading the chosen file.
+        console.log('Image URI: ' + result);
+        uploadAvatar(result);
+      }, error);
   }
 
   function captureAvatar(success, error) {

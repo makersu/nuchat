@@ -60,7 +60,8 @@ function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountS
           $scope.closeMetaMenu();
         }
       }, errorHandler, {
-        width: 800
+        targetWidth: 800,
+        targetHeight: 800
       }
     );
   };
