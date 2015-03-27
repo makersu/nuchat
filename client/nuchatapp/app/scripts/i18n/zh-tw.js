@@ -19,6 +19,7 @@ var chtTranslate = function ($translateProvider) {
 		TAGS: '標籤',
 		MANAGE_TAGS: '管理標籤',
 		SEARCH_OR_ADD_TAGS: '搜尋/新增標籤',
+		TAGS_FILTER: '標籤篩選',
 
 		// Meta Menu
 		SEND_PHOTO: '傳送圖片',

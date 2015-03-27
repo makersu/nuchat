@@ -1,9 +1,9 @@
-function DirectoryCtrl($scope, $rootScope, $state, $stateParams, RoomService, $timeout) {
+function DirectoryCtrl($scope, $rootScope, $state, $stateParams, RoomService, $timeout, $NUChatTags) {
 	/* Variables */
 	// Private
 
 	// Scope public
-	$scope.expanded = false;
+	$scope.itemList = null;
 
 	/* Methods */
 	// Global
@@ -11,6 +11,9 @@ function DirectoryCtrl($scope, $rootScope, $state, $stateParams, RoomService, $t
 	// Private
 
 	// Scope Public
+	$scope.filterTags = function() {
+		$rootScope.editTags($NUChatTags.getTagList(), false);
+	};
 
 	/* Onload */
 	RoomService.setCurrentRoom($stateParams.roomId);

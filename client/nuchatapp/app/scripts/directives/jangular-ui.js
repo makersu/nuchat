@@ -188,7 +188,7 @@
 
 				// Appending the summary block after the links.
 				function parseLink(links) {
-					console.log(links);
+					// console.log(links);
 					var q = $q.defer();
 					var cacheView = { id: scope.msg.id };
 					scope.msg.type = METATYPE.LINK;
@@ -769,11 +769,13 @@
 			restrict: 'E',
 			replace: true,
 			transclude: true,
+			scope: {
+				isFlipped: '=?'
+			},
 			template: '<div class="flip-container">'+
 									'<div class="flip-item" ng-class="{\'flipped\': isFlipped}" ng-transclude></div>'+
 								'</div>',
 			link: function(scope, elem, attrs) {
-				scope.isFlipped = false;
 				var flipEvent = attrs.flipEvent || 'hold';
 				var $flipItem = angular.element(elem[0].querySelector('.flip-item'));
 				var flipping = function(event) {
@@ -835,7 +837,7 @@
   			}
   			
 				applyView();
-				
+
   			// scope.$watch('contentObj', function(newVal, oldVal) {
   			// 	if (newVal && newVal !== oldVal) {
   			// 		console.log('urlView: ');

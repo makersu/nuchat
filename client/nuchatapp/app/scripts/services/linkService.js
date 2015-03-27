@@ -11,11 +11,10 @@ function LinkService($filter, METATYPE) {
     }
   }
 
-  function remove(id) {
-    var links = $filter('filter')(_list, { id: id });
+  function remove(linkId) {
+    var links = $filter('filter')(_list, { id: linkId });
     if (links.length > 0) {
-      var idx = _list.indexOf(links);
-      consol.log(idx);
+      var idx = _list.indexOf(links[0]);
       _list.splice(idx, 1);
     }
   }

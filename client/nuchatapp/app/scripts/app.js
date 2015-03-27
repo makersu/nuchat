@@ -37,8 +37,14 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     function clearSearchTags() {
       $rootScope.search = {};
     }
-    $rootScope.editTags = function(message) {
+    $rootScope.editTags = function(message, manageTags) {
+      if (!message) {
+        console.error('No message to edit!');
+        return
+      }
       $rootScope.currentMsg = message;
+      $rootScope.manageTags = manageTags || false;
+      $rootScope.modalTagTitle = $rootScope.manageTags ? $filter('translate')('MANAGE_TAGS') : $filter('translate')('TAGS_FILTER');
       $rootScope.tagModal.show();
     };
     $rootScope.addTag = function() {
@@ -48,6 +54,10 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     $rootScope.removeTag = function(idx) {
       $NUChatTags.remove($rootScope.currentMsg, idx);
       clearSearchTags();
+    };
+    $rootScope.filterByTag = function() {
+      $NUChatTags.filterList();
+      $rootScope.$broadcast('onTagFiltered');
     };
     $rootScope.closeTagsModal = function() {
       $rootScope.search = {};

@@ -49,10 +49,31 @@ function brief($filter, $checkFormat) {
 	return briefFilter;
 }
 
+function tagFilter() {
+	return function(items, tags) {
+		if (tags.length == 0) {
+			return items;
+		}
+		return items.filter(function(item) {
+			if (item.tags) {
+				var filtered = true;
+				angular.forEach(tags, function(tag) {
+					console.log(item.tags.indexOf(tag.name));
+					filtered &= item.tags.indexOf(tag.name) > -1;
+				});
+				if (filtered) {
+					return item;
+				}
+			}
+		});
+	};
+};
+
 angular.module('Nuchatapp.filters', [])
 	.filter('amChatCalendar', ['moment', '$filter', amChatCalendar])
 	.filter('amChatGrouping', ['moment', '$filter', amChatGrouping])
 	.filter('brief', ['$filter', '$checkFormat', brief])
+	.filter('tagFilter', tagFilter)
 	.filter('nl2br', ['$filter',
 	  function($filter) {
 	    return function(data) {

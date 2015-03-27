@@ -181,6 +181,11 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
     $scope.editing = false;
   };
 
+  /* Tags functions */
+  $scope.editTags = function(msg) {
+    $rootScope.editTags(msg, true);
+  };
+
   /* Trigger functions */
   $scope.viewCalendar = function(callback) {
     $scope.selectTime = true;
@@ -228,12 +233,14 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, Room, LBSocket
 
   // Watchers
   $scope.$watchCollection('room.messages', function(newVal, oldVal) {
-    $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
-      return $filter('amChatGrouping')(msg.created);
-    });
-    // Open the latest group.
-    if ($scope.room.groupedMessages.length > 0) {
-      $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].open = true;
+    if (newVal) {
+      $scope.room.groupedMessages = $filter('groupBy')(newVal, 'created', function(msg) {
+        return $filter('amChatGrouping')(msg.created);
+      });
+      // Open the latest group.
+      if ($scope.room.groupedMessages.length > 0) {
+        $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].open = true;
+      }
     }
   });
 

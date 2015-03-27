@@ -19,6 +19,7 @@ var enTranslate = function ($translateProvider) {
 		TAGS: 'Tags',
 		MANAGE_TAGS: 'Manage Tags',
 		SEARCH_OR_ADD_TAGS: 'Search/Add Tags',
+		TAGS_FILTER: 'Tags Filter',
 
 		// Meta Menu
 		SEND_PHOTO: 'Send Photos',
