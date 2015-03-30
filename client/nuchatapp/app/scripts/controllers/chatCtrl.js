@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatTags, METATYPE, ENV,
+            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
             $ionicModal, $location, FriendService) {
 
 	console.log('ChatCtrl');
@@ -208,6 +208,9 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   $NUChatObject.init($scope.room, $scope.currentUser);
   console.log($scope.room)//
 
+  // Reset the NUChatLinks
+  $NUChatLinks.reset();
+
   // Reading unread messages from storage(or TODO: DB?)
   // var unreadMessages = $localstorage.getObject($scope.room.id);
   // console.log(unreadMessages)//
@@ -272,10 +275,10 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
     // console.log($stateParams.roomId);
     // console.log(data.roomId);
     // Saving the message into the Directory by type.
-    scrollHandle.scrollBottom();
+    if (scrollHandle) scrollHandle.scrollBottom();
   });
-  $scope.$on('modal.hidden', function() {
-  });
+  // $scope.$on('modal.hidden', function() {
+  // });
 
     //this.sendMessage = function(message) {
     //    self.socket.emit('room:messages:new', message);

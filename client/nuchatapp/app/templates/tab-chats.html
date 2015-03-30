@@ -9,7 +9,7 @@
     </ion-refresher>
     <ion-list>
       <ion-item class="item-avatar" ng-repeat="room in availableRooms track by $index" type="item-text-wrap" ng-click="goToRoom(room.id)">
-        <img src="{{ room.profile || 'images/profile.png' }}">
+        <img ng-src="{{ room.profile || 'images/profile.png' }}">
         {{room.name}}
         <p>{{ room.latestMessage | brief }}</p>
         <span class="timestamp">{{ room.latestMessage.created | amChatCalendar }}</span>

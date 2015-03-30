@@ -1,4 +1,4 @@
-function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $rootScope) {
+function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout) {
 	var FIXED_TO_TOP_OFFSET = 105;
 	var CONTAINER_INIT_HEIGHT;
 	var CONTAINER_FIXED_HEIGHT;
@@ -10,6 +10,7 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 	var _container = null;
 	var _lastY;
 	var _cummulatedDiff = 0;
+	var _scrollView = null;
 
 	// function getScrollView(selector) {
 	// 	if (selector) {
@@ -21,8 +22,21 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 	// 	var scrollView = getScrollView(selector);
 	// 	return scrollView.getPosition();
 	// }
+	function setContainer(containerSelector) {
+		// Reset the content container to avoid the cached.
+		if (_scrollView) {
+			// console.log(_scrollView);
+			_container = _scrollView[0].querySelector(containerSelector);
+			// console.log(_container);
+			setContainerHeight(CONTAINER_FIXED_HEIGHT);
+		}
+	}
 	function setContainerHeight(h) {
+		// if (!_container) _container = _scrollView[0].querySelector(_containerSelector);
 		angular.element(_container).css('height', h+'px');
+		resize();
+	}
+	function resize() {
 		var scrollHandles = $filter('filter')($ionicScrollDelegate._instances, {$$delegateHandle: 'dirScrollHandle'});
 		if (scrollHandles.length) {
 			var dirScrollHandle = scrollHandles[0];
@@ -36,7 +50,7 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 	}
 	function getCoverHeight() {
 		if (!_cover) {
-			_cover = document.querySelector('.cover');
+			_cover = _scrollView[0].querySelector('.cover');
 		}
 		return _cover.offsetHeight;
 	}
@@ -45,19 +59,19 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 	}
 	function getCoverImg() {
 		if (!_coverImg) {
-			_coverImg = document.querySelector('.cover img');
+			_coverImg = _scrollView[0].querySelector('.cover img');
 		}
 		return _coverImg;
 	}
 	function getDirTabsHeight() {
 		if (!_dirTabs) {
-			_dirTabs = document.querySelector('.directory .tabs');
+			_dirTabs = _scrollView[0].querySelector('.directory .tabs');
 		}
 		return _dirTabs.offsetHeight;
 	}
 	function getDirTabsTop() {
 		if (!_dirTabs) {
-			_dirTabs = document.querySelector('.directory .tabs');
+			_dirTabs = _scrollView[0].querySelector('.directory .tabs');
 		}
 		return _dirTabs.offsetTop;
 	}
@@ -85,11 +99,11 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 			// console.log(_cummulatedDiff);
 			var radius = 10*_cummulatedDiff/FIXED_TO_TOP_OFFSET;
 			$imageFilters.cssBlur(coverImg, radius);
-			setContainerHeight( CONTAINER_INIT_HEIGHT+(CONTAINER_FIXED_HEIGHT-CONTAINER_INIT_HEIGHT)*_cummulatedDiff/FIXED_TO_TOP_OFFSET );
+			// setContainerHeight( CONTAINER_INIT_HEIGHT+(CONTAINER_FIXED_HEIGHT-CONTAINER_INIT_HEIGHT)*_cummulatedDiff/FIXED_TO_TOP_OFFSET );
 		} else if (_cummulatedDiff >= FIXED_TO_TOP_OFFSET) {
 			setCoverHeight(_coverOriginalHeight - FIXED_TO_TOP_OFFSET);
 			setDirTabsTop(_dirTabsOriginalTop - FIXED_TO_TOP_OFFSET);
-			setContainerHeight(CONTAINER_FIXED_HEIGHT);
+			// setContainerHeight(CONTAINER_FIXED_HEIGHT);
 		} else if (_cummulatedDiff <= 0) {
 			reset();
 		}
@@ -101,7 +115,7 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 		if (!_dirTabsOriginalTop) {
 			_dirTabsOriginalTop = getDirTabsTop();
 		}
-		var coverImg = document.querySelector('.cover img');
+		var coverImg = _scrollView[0].querySelector('.cover img');
 		setCoverHeight(_coverOriginalHeight);
 		setDirTabsTop(_dirTabsOriginalTop);
 		// Un-Blur effects
@@ -112,13 +126,21 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 			CONTAINER_INIT_HEIGHT = verge.viewportH()-_coverOriginalHeight-getDirTabsHeight();
 			CONTAINER_FIXED_HEIGHT = CONTAINER_INIT_HEIGHT+FIXED_TO_TOP_OFFSET;
 		}
-		setContainerHeight(CONTAINER_INIT_HEIGHT);
+		// if (_container) {
+		setContainerHeight(CONTAINER_FIXED_HEIGHT);
+		// }
 	}
 	function bindScrollToFixed(containerSelector, viewSelector) {
-		_container = document.querySelector(containerSelector);
-		var view = angular.element(document.querySelector(viewSelector));
-		reset();
-		view.on('touchmove', function(e) {
+		// Reset the scroll view to avoid the cached.
+		_scrollView = angular.element(document.querySelector(viewSelector));
+		_container = _scrollView[0].querySelector(containerSelector);
+		// Reset the cover image to avoid the cached.
+		_cover = _scrollView[0].querySelector('.cover');
+		_coverImg = _scrollView[0].querySelector('.cover img');
+		// Reset the tabs to avoid the cached.
+		_dirTabs = _scrollView[0].querySelector('.directory .tabs');
+		// Binding the touch events.
+		_scrollView.off('touchmove').on('touchmove', function(e) {
 			var currentY = e.touches[0].clientY;
 	    if (currentY > _lastY) {
 	    	// Move down
@@ -129,7 +151,7 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 	    }
 	    _lastY = currentY;
 		});
-		view.on('touchend', function() {
+		_scrollView.off('touchend').on('touchend', function() {
 			_lastY = undefined;
 		});
 	}
@@ -137,10 +159,12 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout, $
 	var _service = {
 		// getScrollView: getScrollView,
 		// getFamousScrollPosition: getFamousScrollPosition,
+		setContentContainer: setContainer,
 		getCoverHeight: getCoverHeight,
 		setCoverHeight: setCoverHeight,
 		scrollToFixed: scrollToFixed,
 		bindScrollToFixed: bindScrollToFixed,
+		resize: resize,
 		reset: reset
 	}
 

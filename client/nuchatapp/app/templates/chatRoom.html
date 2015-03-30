@@ -2,7 +2,7 @@
   <ion-content has-header="true" padding="true">
 	</ion-content>
 </ion-view> -->
-<ion-view id="userMessagesView" class="flip" cache-view="false" title="{{ room.name }}">
+<ion-view id="userMessagesView" title="{{ room.name }}">
 
 	<div class="loader-center" ng-if="!doneLoading">
 		<div class="loader">
@@ -101,7 +101,7 @@
 		  	<div class="col tab-item" ng-click="captureVoice()"><i class="icon ion-mic-a"></i>{{ ::'VOICE_MESSAGE' | translate }}</div>
 		  </div>
 		  <div class="row">
-		  	<div class="col tab-item" ng-click="captureVideo()"><i class="icon ion-ios7-videocam"></i>{{ ::'CAPTURE_VIDEO' | translate }}</div>
+		  	<div class="col tab-item" ng-click="captureVideo()"><i class="icon ion-ios-videocam"></i>{{ ::'CAPTURE_VIDEO' | translate }}</div>
 		  	<div class="col tab-item" ng-click="capturePhoto()"></div>
 		  	<div class="col tab-item" ng-click="captureVoice()"></div>
 		  </div>

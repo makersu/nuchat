@@ -27,10 +27,15 @@ function LinkService($filter, METATYPE) {
     return _list;
   }
 
+  function reset() {
+    _list = [];
+  }
+
 	var _service = {
 		getLinks: getLinks,
 		push: push,
 		remove: remove,
+    reset: reset,
 	};
 
 	return _service;

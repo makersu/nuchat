@@ -21,10 +21,15 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 	};
 
 	/* Onload */
-	$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
 	// Events
-	$timeout(function() {
-		$scrolls.bindScrollToFixed('.directory .scroll-content', '.flip');
+	$scope.$on('$ionicView.loaded', function() {
+		console.log('link view loaded');
+	});
+	$scope.$on('$ionicView.enter', function() {
+		console.log('enter link view');
+		$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
+		$scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
+		$scrolls.resize();
 	});
 
 	$scope.$on('onTagFiltered', function() {

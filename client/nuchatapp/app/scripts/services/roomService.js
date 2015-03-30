@@ -11,7 +11,8 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
     		room.name=FriendService.get(room.ownerId).username
     	}
     	else{
-    		room.name=FriendService.get(room.friend).username
+    		var friend = FriendService.get(room.friend);
+    		room.name = friend ? friend.username : '';
     	}
     }
 		//console.log(room);

@@ -191,7 +191,8 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
           templateUrl: 'templates/directory.html',
           controller: 'DirectoryCtrl'
         }
-      }
+      },
+      cache: false
     })
     .state('tab.directory.article', {
       url: '/article',
@@ -200,8 +201,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
           templateUrl: 'templates/dir-article.html',
           controller: 'DirArticleCtrl'
         }
-      },
-      cache: false
+      }
     })
     .state('tab.directory.files', {
       url: '/files',
@@ -220,8 +220,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
           templateUrl: 'templates/dir-links.html',
           controller: 'DirLinksCtrl'
         }
-      },
-      cache: false
+      }
     })
     .state('tab.directory.calendar', {
       url: '/calendar',
