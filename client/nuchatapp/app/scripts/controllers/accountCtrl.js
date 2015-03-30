@@ -1,24 +1,15 @@
-function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountService) {
+function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountService, User, ENV) {
   console.log('AccountCtrl')
+ 
+  $scope.currentUser = User.getCachedCurrent()//
+  $scope.$watch(
+    function(){ return AccountService.getAvatarUrl() },
+    function(newVal) {
+      $scope.avatarUrl = newVal;
+      console.log($scope.avatarUrl)
+    }
+  );
 
-    $scope.currentUser = AccountService.user
-    console.log($scope.currentUser)
-
-    // if($scope.currentUser.avatarThumbnail){
-    //   console.log($scope.currentUser.avatarThumbnail)
-    //   $scope.currentUser.avatarThumbnail=ENV.GRIDFS_BASE_URL+$scope.currentUser.avatarThumbnail
-    //   console.log($scope.currentUser.avatarThumbnail)
-    // }
-
-  // $scope.avatar = function(avatarThumbnail){
-  //   console.log(avatarThumbnail)
-  //   var avatar='images/profile.png'
-  //   if(avatarThumbnail){
-  //     avatar = ENV.GRIDFS_BASE_URL+avatarThumbnail
-  //   }
-  //   console.log(avatar)
-  //   return avatar
-  // }
 
   /**
    * @name logout()
@@ -55,7 +46,6 @@ function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountS
     console.log('chooseAvatar')
     $NUChatObject.chooseAvatar(
       function(results) {
-        console.log(results)//
         if ($scope.metaMenu.isShown()) {
           $scope.closeMetaMenu();
         }
@@ -64,10 +54,9 @@ function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountS
       }
     );
   };
+  
   $scope.captureAvatar = function() {
     $NUChatObject.captureAvatar(function(imgUri) {
-      // $scope.input.text = imgUri;
-      // $scope.sendMessage();
       if ($scope.metaMenu.isShown()) {
         $scope.closeMetaMenu();
       }

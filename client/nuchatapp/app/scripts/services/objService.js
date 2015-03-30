@@ -1,8 +1,6 @@
-function ObjService($cordovaCapture, LBSocket, AccountService) {
+function ObjService($cordovaCapture, LBSocket, User, AccountService) {
 	var _currentRoom = null;
 	var _currentOwner = null;
-  var user=AccountService.user
-  // updateAvatar();
   
 	function init(room, user) {
 		_currentRoom = room;
@@ -13,7 +11,7 @@ function ObjService($cordovaCapture, LBSocket, AccountService) {
     console.log('chooseAvatar')
     window.imagePicker.getPictures(
       function(results) {
-        success.call(this, results);
+        success.call(this, results);//
         // Uploading all the files.
         angular.forEach(results, function(photo) {
           console.log('Image URI: ' + photo);
@@ -25,7 +23,8 @@ function ObjService($cordovaCapture, LBSocket, AccountService) {
   function captureAvatar(success, error) {
     $cordovaCapture.captureImage()
       .then(function(imgData) {
-        success.call(this, imgData[0].fullPath);
+        success.call(this, imgData[0].fullPath);//
+        console.log(imgData[0].fullPath);
         // Uploading the captured.
         uploadAvatar(imgData[0].fullPath);
       }, error);
@@ -44,18 +43,14 @@ function ObjService($cordovaCapture, LBSocket, AccountService) {
           reader.onloadend = function(event) {
             console.log('onload')
             var data = {};
-            // console.log(User.getCachedCurrent())
-            data.userId = user.id;
+            data.userId = User.getCachedCurrent().id;//refactoring?
             data.file = event.target.result;
             data.type = file.type;
-            //console.log(data);
             console.log('user:profile:avatar')
             LBSocket.emit('user:profile:avatar', data , function(err,profile){
               console.log(profile)
               if(profile){
-                // user.avatarOriginal=profile.avatarOriginal
-                // user.avatarThumbnail=profile.avatarThumbnail
-                AccountService.updateAvatar(profile)
+                AccountService.setAvatarUrl(profile)
               }
             });
           }//onloadend
@@ -68,17 +63,6 @@ function ObjService($cordovaCapture, LBSocket, AccountService) {
       }
     );//end resolveLocalFileSystemURL
   }
-
-  // function updateAvatar(profile){
-  //   if(profile){
-  //     user.avatarOriginal=profile.avatarOriginal
-  //     user.avatarThumbnail=profile.avatarThumbnail
-  //   }
-  //   if(user.avatarThumbnail){
-  //     user.avatarThumbnail=ENV.GRIDFS_BASE_URL+user.avatarThumbnail
-  //     console.log(user.avatarThumbnail)
-  //   }
-  // }
 
 	function choosePhotosUpload(success, error, options) {
 		window.imagePicker.getPictures(
@@ -137,7 +121,6 @@ function ObjService($cordovaCapture, LBSocket, AccountService) {
             data.size = file.size;
             console.log(data);
 
-            //LBSocket.emit('room:files:new', {image:event.target.result, room:$scope.room, ownerId: $scope.currentUser.id });
             LBSocket.emit('room:files:new', data);
           }
 
@@ -157,7 +140,8 @@ function ObjService($cordovaCapture, LBSocket, AccountService) {
 		capturePhotoUpload: capturePhotoUpload,
 		captureAudioUpload: captureAudioUpload,
 		captureVideoUpload: captureVideoUpload,
-    chooseAvatar: chooseAvatar
+    chooseAvatar: chooseAvatar,
+    captureAvatar: captureAvatar
 	};
 
 	return _service;

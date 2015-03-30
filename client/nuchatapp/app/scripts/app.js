@@ -241,7 +241,8 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
           templateUrl: 'templates/tab-account.html',
           controller: 'AccountCtrl'
         }
-      }
+      },
+      cache: false
     });
 
   // if none of the above states are matched, use this as the fallback
