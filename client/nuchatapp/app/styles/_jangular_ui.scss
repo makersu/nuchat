@@ -155,7 +155,7 @@ grid-menu {
 	    background: darken($collapseBtnHover_bg_color, 10%);
 	  }
 		&.expand {
-	    @include rotate3d(0, 0, 1, 360deg);
+	    @include rotateZ(360deg);
 	    z-index: 99;
 	    @for $i from 1 through 4 {
 	    	&.expand-left-#{$i} {

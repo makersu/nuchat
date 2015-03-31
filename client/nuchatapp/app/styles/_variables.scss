@@ -1,6 +1,8 @@
 /* Colors */
 $timestamp_color: #bdbdbd;
 $cover_font_color: #fff;
+$chatNotification_font_color: #fff;
+$chatNotification_bg_color: rgba(0, 0, 0, 0.4);
 
 /* Font Size */
 $timestamp_fontSize: 10px;
@@ -14,3 +16,4 @@ $cover_font_size: 20px;
 $directoryCover_height: 150px;
 $searchInput_height: 36px;
 $inputBar_height: 64px;
+$chatNotification_bottom: 44px;

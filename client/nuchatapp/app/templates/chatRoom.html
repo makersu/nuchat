@@ -18,7 +18,7 @@
     <a class="button button-clear icon fa fa-th-large" href="#/tab/directory/{{ room.id }}/article"></a>
   </ion-nav-buttons>
 
-	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll">
+	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()">
 
 		<accordion close-others="false">
 			<accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}">
@@ -27,7 +27,7 @@
 
 					<div ng-if="::currentUser.id !== message.ownerId">
 						<img ng-click="viewProfile(message)" class="profile-pic left" 
-						src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="onProfilePicError(this)" />
+						ng-src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="onProfilePicError(this)" />
 						<div class="chat-bubble left">
 							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll" linkinapp="{{ ::message.id }}">
 							</meta-msg>
@@ -68,6 +68,8 @@
 	<div ng-if="selectTime" class="trigger-func trigger-calendar">
 		<datepicker ng-model="dt" class="well well-sm" ng-change="setDate(dt)"></datepicker>
 	</div>
+
+	<div class="notification" ng-if="notify">{{ notify }}</div>
 
 	<form name="sendMessageForm" ng-submit="sendMessage(sendMessageForm)" novalidate>
 		<ion-footer-bar class="bar-stable item-input-inset message-footer" keyboard-attach>

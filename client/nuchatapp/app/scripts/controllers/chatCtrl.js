@@ -1,6 +1,6 @@
 function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, RoomService, $localstorage, $q, $filter,
             $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
-            $ionicModal, $location, FriendService) {
+            $ionicModal, $location, $utils, FriendService) {
 
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
@@ -28,6 +28,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   // Private
   var audioPlayer = null;
   var audioInterval = null;
+  var prevLatestMsg = null;
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
   console.log($scope.currentUser)//
@@ -198,15 +199,34 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
     };
   };
 
+  /* Events */
+  $scope.checkScroll = function() {
+    var bound = scrollHandle.element.scrollHeight;
+    var lastGroup = $scope.room.groupedMessages[$scope.room.groupedMessages.length-1];
+    if ( lastGroup.open && scrollHandle.getScrollPosition().top >= (bound/2) ) {
+      $scope.clearNotification();
+    }
+  };
+
+  /* Inline Notification */
+  $scope.clearNotification = function() {
+    $scope.$apply(function() {
+      $scope.notify = false;
+    });
+  };
+
   /* OnLoad */
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
   RoomService.setCurrentRoom($stateParams.roomId);
   $scope.room = RoomService.getCurrentRoom();
+  $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
+    return $filter('amChatGrouping')(msg.created);
+  });
+  console.log('enter controller');
   console.log($scope.room)//
 
   // Initializing NUChatObject service
   $NUChatObject.init($scope.room, $scope.currentUser);
-  console.log($scope.room)//
 
   // Reset the NUChatLinks
   $NUChatLinks.reset();
@@ -237,29 +257,57 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   $scope.messageOptions.audioSetting.play.fn = playAudio;
 
   // Watchers
-  $scope.$watchCollection('room.messages', function(newVal, oldVal) {
-    if (newVal) {
-      $scope.room.groupedMessages = $filter('groupBy')(newVal, 'created', function(msg) {
+  // $scope.$watchCollection('room.messages', function(newVal, oldVal) {
+  //   if (newVal) {
+  //     // Only refreshing the group when passing a new date.
+  //     console.log(newVal);
+  //     console.log(newVal[newVal.length-1]);
+  //     console.log(newVal[newVal.length-1].created);
+  //     if ( newVal.length > 1 && $utils.diffDate(newVal[newVal.length-1].created, newVal[newVal.length-2].created) ) {
+  //       $scope.room.groupedMessages = $filter('groupBy')(newVal, 'created', function(msg) {
+  //         return $filter('amChatGrouping')(msg.created);
+  //       });
+  //       // Open the latest group.
+  //       if ($scope.room.groupedMessages.length > 0) {
+  //         $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].open = true;
+  //       }
+  //     }
+  //   }
+  // });
+
+  // Register event listeners
+  $scope.$on('onNewMessage', function(event, args) {
+
+    if ( prevLatestMsg && !$utils.sameDate(args.msg.created, prevLatestMsg.created) ) {
+      var msgs = {};
+      msgs[args.msg.id] = args.msg;
+      var newGroup = $filter('groupBy')(msgs, 'created', function(msg) {
+          return $filter('amChatGrouping')(msg.created);
+      });
+      $scope.room.groupedMessages = $scope.room.groupedMessages.concat(newGroup);
+    } else if (!prevLatestMsg) {
+      $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
         return $filter('amChatGrouping')(msg.created);
       });
       // Open the latest group.
-      if ($scope.room.groupedMessages.length > 0) {
-        $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].open = true;
-      }
+      $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].open = true;
+    } else {
+      // Append to the latest group.
+      $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].items.push(args.msg);
     }
-  });
+    prevLatestMsg = args.msg;
 
-  // Register event listeners
-  $scope.$on('onNewMessage', function() {
-    $timeout(function() {
-      // Scrolling to the latest message.
-      scrollHandle.scrollBottom();
-      // $timeout(function() {
-      //   // For the late loading...
-      //   $NUChatDirectory.saveToDirectory($scope.room.messages[$scope.room.messages.length-1]);
-      //   scrollHandle.scrollBottom();
-      // }, 1000);
-    }, 500);
+    // Scrolling to the bottom if sent by self.
+    if (args.msg.ownerId !== $scope.currentUser.id) {
+      // var scrollHandles = $filter('filter')(scrollHandle._instances, {$$delegateHandle: 'userMessageScroll'});
+      // if (scrollHandles.length) {
+      //   var msgScrollHandle = scrollHandles[0];
+      // }
+      var spoke = $scope.friends[args.msg.ownerId];
+      $scope.notify = spoke.username+': '+$filter('brief')(args.msg);
+      console.log('set notify');
+    }
+
   });
   $scope.$on('urlViewLoaded', function(event, args) {
     console.log('urlViewLoaded');
@@ -268,33 +316,19 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
         var msg = $scope.room.messages[id];
         if (msg) {
           $NUChatDirectory.saveToDirectory(msg);
+          // if (scrollHandle && msg.ownerId === $scope.currentUser.id) {
+          //   scrollHandle.scrollBottom();
+          //   console.log('scroll to bottom');
+          // }
         }
       }
-    })
+    });
     // console.log(RoomService.get());
     // console.log($stateParams.roomId);
     // console.log(data.roomId);
     // Saving the message into the Directory by type.
-    if (scrollHandle) scrollHandle.scrollBottom();
   });
-  // $scope.$on('modal.hidden', function() {
-  // });
 
-    //this.sendMessage = function(message) {
-    //    self.socket.emit('room:messages:new', message);
-    //}
-
-    //$scope.messages=room.messages;
-/*
-    LBSocket.on('room:messages:new', function(message) {
-    	console.log('room:messages:new='+message)
-    	//$scope.room.messages.push(message)
-      RoomService.addMessage(message)
-
-			//self.addMessage(message);
-
-    });
-*/
   var footerBar = document.body.querySelector('#userMessagesView .bar-footer');
   var scroller = document.body.querySelector('#userMessagesView .scroll-content');
   // I emit this event from the monospaced.elastic directive, read line 480
@@ -315,10 +349,12 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   });
 
   // Getting the scroll delegate handle
-  var scrollHandle = $ionicScrollDelegate.$getByHandle('userMessageScroll');
+  var scrollHandle = null;
   $timeout(function() {
+    scrollHandle = $filter('filter')($ionicScrollDelegate._instances, {$$delegateHandle: 'userMessageScroll'})[0];//.$getByHandle('userMessageScroll');
     // Scrolling to the top of unread in initial.
     scrollHandle.scrollBottom();
+    $scope.clearNotification();
     // console.log('scroll bottom');
   });
 

@@ -180,8 +180,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       },
       onExit: function(RoomService) {
         RoomService.setCurrentRoom(-1);
-      },
-      cache: false
+      }
     })
     // Directory
     .state('tab.directory', {

@@ -27,6 +27,16 @@
   margin-bottom: 10px;
 }
 
+/* Message Container */
+#msgContainer {
+  .panel-group {
+    margin: 0;
+  }
+  ion-spinner {
+    // display: none;
+  }
+}
+
 /* Grouping */
 .panel-heading {
   padding: 0;
@@ -108,6 +118,16 @@
 .chat-bubble.right a.autolinker {
   color: #fff;
   font-weight: bold;
+}
+
+// Inline Notification
+.notification {
+  position: fixed;
+  bottom: $chatNotification_bottom;
+  color: $chatNotification_font_color;
+  padding: 5px 15px;
+  width: 100%;
+  background-color: $chatNotification_bg_color;
 }
 
 // Canvas

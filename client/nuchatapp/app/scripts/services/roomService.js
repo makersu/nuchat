@@ -85,7 +85,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		console.log(room);
 		room.messages[message.id]=message
 		console.log(room.messages)
-		$rootScope.$broadcast('onNewMessage');
+		$rootScope.$broadcast('onNewMessage', { msg: message });
   }
 
 

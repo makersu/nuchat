@@ -20,7 +20,7 @@ function DirectoryCtrl($scope, $rootScope, $state, $stateParams, RoomService, $t
 	$scope.room = RoomService.getCurrentRoom();
 	$scope.$on('$ionicView.loaded', function() {
 		$timeout(function() {
-			console.log('loaded view');
+			// console.log('loaded view');
     	$scrolls.bindScrollToFixed('.directory .scroll-content', '.flip[nav-view="active"]');
 		}, 500);
 	});

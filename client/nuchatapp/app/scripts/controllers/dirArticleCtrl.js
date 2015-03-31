@@ -30,18 +30,15 @@ function DirArticleCtrl($scope, $rootScope, $ionicModal, $scrolls, $timeout) {
   });
   $scope.$on('$ionicView.loaded', function() {
     $timeout(function() {
-      console.log('article view loaded');
+      // console.log('article view loaded');
       $scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
       $scrolls.reset();
     }, 500);
   });
   $scope.$on('$ionicView.enter', function() {
-    console.log('enter article view');
+    // console.log('enter article view');
     $scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
   });
-  $scope.$on('$ionicView.leave', function() {
-    $scrolls.reset();
-  })
   //Cleanup the modal when we're done with it!
   $scope.$on('$destroy', function() {
   	if ($scope.modal) {

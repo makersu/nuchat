@@ -23,10 +23,10 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 	/* Onload */
 	// Events
 	$scope.$on('$ionicView.loaded', function() {
-		console.log('link view loaded');
+		// console.log('link view loaded');
 	});
 	$scope.$on('$ionicView.enter', function() {
-		console.log('enter link view');
+		// console.log('enter link view');
 		$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
 		$scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
 		$scrolls.resize();
