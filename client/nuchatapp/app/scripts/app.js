@@ -209,8 +209,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
           templateUrl: 'templates/dir-files.html',
           controller: 'DirFilesCtrl'
         }
-      },
-      cache: false
+      }
     })
     .state('tab.directory.links', {
       url: '/links',
@@ -228,8 +227,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
           templateUrl: 'templates/dir-calendar.html',
           controller: 'DirCalendarCtrl'
         }
-      },
-      cache: false
+      }
     })
 
     .state('tab.account', {

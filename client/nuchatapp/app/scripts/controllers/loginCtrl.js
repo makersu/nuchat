@@ -1,4 +1,4 @@
-function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket) {
+function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService) {
   console.log('LoginCtrl');
 
   $scope.credentials = {};
@@ -38,11 +38,12 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
     $scope.loginResult = User.login({include: 'user', rememberMe: true}, $scope.credentials,
       function () {
         $scope.credentials={}
+        AccountService.setAvatarUrl()
         console.log('self:join');//
-        LBSocket.emit('self:join', User.getCachedCurrent().id);
+        LBSocket.emit('self:join', User.getCachedCurrent().id);//
 
         $ionicHistory.nextViewOptions({disableBack: true});//
-        console.log($location.nextAfterLogin)
+        console.log($location.nextAfterLogin)//
         var next = $location.nextAfterLogin || '/tab/chats';
         $location.nextAfterLogin = null;
         $location.path(next);

@@ -5,10 +5,10 @@
 				Account details
 			</div>
 			<div class="item item-thumbnail-left">
-				<img ng-src="{{ currentUser.avatarThumbnail || 'images/profile.png' }}" ng-click="openMetaMenu()">
-				<p>Username: {{currentUser.username}}</p>
-				<p>Email: {{currentUser.email}}</p>
-				<p>Created: {{currentUser.created | date:'medium'}}</p>
+				<img ng-src="{{ avatarUrl || 'images/profile.png' }}" ng-click="openMetaMenu()">
+				<p>Username: {{ currentUser.username }}</p>
+				<p>Email: {{ currentUser.email }}</p>
+				<p>Created: {{ currentUser.created | date:'medium' }}</p>
 			</div>
 		</div>
 		<button class="button button-block button-energized icon ion-log-out" ng-click="logout()">

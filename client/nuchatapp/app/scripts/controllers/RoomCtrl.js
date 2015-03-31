@@ -20,12 +20,13 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     $location.path('/tab/chats');
   };
 
-   $scope.doRefresh = function() {
+  $scope.doRefresh = function() {
     console.log('doRefresh');//
     $scope.availableRooms = RoomService.getAvailableRooms();
     //
     angular.forEach($scope.availableRooms, function(room) {
       if (isPrivate(room)) {
+        console.log(room);
         console.log( FriendService.get(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId) );
         room.profile = FriendService.get(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId).avatarThumbnail;
       }
@@ -40,7 +41,7 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
   };
 
   /* Onload */
-  $timeout(function() {
+  $scope.$on('$ionicView.enter', function() {
     // $scope.availableRooms = RoomService.getAvailableRooms();
     // console.log($scope.availableRooms);
     $scope.doRefresh();

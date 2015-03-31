@@ -1,22 +1,33 @@
 function AccountService(User, ENV) {
-	var user=User.getCachedCurrent()//
-	console.log(user)
-  updateAvatar();
 
-  function updateAvatar(profile){
-  	if(profile){
-  		user.avatarOriginal=profile.avatarOriginal
-  		user.avatarThumbnail=profile.avatarThumbnail
-  	}
-  	if(user.avatarThumbnail){
-  		user.avatarThumbnail=ENV.GRIDFS_BASE_URL+user.avatarThumbnail
-  		console.log(user.avatarThumbnail)
-  	}
+  var avatarUrl;
+
+  function getAvatarUrl(){
+    return avatarUrl;
   }
 
+  function setAvatarUrl(profile){
+    console.log('setAvatarUrl')
+    var avatarThumbnail;
+    if(profile){
+      avatarThumbnail=profile.avatarThumbnail
+    }
+    else{
+      avatarThumbnail=User.getCachedCurrent().avatarThumbnail
+    }
+
+    if(avatarThumbnail){
+      avatarUrl=ENV.GRIDFS_BASE_URL+avatarThumbnail
+    }
+    else{
+      avatarUrl=undefined;
+    }
+    console.log(avatarUrl)
+  }
+	
   var service = {
-		user: user,
-		updateAvatar: updateAvatar
+    getAvatarUrl: getAvatarUrl,
+    setAvatarUrl: setAvatarUrl
   };
 
   return service;
