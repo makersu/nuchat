@@ -5,7 +5,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
   RoomService.getRoomMessages($stateParams.roomId)
-  $scope.friends=FriendService.getAll();
+  $scope.friends=FriendService.friends;
 
   // var data = {}
   // data.roomId=$stateParams.roomId
