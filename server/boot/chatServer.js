@@ -205,6 +205,10 @@ module.exports = function(app) {
             console.log(err)
             cb(err)
           }
+	console.log(user.friends)//
+	if(!user.friends){
+		user.friends=[]
+	}
           var filter={
             fields: {id: true, username: true, email:true, avatarThumbnail:true }, 
             "where": {
@@ -214,14 +218,18 @@ module.exports = function(app) {
               ]
             }
           }
-          console.log(filter)
+          console.log(JSON.stringify(filter))
           app.models.user.find(filter,function(err,users){
             if(err)
             {
               console.log(err)
               cb(err)
             }
-            console.log(users)
+		console.log(users)//
+		if(!users){
+			console.log('!users');//
+			cb(null,[])
+		}
             for(var i=0;i<users.length;i++){
               user.friends.push(users[i].id)
             }
