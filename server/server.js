@@ -24,6 +24,8 @@ app.start = function() {
 if (require.main === module) {
   //app.start();
   app.sio = require('socket.io')(app.start());
+  var redis = require('socket.io-redis');
+  app.sio.adapter(redis({ host: 'localhost', port: 6379 }));
 /*
   app.io = require('socket.io')(app.start());
 
