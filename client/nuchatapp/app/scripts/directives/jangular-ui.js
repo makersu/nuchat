@@ -103,6 +103,7 @@
 				var _foldingThres = scope.metaOption.foldingThres || FOLDING_LINE_THRES;
 				var _remoteSrv = scope.metaOption.remote || ''; // Empty if use the local file for development...
 				var _originMsg = scope.message = scope.msg.text;
+				var _msgContent = elem.find('div');
 				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope.scrollHandle);
 
 				parse(scope.type)
@@ -274,15 +275,19 @@
 				function parseImg() {
 					// scope.msg.type = METATYPE.IMG;
 					scope.msg.isImg = true;
-					scope.message = _remoteSrv+scope.msg.thumbnailFileId//
-					scope.message = '<img id="img'+scope.msg.id+'" src="'+scope.message+'">';
+					scope.message = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
+					scope.uploading = !scope.msg.thumbnailFileId;
+					scope.message = '<div class="obj-container"><img id="img'+scope.msg.id+'" src="'+scope.message+'"></div>';
+					if (scope.uploading) {
+						_msgContent.append('<ion-spinner></ion-spinner>');
+					}
 				}
 
 				// Assuming the audio uri provided.
 				function parseAudio() {
 					// TODO: if audioSetting is not set, throw the error message.
 					// scope.msg.type = METATYPE.AUDIO;
-					var audioUrl = _remoteSrv+scope.msg.originalFileId;//
+					var audioUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
 
 					scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
 					elem.bind('click', function() {
@@ -311,7 +316,7 @@
 
 				function parseVideo() {
 					// scope.msg.type = METATYPE.VIDEO;
-					var videoUrl = _remoteSrv+scope.msg.originalFileId;//
+					var videoUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
 					scope.message = $sce.trustAsHtml('<video width="200" height="120" controls><source src="'+videoUrl+'"></video>');
 					console.log('parsing video');
 					console.log(scope.message);

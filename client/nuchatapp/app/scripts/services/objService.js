@@ -1,4 +1,4 @@
-function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountService, METATYPE) {
+function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountService, METATYPE, $utils) {
 	var _currentRoom = null;
 	var _currentOwner = null;
   
@@ -49,8 +49,7 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
             var data = {};
             data.userId = User.getCachedCurrent().id;//refactoring?
             data.file = event.target.result;
-            console.log(file);
-            data.type = file.type || METATYPE.IMG+'/jpeg';
+            data.type = file.type || $utils.getMimeType(file);
             //console.log(data);
 
             console.log('user:profile:avatar')
@@ -87,7 +86,7 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
       .then(function(imgData) {
         success.call(this, imgData[0].fullPath);
         // Uploading the captured.
-        uploadFile(imgData[0].fullPath, METATYPE.IMG);
+        uploadFile(imgData[0].fullPath);
       }, error);
 	}
 	function captureAudioUpload(success, error) {
@@ -95,18 +94,18 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
       .then(function(audioData) {
         success.call(this, audioData[0].localURL);
         // Uploading the captured.
-        uploadFile(audioData[0].localURL, METATYPE.AUDIO);
+        uploadFile(audioData[0].localURL);
       }, error);
 	}
 	function captureVideoUpload(success, error) {
 		$cordovaCapture.captureVideo()
       .then(function(videoData) {
-        success.call(this, videoData[0].localURL);
+        success.call(this, videoData[0].fullPath);
         // Uploading the captured.
-        uploadFile(videoData[0].localURL, METATYPE.VIDEO);
+        uploadFile(videoData[0].localURL);
       }, error);
 	}
-	function uploadFile(localUri, type) {
+	function uploadFile(localUri) {
 		window.resolveLocalFileSystemURL(
       localUri, 
       function(fileEntry){
@@ -124,7 +123,7 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
             data.ownerId = _currentOwner.id;
             data.file = event.target.result;
             data.filename = file.name;
-            data.type = file.type || type;
+            data.type = file.type || $utils.getMimeType(file);
             data.size = file.size;
             console.log(data);
 

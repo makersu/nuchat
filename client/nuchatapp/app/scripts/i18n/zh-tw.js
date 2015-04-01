@@ -10,6 +10,7 @@ var chtTranslate = function ($translateProvider) {
 		MORE: '更多',
 		LESS: '隱藏',
 		SHARE: '分享',
+		UPLOADING: '上傳中...',
 
 		// Messages
 		SENT_IMG: '傳送了圖片',

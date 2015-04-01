@@ -80,7 +80,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   //     //LBSocket.emit('room:messages:get', id);
   //   });
   // };
-  $scope.sendMessage=function(sendMessageForm){
+  $scope.sendMessage=function(isLocal){
     console.log('sendMessage');
 
     //console.log($stateParams.roomId)
@@ -89,8 +89,16 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
     $scope.input.ownerId = $scope.currentUser.id;
     console.log($scope.input);
 
-    //LBSocket.emit('room:messages:new', $scope.input);
-    RoomService.createMessage($scope.input)
+    if (isLocal) {
+      $scope.input.created = new Date();
+      RoomService.addMessage($scope.input);
+    } else {
+      //LBSocket.emit('room:messages:new', $scope.input);
+      RoomService.createMessage($scope.input);
+    }
+    $timeout(function() {
+      scrollHandle.scrollBottom();
+    });
 
     $scope.input={};
 
@@ -123,6 +131,12 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   $scope.choosePhoto = function() {
     $NUChatObject.choosePhotosUpload(
       function(results) {
+        // Sending message to local
+        angular.forEach(results, function(imgUri) {
+          $scope.input.text = imgUri;
+          $scope.input.type = METATYPE.IMG;
+          $scope.sendMessage(true);
+        });
         if ($scope.metaMenu.isShown()) {
           $scope.closeMetaMenu();
         }
@@ -133,8 +147,10 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   };
   $scope.capturePhoto = function() {
     $NUChatObject.capturePhotoUpload(function(imgUri) {
-      // $scope.input.text = imgUri;
-      // $scope.sendMessage();
+      // Sending message to local
+      $scope.input.text = imgUri;
+      $scope.input.type = METATYPE.IMG;
+      $scope.sendMessage(true);
       if ($scope.metaMenu.isShown()) {
         $scope.closeMetaMenu();
       }
@@ -142,8 +158,10 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   };
   $scope.captureVoice = function() {
     $NUChatObject.captureAudioUpload(function(audioUri) {
-      // $scope.input.text = audioUri;
-      // $scope.sendMessage();
+      // Sending message to local
+      $scope.input.text = audioUri;
+      $scope.input.type = METATYPE.AUDIO;
+      $scope.sendMessage(true);
       if ($scope.metaMenu.isShown()) {
         $scope.closeMetaMenu();
       }
@@ -151,8 +169,10 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   };
   $scope.captureVideo = function() {
     $NUChatObject.captureVideoUpload(function(videoUri) {
-      // $scope.input.text = videoUri;
-      // $scope.sendMessage();
+      // Sending message to local
+      $scope.input.text = videoUri;
+      $scope.input.type = METATYPE.VIDEO;
+      $scope.sendMessage(true);
       if ($scope.metaMenu.isShown()) {
         $scope.closeMetaMenu();
       }
@@ -210,7 +230,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
 
   /* Inline Notification */
   $scope.clearNotification = function() {
-    $scope.$apply(function() {
+    !$scope.$$phase && $scope.$apply(function() {
       $scope.notify = false;
     });
   };
@@ -345,7 +365,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
     newFooterHeight = (newFooterHeight > 44) ? newFooterHeight : 44;
     
     footerBar.style.height = newFooterHeight + 'px';
-    scroller.style.bottom = newFooterHeight + 'px'; 
+    // scroller.style.bottom = newFooterHeight + 'px'; 
   });
 
   // Getting the scroll delegate handle

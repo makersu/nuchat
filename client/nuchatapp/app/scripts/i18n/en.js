@@ -10,6 +10,7 @@ var enTranslate = function ($translateProvider) {
 		MORE: 'More',
 		LESS: 'Less',
 		SHARE: 'Share',
+		UPLOADING: 'Uploading...',
 
 		// Messages
 		SENT_IMG: 'Sent an image',

@@ -33,7 +33,26 @@
     margin: 0;
   }
   ion-spinner {
-    // display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    width: 100%;
+    height: 100%;
+    stroke: #fff;
+    svg {
+      width: 50%;
+      height: 50%;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      @include translate3d(-50%, -50%, 0);
+    }
+  }
+  .ion-play {
+    & + ion-spinner {
+      width: 85%;
+    }
   }
 }
 

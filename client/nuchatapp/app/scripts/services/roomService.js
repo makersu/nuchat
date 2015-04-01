@@ -1,4 +1,4 @@
-function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope) {
+function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat) {
 	var DEBUG = false;
 	console.log('RoomService');
 
@@ -43,7 +43,14 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   	updateLatestMessageInfo(newMessageInfo);
   	if (newMessageInfo.message.roomId == _currentRoomId && !$rootScope.isInBackground) {
   		// syncMessage(data.message)
-  		addMessage(newMessageInfo.message)
+  		// Checking the owner of the coming message, processing if not self or only text.
+  		if (newMessageInfo.message.ownerId != User.getCachedCurrent().id || !newMessageInfo.message.type) {
+  			addMessage(newMessageInfo.message);
+  		} else if ( $checkFormat.isImg(newMessageInfo.message.type) ||
+  								$checkFormat.isAudio(newMessageInfo.message.type) ||
+  								$checkFormat.isVideo(newMessageInfo.message.type) ) {
+  			$rootScope.$broadcast('uploaded');
+  		}
   	}
   	else{
   		var message=newMessageInfo.message
@@ -238,7 +245,8 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		setCurrentRoom: setCurrentRoom,
 		getCurrentRoom: getCurrentRoom,
 		getRoomMessages: getRoomMessages,
-		createMessage: createMessage
+		createMessage: createMessage,
+		addMessage: addMessage,
 	};
 
 	return service;
