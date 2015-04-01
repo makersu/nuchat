@@ -1,14 +1,14 @@
-function FriendCtrl($scope, $state, $ionicHistory, $location, User, LBSocket, FriendService, RoomService){
+function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User, LBSocket, FriendService, RoomService){
 	console.log('FriendCtrl');
 
-	$scope.friends = FriendService.getAll();
+	$scope.friends = FriendService.friends;
 
 	$scope.friendChat = function(friendId){
 		console.log(friendId);//
 
 		var privateroom={
-  		user:User.getCachedCurrent().id,
-  		friend:friendId
+  		user: User.getCachedCurrent().id,
+  		friend: friendId
   	}
 
   	LBSocket.emit('friend:join', privateroom, function(room) {
@@ -27,14 +27,72 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, User, LBSocket, Fr
 
   $scope.doRefresh = function() {
     console.log('doRefresh')
-    console.log('friends:get');
-    LBSocket.emit('friends:get');//callback once getall?
+    FriendService.getFriends();
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply()
   };
 
-  //TODO: refactoring move?
-  console.log('friends:get');//
-  LBSocket.emit('friends:get');
+  $ionicModal.fromTemplateUrl('templates/modals/searchFriendModal.html', function(modal) {
+    $scope.searchFriendModal = modal;
+    }, {
+      scope: $scope
+  });
+
+  $scope.showSearchFriendModal = function(){
+    $scope.searchFriendModal.show();
+  }
+
+  $scope.hideSearchFriendModal = function(){
+    $scope.searchFriendModal.hide();
+  }
+
+  $scope.search={}
+  //Refactoring
+  $scope.searchFriend = function(){
+    console.log($scope.search);
+    if(!$scope.search.text){
+      console.log('!$scope.search.text')
+      return;
+    }
+    var data={}
+    data.searchText=$scope.search.text
+    data.userId=User.getCachedCurrent().id
+    console.log(data)
+    console.log('friends:find')
+    LBSocket.emit('friends:find',data,function(err,results){
+      if(err){
+        console.log(err)
+      }
+      else{
+        console.log(results)
+        $scope.results=results;
+      }
+    });
+  }
+
+  $scope.addNewFriends = function(results){
+    console.log('addFriend')
+    console.log(results)
+    if(!results){
+      $scope.hideSearchFriendModal()
+      return;
+    }
+    var data={}
+    data.newFriends=[]
+
+    for(var i=0;i<results.length;i++){
+      if(results[i].selected){
+        console.log(results[i])
+        data.newFriends.push(results[i].id)//
+      }
+    }
+
+    data.userId=User.getCachedCurrent().id
+    //console.log(data)
+    FriendService.addNewFriends(data)
+    $scope.hideSearchFriendModal()
+  }
+
+  FriendService.getFriends();
 
 }

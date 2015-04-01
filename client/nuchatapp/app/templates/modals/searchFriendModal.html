@@ -1,0 +1,29 @@
+<ion-modal-view ng-class="{'transparent':!manageTags}">
+  <ion-header-bar align-title="left" class="bar-royal">
+    <div class="buttons">
+      <button class="button-icon icon ion-arrow-left-c" ng-click="hideSearchFriendModal()"></button>
+    </div>
+    <h1 class="title">{{ modalTagTitle }}</h1>
+    <div class="buttons">
+      <button class="button-icon icon ion-checkmark" ng-click="addNewFriends(results)"></button>
+    </div>
+  </ion-header-bar>
+  <ion-content>
+    <div class="bar bar-header item-input-inset">
+      <label class="item-input-wrapper">
+        <input type="text" placeholder="{{ ::'SEARCH_OR_ADD_FRIENDS' | translate }}" ng-model="search.text" ng-minlength="2">
+      </label>
+      <button class="button button-clear button-icon icon ion-ios-search" ng-click="searchFriend()" ></button>
+    </div>
+    <ion-list>
+      <div collection-repeat="result in results">
+        <ion-checkbox ng-model="result.selected">{{ result.username }}</ion-checkbox>
+      </div>
+    </ion-list>
+    <!-- <div class="padding">
+      <button class="button button-block button-royal" ng-click="addFriend(results)">
+        加入好友列表
+      </button>
+    </div> -->
+  </ion-content>
+</ion-modal-view>

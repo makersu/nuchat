@@ -61,32 +61,190 @@ module.exports = function(app) {
         console.log('user:profile')
       });
 
-      //
-      // UserList request
-      //
-      socket.on('friends:get', function (query) {
-        console.log('friends:get')
-        //console.log(app.models.User)
+      // //
+      // // UserList request
+      // //
+      // socket.on('friends:get', function (query) {
+      //   console.log('friends:get')
+      //   //console.log(app.models.User)
         
-        app.models.user.find(function(err,friends){
-          console.log(friends)
+      //   app.models.user.find(function(err,friends){
+      //     console.log(friends)
           
+      //     if(err){
+      //       console.log(err)
+      //     }
+      //     _.each(friends, function(friend) {
+      //       console.log(friend)
+      //       console.log('friends:new')
+      //       socket.emit('friends:new', {
+      //         id: friend.id,
+      //         username: friend.username,
+      //         avatarThumbnail: friend.avatarThumbnail,
+      //         avatarOriginal: friend.avatarOriginal
+      //       });
+      //     });//_.each
+
+      //   });//app.models.User.find
+      // })//socket.on
+
+      //
+      // get friends
+      //
+      socket.on('friends:get', function (data, cb) {
+        console.log('friends:get')
+        console.log(data)
+        
+        app.models.user.findById(data.userId,function(err,user){
           if(err){
             console.log(err)
+            cb(err)
           }
-          _.each(friends, function(friend) {
-            console.log(friend)
-            console.log('friends:new')
-            socket.emit('friends:new', {
-              id: friend.id,
-              username: friend.username,
-              avatarThumbnail: friend.avatarThumbnail,
-              avatarOriginal: friend.avatarOriginal
-            });
-          });//_.each
+          console.log(user)
 
-        });//app.models.User.find
+          var filter={
+            fields: {id: true, username: true, email:true, avatarThumbnail:true }, 
+            "where": { 
+                id:{ inq: user.friends}      
+            }
+          }
+          console.log(filter)
+
+          app.models.user.find(filter,function(err,friends){
+            if(err){
+              console.log(err)
+              cb(err)
+            }
+            console.log(friends)
+            cb(null,friends)
+          });//user.find
+        });//user.findById
       })//socket.on
+
+      //
+      // find friend
+      //
+      socket.on('friends:find', function (data, cb) {
+        console.log('friends:find')
+        console.log(data)
+
+        var filter={
+          fields: {id: true, username: true},
+          "where": { 
+              "and":[{id:{neq:data.userId}}]            
+          }
+        }
+
+        var orCondition = {"or":[]}
+        orCondition.or.push({"email":{"like": data.searchText } })
+        orCondition.or.push({"username":{"like": data.searchText } })
+
+        filter.where.and.push(orCondition)
+
+        console.log(filter)
+
+        app.models.user.find(filter,function(err,results){
+          if(err){
+            console.log(err)
+            cb(err)
+          }
+          else{
+            console.log(results)
+            cb(null,results)
+          }
+          
+        });//user.find 
+
+      });//socket.on 
+
+      // //
+      // // add new friend
+      // //
+      // socket.on('friends:new', function (data) {
+      //   console.log('friends:new')
+      //   console.log(data)
+      //   var start=moment()//
+      //   app.models.user.findById(data.userId,function(err,user){
+      //     console.log(user.friends)
+      //     if(!user.friends){
+      //       user.friends=[]
+      //     }
+      //     console.log(user.friends)
+
+      //     for(var i=0;i<data.newFriends.length;i++){
+      //       console.log(data.newFriends[i])
+      //       if(user.friends.indexOf(data.newFriends[i])==-1){
+      //         user.friends.push(data.newFriends[i])
+      //       }
+      //     }
+      //     console.log(user.friends)
+      //     user.save(function(err,obj){
+      //       var end=moment()//
+      //       console.log('end.diff(start)='+end.diff(start))
+      //       if(err){
+      //         console.log(err)
+      //       }
+      //       console.log(obj)
+
+
+      //     });
+
+      //   });//end findById
+
+      // });//socket.on
+
+      //
+      // add new friend
+      //
+      socket.on('friends:new', function (data, cb) {
+        console.log('on friends:new')
+        console.log(data)
+        app.models.user.findById(data.userId,function(err,user){
+          if(err)
+          {
+            console.log(err)
+            cb(err)
+          }
+	console.log(user.friends)//
+	if(!user.friends){
+		user.friends=[]
+	}
+          var filter={
+            fields: {id: true, username: true, email:true, avatarThumbnail:true }, 
+            "where": {
+              "and" : [
+                {id: {inq:data.newFriends}},
+                {id: {nin:user.friends}}
+              ]
+            }
+          }
+          console.log(JSON.stringify(filter))
+          app.models.user.find(filter,function(err,users){
+            if(err)
+            {
+              console.log(err)
+              cb(err)
+            }
+		console.log(users)//
+		if(!users){
+			console.log('!users');//
+			cb(null,[])
+		}
+            for(var i=0;i<users.length;i++){
+              user.friends.push(users[i].id)
+            }
+            console.log(user)
+            user.save(function(err,obj){
+              
+              if(err){
+                console.log(err)
+                cb(err)
+              }
+              cb(null,users)
+            });//user.save
+          });//user.find
+        });//user.findById
+      });//socket.on
 
 
       //
@@ -178,6 +336,12 @@ module.exports = function(app) {
         console.log('friend:join')
         console.log(data)
 
+        //create self room?
+        if(data.user==data.friend){
+          console.log('data.user==data.friend')
+          return;
+        }
+
         var filter={
           "where": { 
             "or" : [
@@ -217,7 +381,7 @@ module.exports = function(app) {
                 socket.emit('rooms:new', newroom);//
                 
                 //notify friend new room created
-                console.log('friends:new')
+                console.log('emit friends:new')
                 app.sio.sockets.to(newroom.friend).emit('friends:new', {
                   id: user.id,
                   username: user.username

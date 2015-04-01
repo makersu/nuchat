@@ -34,6 +34,10 @@ var enTranslate = function ($translateProvider) {
 		WRITE_SOMETHING_HERE: 'Writing something here...',
 		FILES: 'Files',
 		LINKS: 'Links',
-		CALENDAR: 'Calendar'
+		CALENDAR: 'Calendar',
+
+		// Friends
+		SEARCH_OR_ADD_FRIENDS: 'Search/Add Friends',
+
 	});
 };

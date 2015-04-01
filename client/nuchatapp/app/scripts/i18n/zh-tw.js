@@ -34,6 +34,9 @@ var chtTranslate = function ($translateProvider) {
 		WRITE_SOMETHING_HERE: '寫點什麼吧...',
 		FILES: '檔案',
 		LINKS: '連結',
-		CALENDAR: '行事曆'
+		CALENDAR: '行事曆',
+
+		// Friends
+		SEARCH_OR_ADD_FRIENDS: '搜尋好友',
 	});
 };
