@@ -2,36 +2,42 @@
 
 #ACCOUNT
 ##~~register~~
-##~~login~~
+##~~login with username~~
+##login with email
 ##~~show account info~~
 ##update account info
-##update avatar
+##~~update avatar~~
 ##update password
 ##third party login
 ##~~logout~~
 
 #FRIEND
-##get friends
-##add friend
-##search friend
+##~~get friends~~
+##~~add friend~~
+##~~search friend~~
+##unfriend
+##block user
 
 #ROOM
 ##~~create room~~
 ##~~get rooms joined~~
 ##add room member
+##remove room member
 ##show room members
 
 #MESSAGE
 ##show history messages
 ##~~show message~~
 ##~~add message~~
-##add url(card view)
+##~~add url(card view)~~
 ##add address(map view)
-##add pic
-##add file
+##~~add pic~~
+##~~add file~~
 ##add event/invitation(calendar view)
+##get email(email card view)
 ##message notification
 ##message read/unread
+##add message of open api?
 
 #Dev
 ```
