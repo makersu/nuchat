@@ -11,6 +11,7 @@
  *  5) Url(link) View
  *  6) Collapse Buttons
  *  7) Flip Item
+ *  8) Image Viewer
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
@@ -32,6 +33,10 @@
 		if (content) {
 			return content.toLowerCase().match(/(http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/~\+#]*[\w\-\@?^=%&amp;\/~\+#])?/);			
 		}
+	}
+
+	function isIOS() {
+		return device.platform == 'iOS';
 	}
 
 	// function isImg(content) {
@@ -86,7 +91,7 @@
 	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
 	 * 4) Video: ogg|mp4|webm (HTML 5 Video supports)
 	 */
-	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce) {
+	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
 		return {
 			restrict: 'EA',
 			scope: {
@@ -95,7 +100,7 @@
 				metaOption: '=',
 				scrollHandle: '@',
 			},
-			template: '<div class="content" ng-bind-html="message" id="{{ ::msg.id }}"></div>\
+			template: '<div class="content" id="{{ ::msg.id }}"></div>\
 								 <a class="extend" ng-if="hasMore && !extended" ng-click="extend()">...{{ ::\'MORE\' | translate }}</a>\
 								 <a class="extend" ng-if="extended" ng-click="hide()">...{{ ::\'LESS\' | translate }}</a>',
 			link: function(scope, elem, attrs) {
@@ -111,9 +116,15 @@
 						elem.append(view);
 					}, errorHandler);
 
+				// Registering events.
+				scope.$on('uploaded', function() {
+					scope.uploading = false;
+				});
+
 				scope.extend = function() {
 					scope.extended = true;
 					scope.message = $filter('nl2br')(_originMsg);
+					_msgContent.html('').append(scope.message);
 				};
 				scope.hide = function() {
 					scope.extended = false;
@@ -275,12 +286,13 @@
 				function parseImg() {
 					// scope.msg.type = METATYPE.IMG;
 					scope.msg.isImg = true;
-					scope.message = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
+					var imgSrc = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
 					scope.uploading = !scope.msg.thumbnailFileId;
-					scope.message = '<div class="obj-container"><img id="img'+scope.msg.id+'" src="'+scope.message+'"></div>';
-					if (scope.uploading) {
-						_msgContent.append('<ion-spinner></ion-spinner>');
-					}
+					var $imgElem = angular.element('<img id="img'+scope.msg.id+'" src="'+imgSrc+'">');
+					_msgContent.append($imgElem).append( $compile('<ion-spinner ng-if="uploading"></ion-spinner>' )(scope) );
+					$imgElem.on('click', scope.metaOption.imgSetting.clickHandler ? function() {
+						scope.metaOption.imgSetting.clickHandler(scope.msg.id);
+					} : {});
 				}
 
 				// Assuming the audio uri provided.
@@ -288,8 +300,10 @@
 					// TODO: if audioSetting is not set, throw the error message.
 					// scope.msg.type = METATYPE.AUDIO;
 					var audioUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
+					scope.uploading = !scope.msg.originalFileId;
 
-					scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
+					// scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
+					_msgContent.append( $compile('<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i><ion-spinner icon="lines" ng-if="uploading"></ion-spinner>' )(scope) );
 					elem.bind('click', function() {
 						scope.msg.isPlaying = !scope.msg.isPlaying;
 						setView();
@@ -314,26 +328,88 @@
 					});
 				}
 
+				function requestFullScreen(elem) {
+					if (elem.requestFullscreen) {
+					  elem.requestFullscreen();
+					} else if (elem.msRequestFullscreen) {
+					  elem.msRequestFullscreen();
+					} else if (elem.mozRequestFullScreen) {
+					  elem.mozRequestFullScreen();
+					} else if (elem.webkitRequestFullscreen) {
+					  elem.webkitRequestFullscreen();
+					}
+				}
+				function exitFullScreen(elem) {
+					if (elem.exitFullscreen) {
+					  elem.exitFullscreen();
+					} else if (elem.msExitFullscreen) {
+					  elem.msExitFullscreen();
+					} else if (elem.mozCancelFullScreen) {
+					  elem.mozCancelFullScreen();
+					} else if (elem.webkitExitFullscreen) {
+					  elem.webkitExitFullscreen();
+					}
+				}
+
 				function parseVideo() {
 					// scope.msg.type = METATYPE.VIDEO;
 					var videoUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
-					scope.message = $sce.trustAsHtml('<video width="200" height="120" controls><source src="'+videoUrl+'"></video>');
-					console.log('parsing video');
-					console.log(scope.message);
+					var thumbnailUrl = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
+					scope.uploading = !scope.msg.originalFileId;
+					var $videoElem = angular.element('<video class="video-thumb" poster="'+thumbnailUrl+'"><source src="'+videoUrl+'"></video>');
+					// $videoElem.on('loadeddata', function() {
+					// 	$videoElem[0].currentTime = 1;
+					// 	console.log('video loadeddata');
+					// 	console.log($videoElem[0].duration);
+					// 	console.log($videoElem[0].currentTime);
+					// });
+					$videoElem.on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
+				    var isFullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+				    if (isFullscreen) {
+							$videoElem.attr('controls', 'controls');
+				    	$playBtn.css('opacity', '0');
+				    } else {
+							$videoElem.removeAttr('controls');
+							$playBtn.css('opacity', '1');
+				    }
+					});
+					// $videoElem[0].src = videoUrl;
+					var $playBtn = angular.element('<i class="icon ion-play"></i>');
+					$playBtn.on('click', function() {
+						if ($videoElem[0].paused) {
+							$videoElem[0].play();
+							requestFullScreen($videoElem[0]);
+						} else {
+							$videoElem[0].pause();
+							exitFullScreen($videoElem[0]);
+						}
+					});
+					_msgContent.append($videoElem);
+					if (!isIOS()) {
+						_msgContent.append($playBtn);
+					}
+					_msgContent.append($compile('<ion-spinner icon="crescent" ng-if="uploading"></ion-spinner>')(scope));
+					// scope.message = $sce.trustAsHtml('<video width="200" height="120" controls><source src="'+videoUrl+'"></video>');
+					// _msgContent.append( $compile('<video width="200" height="120" controls><source src="'+videoUrl+'"></video><ion-spinner ng-if="uploading"></ion-spinner>' )(scope) );
+					// _msgContent.append( $compile('<i class="icon ion-play"></i>' )(scope) );
+					// _msgContent.append( $compile('<video width="200" height="120" controls><source src="'+videoUrl+'"></video><ion-spinner ng-if="uploading"></ion-spinner>' )(scope) );
+					// console.log('parsing video');
+					// console.log(scope.message);
 				}
 
 				function parseText() {
+					var text = scope.message;
 					var lines = scope.message.split('\n');
 					if (lines.length > _foldingThres || scope.message.length > FOLDING_CHAR_THRES) {
-						var text = '';
 						for (var i = 0; i < lines.length && i < _foldingThres && text.length < FOLDING_CHAR_THRES; i++) {
 							text += lines[i]+'<br>';
 						}
 						text = text.substring(0, text.length-4);
 						if (text.length > FOLDING_CHAR_THRES) text = text.substr(0, FOLDING_CHAR_THRES);
 						scope.hasMore = true;
-						scope.message = text;
+						// scope.message = text;
 					}
+					_msgContent.html('').append(text);
 				}
 
 				// Output error logs
@@ -794,6 +870,196 @@
 			}
 		};
 	});
+
+	/**
+	 * Image Viewer
+	 */
+	jangularUI
+		.directive('imageViewer', ['$ionicSlideBoxDelegate', '$ionicScrollDelegate', '$filter', '$imageViewer', '$timeout',
+			function($ionicSlideBoxDelegate, $ionicScrollDelegate, $filter, $imageViewer, $timeout) {
+
+				return {
+					restrict: 'E',
+					template: '<ion-modal-view class="image-viewer transparent hello">'+
+											'<ion-slide-box auto-play="false" active-slide="initIndex" does-continue="true" on-slide-changed="slideChanged($index)" delegate-handle="slideHandle">'+
+												'<ion-slide ng-repeat="img in viewList">'+
+												  '<ion-scroll zooming="true" min-zoom="1" direction="xy" style="height:100%" delegate-handle="imgViewerScrollHandle{{$index}}" on-scroll="onImageScroll($event)">'+
+												    '<div class="img-container">'+
+												      '<img ng-src="{{ img.src }}" lazy-load="lazyLoadFn(img)">'+
+												    '</div>'+
+												  '</ion-scroll>'+
+												'</ion-slide>'+
+											'</ion-slide-box>'+
+										  '<a class="close" ng-click="close()">{{ ::"CLOSE" | translate }}</a>'+
+										'</ion-modal-view>',
+					link: function($scope, $elem, $attrs) {
+						var prevIdx = $scope.initIndex;
+						// $scope.imgList = $scope[$attrs.imgList] || [];
+						$scope.onImageScroll = onImageScroll;
+						$scope.slideChanged = slideChanged;
+						$scope.close = $imageViewer.hide;
+
+						// if ($scope.currentIndex > 0) {
+						// 	var	slideHandles = $filter('filter')($ionicSlideBoxDelegate._instances, { $$delegateHandle: 'slideHandle' });
+						// 	console.log(slideHandles);
+						// 	if (slideHandles.length) {
+						// 		var slideHandle = slideHandles[0];
+						// 		slideHandle.slide(1);
+						// 	}
+						// };
+
+						function onImageScroll() {
+							var	scrollHandles = $filter('filter')($ionicScrollDelegate._instances, { $$delegateHandle: 'imgViewerScrollHandle'+prevIdx });
+							var scrollHandle = null;
+							if (scrollHandles.length) {
+								scrollHandle = scrollHandles[0];
+								var zoom = scrollHandle.getScrollPosition().zoom;
+								var	slideHandles = $filter('filter')($ionicSlideBoxDelegate._instances, { $$delegateHandle: 'slideHandle' });
+								if (slideHandles.length) {
+									var slideHandle = slideHandles[0];
+									if (zoom > 1) {
+										slideHandle.enableSlide(false);
+									} else {
+										slideHandle.enableSlide(true);
+									}
+								}
+							}
+						}
+
+						function updateView(index) {
+							// Next
+							// if ($scope.currentIndex < $scope.imgList.length-1)
+							// 	$scope.viewList[(index+1) % $scope.viewBuffLength] = $scope.imgList[$scope.currentIndex+1];
+							// else
+							// 	$scope.viewList[(index+1) % $scope.viewBuffLength] = $scope.imgList[0];
+							$scope.viewList[(index+1) < $scope.viewBuffLength-1 ? index+2 : index+2-$scope.viewBuffLength] = $scope.imgList[
+									($scope.currentIndex+1) < $scope.imgList.length-1 ? $scope.currentIndex+2 : $scope.currentIndex+2-$scope.imgList.length];
+							// Previous
+							// if ($scope.currentIndex > 0)
+							// 	$scope.viewList[(index+$scope.viewBuffLength-1) % $scope.viewBuffLength] = $scope.imgList[$scope.currentIndex-1];
+							// else
+							// 	$scope.viewList[(index+$scope.viewBuffLength-1) % $scope.viewBuffLength] = $scope.imgList[$scope.imgList.length-1];
+							$scope.viewList[(index-1) > 0 ? index-2 : $scope.viewBuffLength+index-2] = $scope.imgList[
+									($scope.currentIndex-1) > 0 ? $scope.currentIndex-2 : $scope.imgList.length+$scope.currentIndex-2];
+							// if ($scope.currentIndex === $scope.imgList.length-1 && index === $scope.viewBuffLength-1) {
+							// 	console.log('to the end');
+							// }
+						}
+
+						function slideChanged(index) {
+							// console.log('prevIdx: '+prevIdx);
+							if (index === $scope.viewBuffLength-1 && prevIdx === 0) {
+								$scope.currentIndex--;
+							} else if (index === 0 && prevIdx === $scope.viewBuffLength-1) {
+								$scope.currentIndex++;
+							} else {
+								$scope.currentIndex += index - prevIdx;
+							}
+							prevIdx = index;
+
+							if ($scope.currentIndex < 0)
+								$scope.currentIndex = $scope.imgList.length-1;
+							else if ($scope.currentIndex > $scope.imgList.length-1)
+								$scope.currentIndex = 0;
+
+							// console.log(index);
+							// console.log('currentIndex: '+$scope.currentIndex);
+							// console.log('slide changed');
+							updateView(index);
+							// console.log('after updated: ');
+							// console.log($scope.viewList);
+
+
+							var	slideHandles = $filter('filter')($ionicSlideBoxDelegate._instances, { $$delegateHandle: 'slideHandle' });
+							if (slideHandles.length) {
+								var slideHandle = slideHandles[0];
+								
+								// if ($scope.currentIndex == 0 || $scope.currentIndex == $scope.imgList.length-1) {
+								// 	// if ($scope.currentIndex == 0 && index > 0) {
+								// 	// 	var arr = []
+								// 	// 	for (var i = 0; i < $scope.imgList.length; i++) {
+								// 	// 		arr.push($scope.imgList[i]);
+								// 	// 	}
+								// 	// 	$scope.viewList = arr;
+								// 	// } else if ($scope.currentIndex == $scope.imgList.length-1 && index < $scope.viewBuffLength-1) {
+								// 	// 	var end = $scope.imgList.length-1;
+								// 	// 	var arr = []
+								// 	// 	for (var i = end; i >= 0 && i > end-$scope.viewBuffLength; i--) {
+								// 	// 		arr.push($scope.imgList[i]);
+								// 	// 	}
+								// 	// 	$scope.viewList = arr.reverse();
+								// 	// 	console.log(index);
+								// 	// 	console.log($scope.viewList);
+								// 	// 	prevIdx = -1;
+								// 	// 	slideHandle.slide(2, 0);
+								// 	// }
+
+								// 	slideHandle.loop(false);
+								// } else {
+								// 	slideHandle.loop(true);
+								// }
+								$timeout(function() {
+									slideHandle.update();
+								}, 0);
+							}
+						}
+					}
+				}
+		}])
+		.factory('$imageViewer', ['$ionicModal', '$rootScope', '$ionicSlideBoxDelegate',
+			function($ionicModal, $rootScope, $ionicSlideBoxDelegate) {
+				var _self = this;
+				$scope = $rootScope.$new();
+
+				_self.show = function(imgList, index, options) {
+					$scope.imgList = imgList;
+					parseOptions(options);
+					$scope.viewList = _self.setViewList($scope.imgList, index);
+					$scope.currentIndex = index;
+					$scope.lazyLoadFn = options.noSrcHandler || {};
+					$scope.modal = $ionicModal.fromTemplate('<image-viewer lazy-load-fn="lazyLoadFn"></image-viewer>', {
+						scope: $scope,
+						animation: 'slide-in-up'
+					});
+					// console.log($scope.modal);
+					$scope.modal.show();
+				}
+
+				_self.hide = function() {
+					$scope.modal.remove();
+				}
+
+				_self.setViewList = function(list, index) {
+					if (list.length < 5) {
+						$scope.viewBuffLength = list.length;
+						return list;
+					}
+
+					$scope.viewBuffLength = 5;// + list.length % 3;
+					$scope.initIndex = index % $scope.viewBuffLength;
+					var arr = list.slice(index-$scope.initIndex, index+$scope.viewBuffLength-$scope.initIndex);
+					if (index === 0) {
+						arr[$scope.viewBuffLength-1] = list[list.length-1];
+						arr[$scope.viewBuffLength-2] = list[list.length-2];
+					} else if (index === list.length-1) {
+						arr[$scope.initIndex < $scope.viewBuffLength-1 ? $scope.initIndex+1 : 0] = list[0];
+						arr[$scope.initIndex+1 < $scope.viewBuffLength-1 ? $scope.initIndex+2 : 1] = list[1];
+					}
+					return arr;
+				}
+
+				function parseOptions(options) {
+					if (options) {
+						if (options.imgSrcProp) {
+							angular.forEach($scope.imgList, function(img) {
+								img.src = (options.base || '')+img[options.imgSrcProp];
+							});
+						}
+					}
+				}
+
+				return _self;
+			}]);
 
 	/**
 	 * Url View

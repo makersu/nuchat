@@ -37,6 +37,7 @@ var chtTranslate = function ($translateProvider) {
 		CALENDAR: '行事曆',
 
 		// Friends
-		SEARCH_OR_ADD_FRIENDS: '搜尋好友',
+		SEARCH_OR_ADD_FRIENDS: '搜尋/新增好友',
+		NEW_FRIENDS: '新增好友',
 	});
 };

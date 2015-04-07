@@ -1,6 +1,6 @@
 function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, RoomService, $localstorage, $q, $filter,
             $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
-            $ionicModal, $location, $utils, FriendService) {
+            $ionicModal, $location, $utils, FriendService, $imageViewer, $checkFormat) {
 
 	console.log('ChatCtrl');
 	console.log($stateParams.roomId);
@@ -28,12 +28,25 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   // Private
   var audioPlayer = null;
   var audioInterval = null;
-  var prevLatestMsg = null;
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
-  console.log($scope.currentUser)//
+  // console.log($scope.currentUser)//
   $scope.input = {};
   $scope.messageOptions = {
+    imgSetting: {
+      clickHandler: function(id) {
+        var imgList = [];
+        angular.forEach($scope.room.groupedMessages, function(group) {
+          var chunk = $filter('filter')(group.items, function(msg) {
+            return $checkFormat.isImg(msg.type);
+          });
+          if (chunk.length) imgList = imgList.concat(chunk);
+        });
+        var selectedList = $filter('filter')(imgList, { id: id });
+        var index = selectedList.length ? imgList.indexOf(selectedList[0]) : 0;
+        $imageViewer.show(imgList, index, { imgSrcProp: 'originalFileId', base: ENV.GRIDFS_BASE_URL });
+      }
+    },
     audioSetting: { 
       stop: { img: 'images/audiowave.png', icon: 'icon ion-play' }, 
       play: { img: 'images/audiowave.gif', icon: 'icon ion-pause' }
@@ -96,6 +109,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
       //LBSocket.emit('room:messages:new', $scope.input);
       RoomService.createMessage($scope.input);
     }
+    RoomService.getLastGroup($scope.room).open = true;
     $timeout(function() {
       scrollHandle.scrollBottom();
     });
@@ -222,7 +236,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   /* Events */
   $scope.checkScroll = function() {
     var bound = scrollHandle.element.scrollHeight;
-    var lastGroup = $scope.room.groupedMessages[$scope.room.groupedMessages.length-1];
+    var lastGroup = RoomService.getLastGroup($scope.room);
     if ( lastGroup.open && scrollHandle.getScrollPosition().top >= (bound/2) ) {
       $scope.clearNotification();
     }
@@ -297,25 +311,6 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
 
   // Register event listeners
   $scope.$on('onNewMessage', function(event, args) {
-
-    if ( prevLatestMsg && !$utils.sameDate(args.msg.created, prevLatestMsg.created) ) {
-      var msgs = {};
-      msgs[args.msg.id] = args.msg;
-      var newGroup = $filter('groupBy')(msgs, 'created', function(msg) {
-          return $filter('amChatGrouping')(msg.created);
-      });
-      $scope.room.groupedMessages = $scope.room.groupedMessages.concat(newGroup);
-    } else if (!prevLatestMsg) {
-      $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
-        return $filter('amChatGrouping')(msg.created);
-      });
-      // Open the latest group.
-      $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].open = true;
-    } else {
-      // Append to the latest group.
-      $scope.room.groupedMessages[$scope.room.groupedMessages.length-1].items.push(args.msg);
-    }
-    prevLatestMsg = args.msg;
 
     // Scrolling to the bottom if sent by self.
     if (args.msg.ownerId !== $scope.currentUser.id) {

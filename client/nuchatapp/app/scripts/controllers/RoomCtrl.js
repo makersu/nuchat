@@ -26,7 +26,9 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     //
     angular.forEach($scope.availableRooms, function(room) {
       if (isPrivate(room)) {
+        console.log('yes private');
         console.log(room);
+        console.log(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId);
         console.log( FriendService.get(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId) );
         room.profile = FriendService.get(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId).avatarThumbnail;
       }

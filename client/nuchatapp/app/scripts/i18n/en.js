@@ -38,6 +38,6 @@ var enTranslate = function ($translateProvider) {
 
 		// Friends
 		SEARCH_OR_ADD_FRIENDS: 'Search/Add Friends',
-
+		NEW_FRIENDS: 'New Friends',
 	});
 };

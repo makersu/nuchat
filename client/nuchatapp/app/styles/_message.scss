@@ -1,7 +1,8 @@
 .message {
   font-size: 14px;
   img {
-  	width: 100%;
+    max-width: $messageImg_max_width;
+    max-height: $messageImg_max_width;
     // Audio type
     &.audio {
       width: 85%;
@@ -11,6 +12,23 @@
         font-size: $audioControlIcon_font_size;
       }
     }
+  }
+  .video-thumb {
+    width: 200px;
+    & + .ion-play {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      @include translate3d(-50%, -50%, 0);
+      border: 1px solid $videoIcon_color;
+      @include border-radius(50%);
+      font-size: $videoIcon_font_size;
+      padding: 0 12px;
+      color: $videoIcon_color;
+    }
+  }
+  video {
+    background-color: black;
   }
 }
 
@@ -49,9 +67,17 @@
       @include translate3d(-50%, -50%, 0);
     }
   }
-  .ion-play {
+  .ion-play, .ion-pause {
     & + ion-spinner {
       width: 85%;
+    }
+  }
+  video {
+    & + .ion-play, .ion-pause {
+      z-index: 2;
+      & + ion-spinner {
+        width: 100%;
+      }
     }
   }
 }
@@ -147,6 +173,7 @@
   padding: 5px 15px;
   width: 100%;
   background-color: $chatNotification_bg_color;
+  pointer-events: none; // Click through
 }
 
 // Canvas

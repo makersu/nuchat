@@ -1,6 +1,7 @@
-function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User, LBSocket, FriendService, RoomService){
+function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User, LBSocket, FriendService, RoomService, $filter){
 	console.log('FriendCtrl');
-
+  /* Variables */
+  $scope.modalTitle = $filter('translate')('NEW_FRIENDS');
 	$scope.friends = FriendService.friends;
 
 	$scope.friendChat = function(friendId){

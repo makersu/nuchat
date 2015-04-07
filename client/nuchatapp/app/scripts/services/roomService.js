@@ -1,5 +1,6 @@
-function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat) {
+function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout) {
 	var DEBUG = false;
+	var _prevLatestMsg = null;
 	console.log('RoomService');
 
 	//when get new room
@@ -90,9 +91,36 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		console.log(message);
 		var room = getRoom(message.roomId);
 		console.log(room);
-		room.messages[message.id]=message
-		console.log(room.messages)
+		room.messages[message.id] = message;
+		console.log(room.messages);
+		grouping(room, message);
+		
 		$rootScope.$broadcast('onNewMessage', { msg: message });
+  }
+
+  function grouping(room, newMsg) {
+  	if ( _prevLatestMsg && !$utils.sameDate(newMsg.created, _prevLatestMsg.created) ) {
+      var msgs = {};
+      msgs[newMsg.id] = newMsg;
+      var newGroup = $filter('groupBy')(msgs, 'created', function(msg) {
+          return $filter('amChatGrouping')(msg.created);
+      });
+      room.groupedMessages = room.groupedMessages.concat(newGroup);
+    } else if (!_prevLatestMsg) {
+      room.groupedMessages = $filter('groupBy')(room.messages, 'created', function(msg) {
+        return $filter('amChatGrouping')(msg.created);
+      });
+      // Open the latest group.
+      getLastGroup(room).open = true;
+    } else {
+      // Append to the latest group.
+      getLastGroup(room).items.push(newMsg);
+    }
+    _prevLatestMsg = angular.copy(newMsg);
+  }
+
+  function getLastGroup(room) {
+  	return room.groupedMessages[room.groupedMessages.length-1];
   }
 
 
@@ -247,6 +275,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		getRoomMessages: getRoomMessages,
 		createMessage: createMessage,
 		addMessage: addMessage,
+		getLastGroup: getLastGroup,
 	};
 
 	return service;
