@@ -1,8 +1,8 @@
-function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User, LBSocket, FriendService, RoomService, $filter){
+function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User, LBSocket, FriendService, RoomService, $filter, $timeout){
 	console.log('FriendCtrl');
   /* Variables */
   $scope.modalTitle = $filter('translate')('NEW_FRIENDS');
-	$scope.friends = FriendService.friends;
+	$scope.friends = [];
 
 	$scope.friendChat = function(friendId){
 		console.log(friendId);//
@@ -91,9 +91,19 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
     data.userId=User.getCachedCurrent().id
     //console.log(data)
     FriendService.addNewFriends(data)
+      .then(function(friends) {
+        $scope.friends = friends;
+      });
     $scope.hideSearchFriendModal()
   }
 
-  FriendService.getFriends();
+  /* OnLoad */
+  // OnResume
+  $scope.$on('$ionicView.enter', function() {
+    FriendService.getFriends()
+      .then(function(friends) {
+        $scope.friends = friends;
+      });
+  });
 
 }

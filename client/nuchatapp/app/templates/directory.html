@@ -1,6 +1,6 @@
 <ion-view class="flip">
 	<div class="cover">
-		<img id="coverImg" src="images/dana.jpg">
+		<img id="coverImg" ng-src="{{ room.profile || 'images/dana.jpg' }}">
 		<div class="name">{{ room.name }}</div>
 		<a class="button button-clear icon ion-chatbubble-working" href="#/tab/room/{{ ::room.id }}"></a>
 	</div>

@@ -1,4 +1,4 @@
-function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout) {
+function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout, ENV) {
 	var DEBUG = false;
 	var _prevLatestMsg = null;
 	console.log('RoomService');
@@ -7,14 +7,18 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 	LBSocket.on('rooms:new', function(room) {	
     console.log('rooms:new');
 		console.log(room);
-    if(room.type=="private"){
-			if(room.ownerId!=User.getCachedCurrent().id){
-    		room.name=FriendService.get(room.ownerId).username
-    	}
-    	else{
-    		var friend = FriendService.get(room.friend);
-    		room.name = friend ? friend.username : '';
-    	}
+    if( isPrivate(room) ) {
+    	$timeout(function() {
+    		var friend = FriendService.get(room.ownerId != User.getCachedCurrent().id ? room.ownerId : room.friend);
+	    	console.log(FriendService.friends);
+	    	console.log(room.ownerId != User.getCachedCurrent().id ? room.ownerId : room.friend);
+	    	console.log(FriendService.get(room.ownerId != User.getCachedCurrent().id ? room.ownerId : room.friend));
+	    	console.log(friend);
+	    	if (friend) {
+	    		room.name = friend.username;
+	  			room.profile = friend.avatarThumbnail;
+	    	}
+    	});
     }
 		//console.log(room);
     addRoom(room);
@@ -121,6 +125,14 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 
   function getLastGroup(room) {
   	return room.groupedMessages[room.groupedMessages.length-1];
+  }
+
+  function isPrivate(room) {
+  	return room.type === 'private';
+  }
+
+  function isGroup(room) {
+  	return room.type === 'group';
   }
 
 
@@ -276,6 +288,8 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		createMessage: createMessage,
 		addMessage: addMessage,
 		getLastGroup: getLastGroup,
+		isPrivate: isPrivate,
+		isGroup: isGroup,
 	};
 
 	return service;

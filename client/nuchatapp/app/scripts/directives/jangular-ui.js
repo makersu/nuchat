@@ -1041,7 +1041,7 @@
 	 * Center Image
    *
    */
-  jangularUI.directive('centerImg', function() {
+  jangularUI.directive('centerImg', ['$timeout', function($timeout) {
   	return {
   		restrict: 'A',
   		link: function(scope, elem, attrs) {
@@ -1055,12 +1055,16 @@
   			img.on('load', function() {
   				var w = img[0].offsetWidth;
   				var h = img[0].offsetHeight;
-  				img.css({position: 'absolute', top: '50%', left: '50%', '-webkit-transform': 'translate3d(-50%,-50%,0)',
-  								width: w > h ? 'auto' : '100%', height: w > h ? '100%' : 'auto'});
+  				var setW = w > h ? 'auto' : '100%';
+  				var setH = w > h ? '100%' : 'auto';
+  				$timeout(function() {
+  					img.css({position: 'absolute', top: '50%', left: '50%', '-webkit-transform': 'translate3d(-50%,-50%,0)',
+  								width: setW, height: setH});
+  				});
   			});
   		}
   	};
-  });
+  }]);
 
 	/**
 	 * Url View

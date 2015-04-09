@@ -32,7 +32,7 @@ function DirArticleCtrl($scope, $rootScope, $ionicModal, $scrolls, $timeout) {
     console.log('enter article view');
     $timeout(function() {
       $scrolls.bindScrollToFixed('.directory .view-container[nav-view="active"] .scroll-content', '.flip[nav-view="active"]');
-    }, 550);
+    }, 600);
     // $scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
   });
   //Cleanup the modal when we're done with it!

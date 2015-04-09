@@ -1,4 +1,4 @@
-function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService) {
+function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService) {
   console.log('LoginCtrl');
 
   $scope.credentials = {};
@@ -8,6 +8,8 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
    */
   console.log(User.getCachedCurrent());//
   if (User.getCachedCurrent()!==null) {
+    // Getting the friend list
+    FriendService.getFriends();
     $location.path('/tab/chats');
   }
 
@@ -41,6 +43,9 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
         AccountService.setAvatarUrl()
         console.log('self:join');//
         LBSocket.emit('self:join', User.getCachedCurrent().id);//
+
+        // Getting the friend list
+        FriendService.getFriends();
 
         $ionicHistory.nextViewOptions({disableBack: true});//
         console.log($location.nextAfterLogin)//

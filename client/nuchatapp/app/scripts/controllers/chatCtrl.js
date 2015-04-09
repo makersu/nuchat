@@ -91,10 +91,10 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
     if (tabHandles.length) {
       tabs = tabHandles[0].$tabsElement;
     }
-    console.log(tabs);
+    // console.log(tabs);
     if (tabs) {
       // Remove tabs.
-      console.log('remove tabs');
+      // console.log('remove tabs');
       $animate.addClass(tabs, 'slideout');
       // Shifting the message bubbles upward.
       $timeout(function() {
@@ -109,11 +109,6 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
         // Re-add the navbar back.
         $ionicNavBarDelegate.showBar(true);
       });
-      // if (toState.name.indexOf('tab.directory') == 0) {
-      //   $timeout(function() {
-      //     $ionicNavBarDelegate.showBar(false);
-      //   });
-      // }
     }
   }
   // Scope Public
@@ -291,7 +286,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
   // OnResume
   $scope.$on('$ionicView.enter', function() {
     console.log('enter controller');
-    console.log($scope.room)//
+    console.log($scope.room);//
     // Initializing NUChatObject service
     $NUChatObject.init($scope.room, $scope.currentUser);
 

@@ -9,8 +9,7 @@
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
     'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap'])
-.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $ionicTabsDelegate, $animate,
-    $ionicScrollDelegate, $timeout, $ionicNavBarDelegate, $ionicModal, $NUChatTags) {
+.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)

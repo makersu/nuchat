@@ -1,4 +1,4 @@
-function FriendService(User, LBSocket, ENV) {
+function FriendService(User, LBSocket, ENV, $q) {
 	console.log('FriendService');
 
 	var friends = {};
@@ -16,42 +16,49 @@ function FriendService(User, LBSocket, ENV) {
 	});
 
 	//
-	function getFriends(){
+	function getFriends() {
+		var q = $q.defer();
 		console.log('getFriends');
 		console.log('friends:get');
 
-  	LBSocket.emit('friends:get',{userId:User.getCachedCurrent().id},function(err,oldFriends){
-  		if(err){
-  			console.log(err)
+  	LBSocket.emit('friends:get',{ userId: User.getCachedCurrent().id }, function(err,oldFriends) {
+  		if (err) {
+  			console.log(err);
   		}
-  		else{
+  		else {
   			addFriends(oldFriends)
+  			q.resolve( _.values(friends) );
   		}
   	});
+
+  	return q.promise;
 	}
 
 	//
-	function addNewFriends(data){
+	function addNewFriends(data) {
+		var q = $q.defer();
 		console.log('addFriend');
 		console.log('friends:new');
-  	LBSocket.emit('friends:new',data,function(err,newFriends){
-  		if(err){
-  			console.log(err)
+  	LBSocket.emit('friends:new', data, function(err, newFriends) {
+  		if (err) {
+  			console.log(err);
   		}
-  		else{
-  			addFriends(newFriends)
+  		else {
+  			addFriends(newFriends);
+  			q.resolve( _.values(friends) );
   		}
   	});
+  	return q.promise;
 	}
 
 	function addFriends(users){
-		console.log(users)
-		for(var i=0;i<users.length;i++){
-			console.log(users[i])
-			updateAvatar(users[i])
-			friends[users[i].id]=users[i]
+		// console.log(users);
+		for (var i = 0; i < users.length; i++) {
+			console.log(users[i]);
+			updateAvatar(users[i]);
+			friends[users[i].id] = users[i];
 		}
-		console.log(friends)
+		console.log(friends);
 	}
 
 	function updateAvatar(friend){
@@ -68,7 +75,7 @@ function FriendService(User, LBSocket, ENV) {
     return friends[friendId];
   }
 
-  getFriends();
+  // getFriends();
 
   var service = {
 		friends: friends,
