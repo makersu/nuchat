@@ -1,4 +1,4 @@
-function DirectoryService($NUChatLinks, $checkFormat, METATYPE) {
+function DirectoryService($NUChatFiles, $NUChatLinks, METATYPE) {
 	/* Methods */
 	function saveToDir(item) {
 		// console.log(item);
@@ -9,6 +9,8 @@ function DirectoryService($NUChatLinks, $checkFormat, METATYPE) {
 			case METATYPE.calendar:
 				break;
 			default:
+				// Otherwise, as a file.
+				if (item.type) $NUChatFiles.push(item);
 				break;
 		}
 	}

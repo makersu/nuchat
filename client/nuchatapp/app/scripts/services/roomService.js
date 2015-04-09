@@ -73,7 +73,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   	if(lastMessage && lastMessage.id){
   		data.messageId = lastMessage.id
   	}
-  	console.log(data)
+  	// console.log(data);
 
   	LBSocket.emit('room:messages:get', data , function(messages){
   		console.log('room:messages:get')
@@ -87,12 +87,12 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 
   //TODO:?
   function addMessage(message) {
-  	console.log('addMessage');
-		console.log(message);
+  	// console.log('addMessage');
+		// console.log(message);
 		var room = getRoom(message.roomId);
-		console.log(room);
+		// console.log(room);
 		room.messages[message.id] = message;
-		console.log(room.messages);
+		// console.log(room.messages);
 		grouping(room, message);
 		
 		$rootScope.$broadcast('onNewMessage', { msg: message });

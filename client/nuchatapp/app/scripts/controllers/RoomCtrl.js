@@ -1,12 +1,25 @@
-function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filter, FriendService){
+function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filter, FriendService, $ionicTabsDelegate, $animate){
 	console.log('RoomCtrl');//
 
   /* Methods */
+  // Private
   function isPrivate(room) {
     console.log(room.type);
     return room.type === 'private';
   }
+  function slideinTabs() {
+    var tabs = null;
+    var tabHandles = $filter('filter')($ionicTabsDelegate._instances, { $$delegateHandle: 'chatDelegate' });
+    if (tabHandles.length) {
+      tabs = tabHandles[0].$tabsElement;
+      if (tabs) {
+        // Re-add tabs.
+        $animate.removeClass(tabs, 'slideout');
+      }
+    }
+  }
 
+  // Scope Public
 	$scope.goToCreateRoom = function () {
     console.log('goToCreateRoom');
     $location.path('/tab/createRoom');
@@ -46,6 +59,7 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
   $scope.$on('$ionicView.enter', function() {
     // $scope.availableRooms = RoomService.getAvailableRooms();
     // console.log($scope.availableRooms);
+    slideinTabs();
     $scope.doRefresh();
   });
   

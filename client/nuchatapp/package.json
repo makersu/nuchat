@@ -57,7 +57,15 @@
     "org.apache.cordova.media",
     "org.apache.cordova.file",
     "org.apache.cordova.device",
-    "de.appplant.cordova.plugin.local-notification",
-    "org.apache.cordova.camera"
+    "org.apache.cordova.camera",
+    "org.apache.cordova.splashscreen",
+    "https://github.com/katzer/cordova-plugin-local-notifications",
+    "./engine/cordova-crosswalk-engine-c0.7.1"
+  ],
+  "cordovaPlatforms": [
+    {
+      "platform": "android",
+      "locator": "./engine/cordova-android-c0.6.1/"
+    }
   ]
 }

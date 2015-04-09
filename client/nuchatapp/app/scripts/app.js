@@ -77,35 +77,38 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     });
     // Listen to stateChangeSuccess event
     $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-      var tabs = null;
-      var tabHandles = $filter('filter')($ionicTabsDelegate.$getByHandle('chatDelegate')._instances, { $$delegateHandle: 'chatDelegate' });
-      if (tabHandles.length) {
-        tabs = tabHandles[0].$tabsElement;
-      }
-      if (tabs) {
-        if (toState.name == 'tab.chatRoom' || toState.name.indexOf('tab.directory') == 0) { // Remove tabs.
-          console.log('remove tabs');
-          $animate.addClass(tabs, 'slideout');
-            // Shifting the message bubbles upward.
-          $timeout(function() {
-            var scrollContent = null;
-            var scrollHandles = $filter('filter')($ionicScrollDelegate.$getByHandle('userMessageScroll')._instances, { $$delegateHandle: 'userMessageScroll' });
-            if (scrollHandles.length) {
-              // console.log(scrollHandles);
-              angular.forEach(scrollHandles, function(handle) {
-                handle.$element.removeClass('has-tabs-top');
-              });
-            }
-          });
-          if (toState.name.indexOf('tab.directory') == 0) {
-            $timeout(function() {
-              $ionicNavBarDelegate.showBar(false);
-            });
-          }
-        } else {  // Re-add tabs.
-          $animate.removeClass(tabs, 'slideout');
-        }
-      }
+      console.log('on $stateChangeSuccess');
+      /** Moved to the $ionicView.enter event of the specified state controller. **/
+      // var tabs = null;
+      // var tabHandles = $filter('filter')($ionicTabsDelegate._instances, { $$delegateHandle: 'chatDelegate' });
+      // if (tabHandles.length) {
+      //   tabs = tabHandles[0].$tabsElement;
+      // }
+      // console.log(tabs);
+      // if (tabs) {
+      //   if (toState.name == 'tab.chatRoom' || toState.name.indexOf('tab.directory') == 0) { // Remove tabs.
+      //     console.log('remove tabs');
+      //     $animate.addClass(tabs, 'slideout');
+      //       // Shifting the message bubbles upward.
+      //     $timeout(function() {
+      //       var scrollContent = null;
+      //       var scrollHandles = $filter('filter')($ionicScrollDelegate.$getByHandle('userMessageScroll')._instances, { $$delegateHandle: 'userMessageScroll' });
+      //       if (scrollHandles.length) {
+      //         // console.log(scrollHandles);
+      //         angular.forEach(scrollHandles, function(handle) {
+      //           handle.$element.removeClass('has-tabs-top');
+      //         });
+      //       }
+      //     });
+      //     if (toState.name.indexOf('tab.directory') == 0) {
+      //       $timeout(function() {
+      //         $ionicNavBarDelegate.showBar(false);
+      //       });
+      //     }
+      //   } else {  // Re-add tabs.
+      //     $animate.removeClass(tabs, 'slideout');
+      //   }
+      // }
     });
   });
 })
@@ -190,8 +193,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
           templateUrl: 'templates/directory.html',
           controller: 'DirectoryCtrl'
         }
-      },
-      cache: false
+      }
     })
     .state('tab.directory.article', {
       url: '/article',

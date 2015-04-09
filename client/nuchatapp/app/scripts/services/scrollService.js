@@ -132,13 +132,23 @@ function ScrollService($imageFilters, $ionicScrollDelegate, $filter, $timeout) {
 	}
 	function bindScrollToFixed(containerSelector, viewSelector) {
 		// Reset the scroll view to avoid the cached.
-		_scrollView = angular.element(document.querySelector(viewSelector));
+		var scrollView = document.querySelector(viewSelector);
+		// If the same view, do not need to bind again.
+		if (_scrollView && _scrollView[0].ng339 === angular.element(scrollView)[0].ng339) {
+			return;
+		}
+		// console.log(scrollView);
+		_scrollView = angular.element(scrollView);
 		_container = _scrollView[0].querySelector(containerSelector);
+		setContainerHeight(containerSelector);
 		// Reset the cover image to avoid the cached.
 		_cover = _scrollView[0].querySelector('.cover');
 		_coverImg = _scrollView[0].querySelector('.cover img');
 		// Reset the tabs to avoid the cached.
 		_dirTabs = _scrollView[0].querySelector('.directory .tabs');
+		// Reset to initial state.
+		reset();
+
 		// Binding the touch events.
 		_scrollView.off('touchmove').on('touchmove', function(e) {
 			var currentY = e.touches[0].clientY;

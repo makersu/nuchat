@@ -1,4 +1,4 @@
-function DirectoryCtrl($scope, $rootScope, $state, $stateParams, RoomService, $timeout, $NUChatTags, $scrolls) {
+function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $timeout, $NUChatTags, $ionicNavBarDelegate) {
 	/* Variables */
 	// Private
 
@@ -18,10 +18,10 @@ function DirectoryCtrl($scope, $rootScope, $state, $stateParams, RoomService, $t
 	/* Onload */
 	RoomService.setCurrentRoom($stateParams.roomId);
 	$scope.room = RoomService.getCurrentRoom();
-	$scope.$on('$ionicView.loaded', function() {
+	// OnResume
+	$scope.$on('$ionicView.enter', function() {
 		$timeout(function() {
-			// console.log('loaded view');
-    	$scrolls.bindScrollToFixed('.directory .scroll-content', '.flip[nav-view="active"]');
-		}, 500);
+      $ionicNavBarDelegate.showBar(false);
+    });
 	});
 }

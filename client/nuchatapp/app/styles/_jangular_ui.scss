@@ -37,15 +37,17 @@
 	.url-view {
 		height: 95%;
 		.content {
-			display: flex;
+			@include display-flex;
 		}
 		img {
-			flex: 1;
-			height: 100%;
+			@include flex(1);
+			display: inline-block;
 			margin: 5px 5px 0 2px;
+			height: 100%;
 		}
 		.info {
-			flex: 4;
+			@include flex(4);
+			display: inline-block;
 			h5 {
 				margin-top: 5px;
 				margin-bottom: 2px;

@@ -21,7 +21,7 @@ function amChatGrouping(moment, $filter) {
 				lastDay: '['+$filter('translate')('YESTERDAY')+']',
 				lastWeek: 'MM-DD ddd',
 				sameDay: '['+$filter('translate')('TODAY')+']',
-				sameElse: 'MM-DD'
+				sameElse: 'MM-DD ddd'
 			}
 		});
 

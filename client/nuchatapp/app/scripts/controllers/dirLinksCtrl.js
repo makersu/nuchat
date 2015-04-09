@@ -1,4 +1,4 @@
-function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $timeout, $filter, RoomService) {
+function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $filter) {
 	/* Variables */
 	// Private
 
@@ -31,7 +31,6 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 		$scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
 		$scrolls.resize();
 	});
-
 	$scope.$on('onTagFiltered', function() {
 		$scope.linkList = $NUChatTags.getFilteredList();
 	});

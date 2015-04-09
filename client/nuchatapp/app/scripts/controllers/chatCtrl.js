@@ -1,5 +1,5 @@
-function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
+function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSocket, RoomService, $localstorage, $q, $filter,
+            $ionicScrollDelegate, $ionicTabsDelegate, $ionicNavBarDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
             $ionicModal, $location, $utils, FriendService, $imageViewer, $checkFormat) {
 
 	console.log('ChatCtrl');
@@ -85,6 +85,37 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
       console.log('Reset audio');
     }
   };
+  var slideoutTabs = function() {
+    var tabs = null;
+    var tabHandles = $filter('filter')($ionicTabsDelegate._instances, { $$delegateHandle: 'chatDelegate' });
+    if (tabHandles.length) {
+      tabs = tabHandles[0].$tabsElement;
+    }
+    console.log(tabs);
+    if (tabs) {
+      // Remove tabs.
+      console.log('remove tabs');
+      $animate.addClass(tabs, 'slideout');
+      // Shifting the message bubbles upward.
+      $timeout(function() {
+        var scrollContent = null;
+        var scrollHandles = $filter('filter')($ionicScrollDelegate._instances, { $$delegateHandle: 'userMessageScroll' });
+        if (scrollHandles.length) {
+          // console.log(scrollHandles);
+          angular.forEach(scrollHandles, function(handle) {
+            handle.$element.removeClass('has-tabs-top');
+          });
+        }
+        // Re-add the navbar back.
+        $ionicNavBarDelegate.showBar(true);
+      });
+      // if (toState.name.indexOf('tab.directory') == 0) {
+      //   $timeout(function() {
+      //     $ionicNavBarDelegate.showBar(false);
+      //   });
+      // }
+    }
+  }
   // Scope Public
   // $scope.joinRoom = function(id, switchRoom) {
   //   console.log(id)
@@ -237,7 +268,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   $scope.checkScroll = function() {
     var bound = scrollHandle.element.scrollHeight;
     var lastGroup = RoomService.getLastGroup($scope.room);
-    if ( lastGroup.open && scrollHandle.getScrollPosition().top >= (bound/2) ) {
+    if ( lastGroup && lastGroup.open && scrollHandle.getScrollPosition().top >= (bound/2) ) {
       $scope.clearNotification();
     }
   };
@@ -256,14 +287,19 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
     return $filter('amChatGrouping')(msg.created);
   });
-  console.log('enter controller');
-  console.log($scope.room)//
 
-  // Initializing NUChatObject service
-  $NUChatObject.init($scope.room, $scope.currentUser);
+  // OnResume
+  $scope.$on('$ionicView.enter', function() {
+    console.log('enter controller');
+    console.log($scope.room)//
+    // Initializing NUChatObject service
+    $NUChatObject.init($scope.room, $scope.currentUser);
 
-  // Reset the NUChatLinks
-  $NUChatLinks.reset();
+    // Reset the NUChatLinks
+    $NUChatLinks.reset();
+
+    slideoutTabs();
+  });
 
   // Reading unread messages from storage(or TODO: DB?)
   // var unreadMessages = $localstorage.getObject($scope.room.id);
@@ -312,15 +348,23 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, User, LBSocket, Room
   // Register event listeners
   $scope.$on('onNewMessage', function(event, args) {
 
-    // Scrolling to the bottom if sent by self.
+    // Sending the local notification if got the message by someone.
     if (args.msg.ownerId !== $scope.currentUser.id) {
       // var scrollHandles = $filter('filter')(scrollHandle._instances, {$$delegateHandle: 'userMessageScroll'});
       // if (scrollHandles.length) {
       //   var msgScrollHandle = scrollHandles[0];
       // }
       var spoke = $scope.friends[args.msg.ownerId];
-      $scope.notify = spoke.username+': '+$filter('brief')(args.msg);
-      console.log('set notify');
+      if (spoke) {
+        $scope.notify = spoke.username+': '+$filter('brief')(args.msg);
+        console.log('set notify');
+      } else {
+        console.error('Cannot find the user('+args.msg.ownerId+') from the friend list');
+      }
+    }
+
+    if (args.msg.type !== METATYPE.LINK) {
+      $NUChatDirectory.saveToDirectory(args.msg);
     }
 
   });

@@ -12,6 +12,7 @@
  *  6) Collapse Buttons
  *  7) Flip Item
  *  8) Image Viewer
+ *  9) Center Image
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
@@ -973,31 +974,6 @@
 							var	slideHandles = $filter('filter')($ionicSlideBoxDelegate._instances, { $$delegateHandle: 'slideHandle' });
 							if (slideHandles.length) {
 								var slideHandle = slideHandles[0];
-								
-								// if ($scope.currentIndex == 0 || $scope.currentIndex == $scope.imgList.length-1) {
-								// 	// if ($scope.currentIndex == 0 && index > 0) {
-								// 	// 	var arr = []
-								// 	// 	for (var i = 0; i < $scope.imgList.length; i++) {
-								// 	// 		arr.push($scope.imgList[i]);
-								// 	// 	}
-								// 	// 	$scope.viewList = arr;
-								// 	// } else if ($scope.currentIndex == $scope.imgList.length-1 && index < $scope.viewBuffLength-1) {
-								// 	// 	var end = $scope.imgList.length-1;
-								// 	// 	var arr = []
-								// 	// 	for (var i = end; i >= 0 && i > end-$scope.viewBuffLength; i--) {
-								// 	// 		arr.push($scope.imgList[i]);
-								// 	// 	}
-								// 	// 	$scope.viewList = arr.reverse();
-								// 	// 	console.log(index);
-								// 	// 	console.log($scope.viewList);
-								// 	// 	prevIdx = -1;
-								// 	// 	slideHandle.slide(2, 0);
-								// 	// }
-
-								// 	slideHandle.loop(false);
-								// } else {
-								// 	slideHandle.loop(true);
-								// }
 								$timeout(function() {
 									slideHandle.update();
 								}, 0);
@@ -1062,10 +1038,35 @@
 			}]);
 
 	/**
+	 * Center Image
+   *
+   */
+  jangularUI.directive('centerImg', function() {
+  	return {
+  		restrict: 'A',
+  		link: function(scope, elem, attrs) {
+  			var img = elem;
+  			if (img[0].tagName !== 'IMG') {
+  				img = elem.find('img');
+  			}
+  			if (!img) {
+  				throw 'Can\'t find img element.';
+  			}
+  			img.on('load', function() {
+  				var w = img[0].offsetWidth;
+  				var h = img[0].offsetHeight;
+  				img.css({position: 'absolute', top: '50%', left: '50%', '-webkit-transform': 'translate3d(-50%,-50%,0)',
+  								width: w > h ? 'auto' : '100%', height: w > h ? '100%' : 'auto'});
+  			});
+  		}
+  	};
+  });
+
+	/**
 	 * Url View
    *
    */
-  jangularUI.directive('urlView', function($urlView, $timeout, $rootScope) {
+  jangularUI.directive('urlView', ['$urlView', '$timeout', '$rootScope', function($urlView, $timeout, $rootScope) {
   	return {
   		restrict: 'EA',
   		scope: {
@@ -1074,7 +1075,7 @@
   		},
   		template: '<a class="url-view" href="{{ ::view.url }}">'+
   								'<div class="content">'+
-	  								'<img ng-src="{{ ::view.image }}" ng-if="::view.image">'+
+	  								'<div class="graph"><img ng-src="{{ ::view.image }}" ng-if="::view.image"></div>'+
 	  								'<div class="info">'+
 		  								'<h5 class="title" ng-bind-html="::view.title"></h5>'+
 		  								'<p class="descript" ng-bind-html="::view.description"></p>'+
@@ -1118,7 +1119,7 @@
   			// });
   		}
   	};
-  });
+  }]);
   // Service of url-view
   jangularUI.factory('$urlView', function() {
   	var _self = this;
