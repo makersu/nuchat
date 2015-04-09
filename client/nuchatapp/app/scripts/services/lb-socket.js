@@ -2,7 +2,11 @@ function LBSocket($rootScope,ENV) {
 
   console.log(ENV.BASE_URL)
  
-  var socket = io.connect(ENV.BASE_URL);
+  //var socket = io.connect(ENV.BASE_URL);
+  var socket = io(ENV.BASE_URL, {
+    transports: [ 'websocket' ]
+  });
+
   return {
     on: function (eventName, callback) {
       socket.on(eventName, function () {  
