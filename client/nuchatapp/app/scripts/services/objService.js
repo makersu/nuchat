@@ -70,6 +70,30 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
     );//end resolveLocalFileSystemURL
   }
 
+  function choosePhotos(success, error, options) {
+    window.imagePicker.getPictures(
+      function(results) {
+        success.call(this, results);
+      }, error, options);
+  }
+  function capturePhoto(success, error) {
+    $cordovaCapture.captureImage()
+      .then(function(imgData) {
+        success.call(this, imgData[0].fullPath);
+      }, error);
+  }
+  function captureAudio(success, error) {
+    $cordovaCapture.captureAudio()
+      .then(function(audioData) {
+        success.call(this, audioData[0].fullPath);
+      }, error);
+  }
+  function captureVideo(success, error) {
+    $cordovaCapture.captureVideo()
+      .then(function(videoData) {
+        success.call(this, videoData[0].fullPath);
+      }, error);
+  }
 	function choosePhotosUpload(success, error, options) {
 		window.imagePicker.getPictures(
       function(results) {
@@ -142,6 +166,10 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
 
 	var _service = {
 		init: init,
+    choosePhotos: choosePhotos,
+    capturePhoto: capturePhoto,
+    captureAudio: captureAudio,
+    captureVideo: captureVideo,
 		choosePhotosUpload: choosePhotosUpload,
 		capturePhotoUpload: capturePhotoUpload,
 		captureAudioUpload: captureAudioUpload,

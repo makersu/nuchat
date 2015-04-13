@@ -288,3 +288,51 @@ grid-menu {
 		}
 	}
 }
+
+/* Center Image */
+.img-wrapper {
+	overflow: hidden;
+	width: 100%;
+	height: 100%;
+	position: relative;
+}
+
+/* Rich Articles */
+.rich-article {
+	// Textarea
+	textarea {
+		width: 100%;
+		padding: 10px;
+	}
+	// Image element
+	.img-wrapper {
+		display: inline-block;
+		margin: 5px 0 0 5px;
+		vertical-align: top;
+		.close {
+			@include opacity(.8);
+			&.button-icon {
+				padding: 0;
+			}
+		}
+	}
+	// Audio element
+	.audio {
+		width: 100%;
+		padding: 5px;
+		audio {
+			width: 75%;
+			display: inline-block;
+		}
+		.button-icon {
+			&.icon:before {
+				font-size: 24px;
+				vertical-align: top;
+				padding: 8px 5px;
+			}
+		}
+	}
+	.video {
+
+	}
+}

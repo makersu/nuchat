@@ -21,11 +21,12 @@ function FriendService(User, LBSocket, ENV, $q) {
 		console.log('getFriends');
 		console.log('friends:get');
 
-  	LBSocket.emit('friends:get',{ userId: User.getCachedCurrent().id }, function(err,oldFriends) {
+  	LBSocket.emit('friends:get', { userId: User.getCachedCurrent().id }, function(err,oldFriends) {
   		if (err) {
-  			console.log(err);
+  			console.error(err);
   		}
   		else {
+  			console.log(oldFriends);
   			addFriends(oldFriends)
   			q.resolve( _.values(friends) );
   		}
@@ -41,7 +42,7 @@ function FriendService(User, LBSocket, ENV, $q) {
 		console.log('friends:new');
   	LBSocket.emit('friends:new', data, function(err, newFriends) {
   		if (err) {
-  			console.log(err);
+  			console.error(err);
   		}
   		else {
   			addFriends(newFriends);

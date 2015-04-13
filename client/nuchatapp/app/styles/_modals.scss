@@ -21,15 +21,6 @@
 				}
 			}
 		}
-		&.editable {
-			.scroll {
-				height: 100%;
-				div[contenteditable] {
-					height: 100%;
-					padding: 10px;
-				}
-			}
-		}
 	}
 }
 

@@ -6,17 +6,26 @@
       <button class="button-icon icon ion-checkmark" ng-click="saveArticle()"></button>
     </div>
   </ion-header-bar>
-  <ion-content class="editable">
-    <div ng-model="article.content" contenteditable></div>
+  <ion-content>
+    <rich-article ng-model="article" editable="editable"></rich-article>
   </ion-content>
   <ion-footer-bar>
   	<div class="buttons">
-  		<button class="button-icon icon ion-happy"></button>
-  		<button class="button-icon icon ion-camera"></button>
+  		<!-- <button class="button-icon icon ion-happy"></button> -->
+  		<button class="button-icon icon ion-image" ng-click="insertImg($event)"></button>
   		<button class="button-icon icon ion-film-marker"></button>
-  		<button class="button-icon icon ion-headphone"></button>
+  		<button class="button-icon icon ion-headphone" ng-click="captureAudio()"></button>
   		<button class="button-icon icon ion-link"></button>
-  		<button class="button-icon icon ion-ios-location"></button>
+  		<!-- <button class="button-icon icon ion-ios-location"></button> -->
   	</div>
 	</ion-footer-bar>
 </ion-modal-view>
+
+<script id="insertImgPopover.html" type="text/ng-template">
+  <ion-popover-view>
+    <ion-content>
+      <button class="button-icon icon ion-images" ng-click="chooseImgs()"></button>
+      <button class="button-icon icon ion-camera" ng-click="captureImg()"></button>
+    </ion-content>
+  </ion-popover-view>
+</script>

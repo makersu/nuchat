@@ -4,6 +4,11 @@ button {
   	padding-top: 2px;
   }
 }
+.button {
+  .button-circle {
+    @include border-radius(50%);
+  }
+}
 
 /* Bar Buttons */
 .bar {

@@ -4,9 +4,7 @@
 		<div collection-repeat="file in fileList"
 			item-width="33.3%"
 			item-height="120">
-			<div class="file-wrapper">
-				<img ng-src="{{ file.thumbUrl || file.typeImg }}" center-img>
-			</div>
+			<responsive-img img-src="{{ file.thumbUrl || file.typeImg }}"></responsive-img>
 		</div>
 	</ion-content>
 </ion-view>

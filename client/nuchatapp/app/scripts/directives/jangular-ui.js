@@ -4,15 +4,16 @@
  *  @lib      Ionic App Labs
  *
  *  Include:
- *  1) Meta-Message
- *  2) WWW Trigger
- *  3) Grid Menu
- *  4) In View Window
- *  5) Url(link) View
- *  6) Collapse Buttons
- *  7) Flip Item
- *  8) Image Viewer
- *  9) Center Image
+ *  1)  Meta-Message
+ *  2)  WWW Trigger
+ *  3)  Grid Menu
+ *  4)  In View Window
+ *  5)  Url(link) View
+ *  6)  Collapse Buttons
+ *  7)  Flip Item
+ *  8)  Image Viewer
+ *  9)  Center Image
+ *  10) Rich Article
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
@@ -1038,20 +1039,34 @@
 			}]);
 
 	/**
-	 * Center Image
+	 * @name Responsive Image
    *
+   * @description Resizing the image to the specified size with retained aspect ratio.
    */
-  jangularUI.directive('centerImg', ['$timeout', function($timeout) {
+  jangularUI.directive('responsiveImg', ['$timeout', function($timeout) {
   	return {
-  		restrict: 'A',
-  		link: function(scope, elem, attrs) {
-  			var img = elem;
-  			if (img[0].tagName !== 'IMG') {
-  				img = elem.find('img');
+  		restrict: 'E',
+  		transclude: true,
+  		replace: true,
+  		template: '<div class="img-wrapper"><img><div ng-transclude></div></div>',
+  		link: function(scope, elem, attrs, ctrl, transclude) {
+  			var width = attrs.width;
+  			var height = attrs.height;
+  			if ( ( width && !angular.isNumber(parseInt(width)) ) || 
+  					 ( height && !angular.isNumber(parseInt(height)) ) ) {
+  				throw 'Illegal value: attribute width/height must be a number.';
   			}
-  			if (!img) {
-  				throw 'Can\'t find img element.';
+  			// var wrapper = elem.find('div');
+  			if (width && height) {
+  				elem.css({width: width+'px', height: height+'px'});
+  			} else if (width) {
+  				elem.css({width: width+'px', height: width+'px'});
+  			} else if (height) {
+  				elem.css({width: height+'px', height: height+'px'});
   			}
+  			elem.find('div').replaceWith(transclude());
+
+  			var img = elem.find('img');
   			img.on('load', function() {
   				var w = img[0].offsetWidth;
   				var h = img[0].offsetHeight;
@@ -1061,6 +1076,88 @@
   					img.css({position: 'absolute', top: '50%', left: '50%', '-webkit-transform': 'translate3d(-50%,-50%,0)',
   								width: setW, height: setH});
   				});
+  			});
+  			attrs.$observe('imgSrc', function(newVal) {
+  				if (!newVal) {
+  					throw 'Illegal src value: attribute img-src must be specified.';
+  				}
+  				img.attr('src', newVal);
+  			});
+  		}
+  	};
+  }]);
+
+  /**
+	 * @name Rich Article
+   *
+   * @description Article compound of text, image, audio, video, links, and other files.
+   */
+  jangularUI.directive('richArticle', ['$compile', '$timeout', function($compile, $timeout) {
+  	return {
+  		restrict: 'EA',
+  		require: 'ngModel',
+  		scope: {
+  			options: '=?richOption',
+  			editable: '=?',
+  			article: '=ngModel',
+  		},
+  		link: function(scope, elem, attrs, ngModel) {
+  			var $imgElem = angular.element('<responsive-img width="150">'+(scope.editable ? '<i class="button-icon icon ion-close-circled close"></i>' : '')+'</responsive-img>');
+  			var $textElem = angular.element(scope.editable ? '<textarea msd-elastic="\\n"></textarea>' : '<div class="textarea"></div>');
+  			var $audioElem = angular.element('<div class="audio"><audio controls></div>');
+  			var $videoElem = angular.element('<div class="video"><video'+(device.platform == 'iOS' ? ' controls' : '')+'>'+(scope.editable ? '<i class="button-icon icon ion-close></i>' : '')+'<div>');
+
+  			scope.delParagraph = function(idx) {
+  				// console.log('click to delete '+idx);
+					scope.article.splice(idx, 1);
+  			}
+  			function isTextParagraph(p) {
+  				return p && p.type === 'text';
+  			}
+  			function parseParagraph(p, idx) {
+  				var $pElem = null;
+  				switch (p.type) {
+  					case 'text':
+  						$pElem = $textElem.clone();
+  						$pElem.attr(scope.editable ? 'ng-model' : 'ng-bind-html', 'article['+idx+'].content');
+  						break;
+  					case 'img':
+  						$pElem = $imgElem.clone();
+  						$pElem.attr('img-src', p.content);
+  						scope.editable && (function() {
+  							$pElem.find('i').attr('ng-click', 'delParagraph('+idx+')');
+  						})();
+  						break;
+  					case 'audio':
+  						$pElem = $audioElem.clone();
+  						$pElem.find('audio').attr('src', p.content);
+  						scope.editable && (function() {
+  							$pElem.append('<i class="button-icon icon ion-close" ng-click="delParagraph('+idx+')"></i>')
+  						})();
+  						break;
+  					case 'video':
+  						break;
+  				}
+  				elem.append( $compile($pElem)(scope) );
+  			}
+  			function setArticle() {
+  				elem.html('');
+  				angular.forEach(scope.article, function(paragraph, idx) {
+  					console.log('parseParagraph');
+	  				console.log(paragraph);
+	  				parseParagraph(paragraph, idx);
+	  			});
+  			}
+
+  			if (!scope.article) scope.article = [];
+  			if ( !isTextParagraph(scope.article[scope.article.length-1]) )
+  				scope.article.push({type: 'text', content: ''});
+  			// Setting the basic class
+  			elem.addClass('rich-article');
+
+  			scope.$watchCollection('article', function(newVal) {
+  				console.log('watch article');
+  				newVal && setArticle();
   			});
   		}
   	};
