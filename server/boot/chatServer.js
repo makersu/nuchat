@@ -712,8 +712,8 @@ module.exports = function(app) {
 
             var profile={}
             profile.id=data.id//refactoring?data.userId?
-            profile.avatarLetter=gridFSFileId
-
+            profile.avatarThumbnail=gridFSFileId
+            profile.avatarLetter=gridFSFileId//need?
             updateUserProfile(profile,cb)//
 
           })//end writeFileToGridStore
