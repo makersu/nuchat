@@ -5,6 +5,7 @@ module.exports = function(app) {
   var ffmpeg = require('fluent-ffmpeg');
   var gm = require('gm');
   var moment = require('moment')
+  var md5 = require('MD5');
 
   //var mongodb=require('loopback-connector-mongodb').mongodb
   var GridStore = require('mongodb').GridStore
@@ -42,6 +43,17 @@ module.exports = function(app) {
         console.log('self:join')
         console.log(userId)
         socket.join(userId);
+      });
+
+
+      //
+      // create profile letter avatar
+      //
+      socket.on('user:profile:letteravatar', function (data, cb) {
+        console.log('user:profile:letteravatar')
+        console.log(data)
+        createLetterAvatar(data,cb)
+
       });
 
       //
@@ -470,7 +482,7 @@ module.exports = function(app) {
         }
         console.log(filter)
         app.models.message.find(filter,function(err,objs){
-          console.log(objs)
+          console.log(objs[0])
           if(cb){
             //fn(objs)//
             cb({"messages":objs})
@@ -519,6 +531,46 @@ module.exports = function(app) {
         }  
 
       });//end socket.on
+
+
+
+      //
+      var writeFromFileToGridStore = function(data,filePath,cb){
+        console.log('writeFromFileToGridStore')
+        console.log(filePath)
+
+        var db = app.datasources.db.connector.db;
+        db.safe = {w: 1};//
+
+        //TODO
+        var options={
+          "content_type": data.content_type
+        }
+
+        if(options.content_type.indexOf('video')!=-1){
+          options.chunk_size = 1024*1024
+        }
+
+        console.log(options)
+        
+        //for thumbnail file
+        var gridStore = new GridStore(db, new ObjectID(), "w", options);
+        gridStore.open(function(err, gridStore) {
+          gridStore.writeFile(filePath, function(err, gridStore) {
+            gridStore.close(function(err, result) {
+              if(err){
+                console.log(err)
+                cb(err)
+              }
+              console.log(result)
+              cb(null,result._id)
+            
+            });//close
+          });//writeFile
+        });//open
+
+      };//writeFromFileToGridStore
+
 
       //
       var writeFileToGridStore = function(data,cb){
@@ -628,6 +680,48 @@ module.exports = function(app) {
         });
       };//createRoomMessage
 
+      var createLetterAvatar = function(data, cb){
+        console.log('createLetterAvatar')
+        console.log(data)
+        var color="#" + md5(data.username).substring(0, 6)
+        console.log(color)
+        var thumbnailFilename = Math.random().toString(36).substring(7)+'.png';
+        var thumbnailFilePath = '/tmp/'+thumbnailFilename//TODO
+        console.log(thumbnailFilePath)
+
+        var firstLetter=data.username.toUpperCase().charAt(0)
+        console.log('firstLetter='+firstLetter)
+        
+        gm(80,80, color)
+        .options({imageMagick: true})
+        .gravity('Center')
+        .fontSize(50)
+        .fill("#ffffff")
+        .drawText(0,5,firstLetter)
+        .write(thumbnailFilePath, function (err) {
+          if(err){
+            console.log(err)
+            cb(err)
+          }
+
+          writeFromFileToGridStore({"content_type": "image/png"},thumbnailFilePath,function(err,gridFSFileId){
+            if(err){
+              console.log(err)
+              cb(err)
+            }
+
+            var profile={}
+            profile.id=data.id//refactoring?data.userId?
+            profile.avatarThumbnail=gridFSFileId
+            profile.avatarLetter=gridFSFileId//need?
+            updateUserProfile(profile,cb)//
+
+          })//end writeFileToGridStore
+
+        });//end wtire
+      }
+
+
       //updateAvatar
       var updateAvatar = function(data,cb){
 
@@ -662,14 +756,14 @@ module.exports = function(app) {
             profile.avatarThumbnail=thumbnailFileId
             profile.avatarOriginal=originalFileId
             //cb(profile)//
-            updateUserAvatar(profile,cb)//
+            updateUserProfile(profile,cb)//
 
           })//end writeFileWithThumbnailToGridStore
         });//end write
       };//end updateAvatar
 
-      var updateUserAvatar =function(profile,cb){
-        console.log('updateUserAvatar')
+      var updateUserProfile =function(profile,cb){
+        console.log('updateUserProfile')
         console.log(profile)
         if(profile.id){
           app.models.user.updateAll({id:profile.id},profile, function(err,obj){

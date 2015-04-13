@@ -1,4 +1,4 @@
-function RegisterCtrl($scope, $ionicPopup, $location, User, LBSocket) {
+function RegisterCtrl($scope, $ionicPopup, $location, User, LBSocket, AccountService) {
   console.log('RegisterCtrl')
 
   $scope.registration = {};
@@ -25,6 +25,7 @@ function RegisterCtrl($scope, $ionicPopup, $location, User, LBSocket) {
       .$promise
       .then(function (res) {
         $scope.registration={}
+        AccountService.setAvatarUrl()
         LBSocket.emit('self:join', User.getCachedCurrent().id);
         $location.path('/tab/chats')
       }, function (err) {

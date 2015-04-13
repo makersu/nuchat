@@ -76,13 +76,18 @@ function FriendService(User, LBSocket, ENV, $q) {
     return friends[friendId];
   }
 
+  function removeAll(){
+  	friends = {};
+  }
+
   // getFriends();
 
   var service = {
 		friends: friends,
 		get: get,
 		getFriends: getFriends,
-		addNewFriends: addNewFriends
+		addNewFriends: addNewFriends,
+		removeAll: removeAll
   };
 
   return service;
