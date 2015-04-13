@@ -278,6 +278,9 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		LBSocket.emit('room:messages:new', newMessage);
 	}
 
+	function removeAll(){
+		rooms = {};
+	}
 
 	var service = {
 		getAvailableRooms: getAvailableRooms,
@@ -290,6 +293,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		getLastGroup: getLastGroup,
 		isPrivate: isPrivate,
 		isGroup: isGroup,
+		removeAll: removeAll
 	};
 
 	return service;

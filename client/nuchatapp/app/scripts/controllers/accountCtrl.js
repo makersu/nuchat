@@ -1,4 +1,4 @@
-function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountService, User, ENV) {
+function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountService, User, ENV, RoomService, FriendService) {
   console.log('AccountCtrl')
 
   /**
@@ -7,6 +7,8 @@ function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountS
    */
   $scope.logout = function () {
     User.logout(function () {
+      RoomService.removeAll();
+      FriendService.removeAll();
     	$location.path('/login');
     });
   }
