@@ -37,14 +37,11 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
       clickHandler: function(id) {
         var imgList = [];
         angular.forEach($scope.room.groupedMessages, function(group) {
-          console.log('group');
-          console.log(group);
           var chunk = $filter('filter')(group.items, function(msg) {
             return $checkFormat.isImg(msg.type);
           });
           if (chunk.length) imgList = imgList.concat(chunk);
         });
-        console.log(imgList);
         var selectedList = $filter('filter')(imgList, { id: id });
         var index = selectedList.length ? imgList.indexOf(selectedList[0]) : 0;
         $imageViewer.show(imgList, index, { imgSrcProp: 'originalFileId', base: ENV.GRIDFS_BASE_URL });
