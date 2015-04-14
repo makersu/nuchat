@@ -257,8 +257,8 @@
 									}
 									if (!cacheView.image) {
 										cacheView.image = cacheView.url+'/favicon.ico';
-									} else if (cacheView.image.indexOf('/') == 0) {
-										cacheView.image = cacheView.url+cacheView.image;
+									} else if (cacheView.image.indexOf('/') == 0 || cacheView.image.indexOf('http') != 0) {
+										cacheView.image = cacheView.url+'/'+cacheView.image;
 									}
 									q.resolve(cacheView);
 								}, function(err) {
@@ -297,6 +297,7 @@
 							case 'icon':
 								if (!obj.image) {
 									obj.image = content;
+									console.log(content);
 								}
 								break;
 							case 'og:url':

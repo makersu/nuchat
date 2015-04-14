@@ -116,7 +116,9 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
 //  console.log($rootScope.currentUser)
 //})    
 
-.config(function($stateProvider, $urlRouterProvider, $httpProvider) {
+.config(function($stateProvider, $urlRouterProvider, $httpProvider, $ionicConfigProvider) {
+  // Disable the swipe to go back.
+  $ionicConfigProvider.views.swipeBackEnabled(false);
 
   // Ionic uses AngularUI Router which uses the concept of states
   // Learn more here: https://github.com/angular-ui/ui-router

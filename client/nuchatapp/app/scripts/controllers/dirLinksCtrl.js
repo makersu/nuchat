@@ -7,7 +7,7 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 	/* Methods */
 	// Private
 	var getOrderedLinks = function() {
-		return $filter('orderBy')($NUChatLinks.getLinks(), '-created');
+		return $filter('orderBy')($NUChatLinks.getLinks($scope.room.messages), '-created');
 	}
 	// Scope public
 	$scope.editTags = function(link) {

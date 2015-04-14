@@ -22,8 +22,8 @@ function LinkService($filter, METATYPE) {
   function getLinks(msgList) {
     // console.log(msgList);
     // console.log(METATYPE.LINK);
-    // _list = $filter('filter')(msgList, {type: METATYPE.LINK});
-    console.log(_list);
+    _list = $filter('filter')(_.values(msgList), {type: METATYPE.LINK});
+    // console.log(_list);
     return _list;
   }
 
