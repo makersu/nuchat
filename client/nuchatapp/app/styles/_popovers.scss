@@ -1,0 +1,23 @@
+.popover {
+	&.active {
+		display: block;
+	}
+	&.row-2 {
+		height: 130px;
+	}
+	&.row-1 {
+		height: 60px;
+	}
+}
+
+// Android
+.platform-android {
+	.popover {
+		&.row-1 {
+			height: 45px;
+		}
+		&.row-2 {
+			height: 120px;
+		}
+	}
+}

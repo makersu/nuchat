@@ -1,4 +1,4 @@
-function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $scrolls, $timeout, $NUChatObject, $compile) {
+function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $scrolls, $timeout, $NUChatObject, $compile, $imageViewer, User, ENV) {
 	/* Variables */
 	// Private
   var $contentContainer = null;
@@ -6,7 +6,8 @@ function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $scrolls
   // var EventHandler = $famous['famous/core/EventHandler'];
 	// Scope Public
   // $scope.scrollEventHandler = new EventHandler();
-  $scope.article = [];
+  $scope.articleList = [];
+  $scope.article = { content: [] };
   $scope.editable = true;
 
 	/* Methods */
@@ -14,15 +15,18 @@ function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $scrolls
   function insertImgParagraph(imgs) {
     if (angular.isArray(imgs)) {
       angular.forEach(imgs, function(img) {
-        $scope.article.push({type: 'img', content: img});
+        $scope.article.content.push({type: 'img', content: img});
       });
     } else {
-      $scope.article.push({type: 'img', content: imgs});
+      $scope.article.content.push({type: 'img', content: imgs});
     }
     $scope.insertImgPopover.hide();
   }
   function insertAudioParagraph(audio) {
-    $scope.article.push({type: 'audio', content: audio});
+    $scope.article.content.push({type: 'audio', content: audio});
+  }
+  function insertVideoParagraph(video) {
+    $scope.article.content.push({type: 'video', content: video});
   }
   function errorHandler(err) {
     console.error(err);
@@ -64,14 +68,63 @@ function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $scrolls
   $scope.captureAudio = function() {
     $NUChatObject.captureAudio(insertAudioParagraph, errorHandler);
   };
+  $scope.captureVideo = function() {
+    $NUChatObject.captureVideo(insertVideoParagraph, errorHandler);
+  };
   $scope.saveArticle = function() {
-    console.log($scope.article);
+    if (!$scope.article.author) {
+      $scope.article.author = User.getCachedCurrent();
+      $scope.article.authorThumbnail = ENV.GRIDFS_BASE_URL+$scope.article.author.avatarThumbnail;
+      $scope.article.posted = new Date();
+      $scope.articleList.push($scope.article);
+    } else {
+      var idx = $scope.articleList.indexOf($scope.selected);
+      $scope.articleList[idx] = $scope.article;
+    }
     $scope.closeModal();
   };
+  $scope.openArticleOption = function(article, $event) {
+    $scope.selected = article;
+    $scope.article = angular.copy(article);
+    if (!$scope.editPopover) {
+      $ionicPopover.fromTemplateUrl('editPopover.html', {
+        scope: $scope,
+      }).then(function(popover) {
+        $scope.editPopover = popover;
+        $scope.editPopover.show($event);
+      });
+    } else {
+      $scope.editPopover.show($event);
+    }
+  };
+  $scope.hideArticleOption = function() {
+    $scope.editPopover.hide();
+  };
+  $scope.editArticle = function() {
+    console.log('editArticle');
+    $scope.hideArticleOption();
+    $scope.openModal();
+  };
+  $scope.delArticle = function() {
+    var idx = $scope.articleList.indexOf($scope.article);
+    $scope.articleList.splice(idx, 1);
+    $scope.hideArticleOption();
+  };
+  $scope.viewImgs = function(imgs, idx) {
+    $imageViewer.show(imgs, idx, { imgSrcProp: 'content' });
+  };
   // Override Global
-  $rootScope.addDir = $scope.openModal;
+  $rootScope.addDir = function() {
+    $scope.article = { content: [] };
+    $scope.openModal();
+  };
 
 	/* Onload */
+  $scope.articleOption = {
+    img: {
+      click: $scope.viewImgs,
+    }
+  };
   $scope.$on('$ionicView.enter', function() {
     console.log('enter article view');
     $timeout(function() {

@@ -84,6 +84,35 @@
 		// return false;
 	}
 
+	function requestFullScreen(elem) {
+		if (elem.requestFullscreen) {
+		  elem.requestFullscreen();
+		} else if (elem.msRequestFullscreen) {
+		  elem.msRequestFullscreen();
+		} else if (elem.mozRequestFullScreen) {
+		  elem.mozRequestFullScreen();
+		} else if (elem.webkitRequestFullscreen) {
+		  elem.webkitRequestFullscreen();
+		}
+	}
+	function exitFullScreen(elem) {
+		if (elem.exitFullscreen) {
+		  elem.exitFullscreen();
+		} else if (elem.msExitFullscreen) {
+		  elem.msExitFullscreen();
+		} else if (elem.mozCancelFullScreen) {
+		  elem.mozCancelFullScreen();
+		} else if (elem.webkitExitFullscreen) {
+		  elem.webkitExitFullscreen();
+		}
+	}
+
+	function swap(a, b) {
+		var temp = a;
+		a = b;
+		b = temp;
+	}
+
 	/**
 	 * Meta Message
 	 * 
@@ -328,29 +357,6 @@
 							icon[0].className = scope.msg.isPlaying ? _audioSetting.play.icon : _audioSetting.stop.icon;
 						}
 					});
-				}
-
-				function requestFullScreen(elem) {
-					if (elem.requestFullscreen) {
-					  elem.requestFullscreen();
-					} else if (elem.msRequestFullscreen) {
-					  elem.msRequestFullscreen();
-					} else if (elem.mozRequestFullScreen) {
-					  elem.mozRequestFullScreen();
-					} else if (elem.webkitRequestFullscreen) {
-					  elem.webkitRequestFullscreen();
-					}
-				}
-				function exitFullScreen(elem) {
-					if (elem.exitFullscreen) {
-					  elem.exitFullscreen();
-					} else if (elem.msExitFullscreen) {
-					  elem.msExitFullscreen();
-					} else if (elem.mozCancelFullScreen) {
-					  elem.mozCancelFullScreen();
-					} else if (elem.webkitExitFullscreen) {
-					  elem.webkitExitFullscreen();
-					}
 				}
 
 				function parseVideo() {
@@ -929,6 +935,7 @@
 						}
 
 						function updateView(index) {
+							// console.log('viewBuffLength: '+$scope.viewBuffLength);
 							// Next
 							// if ($scope.currentIndex < $scope.imgList.length-1)
 							// 	$scope.viewList[(index+1) % $scope.viewBuffLength] = $scope.imgList[$scope.currentIndex+1];
@@ -949,6 +956,7 @@
 						}
 
 						function slideChanged(index) {
+							// console.log('index: '+index);
 							// console.log('prevIdx: '+prevIdx);
 							if (index === $scope.viewBuffLength-1 && prevIdx === 0) {
 								$scope.currentIndex--;
@@ -959,15 +967,15 @@
 							}
 							prevIdx = index;
 
+							// console.log($scope.currentIndex);
 							if ($scope.currentIndex < 0)
 								$scope.currentIndex = $scope.imgList.length-1;
 							else if ($scope.currentIndex > $scope.imgList.length-1)
 								$scope.currentIndex = 0;
 
-							// console.log(index);
 							// console.log('currentIndex: '+$scope.currentIndex);
 							// console.log('slide changed');
-							updateView(index);
+							updateView($scope.currentIndex);
 							// console.log('after updated: ');
 							// console.log($scope.viewList);
 
@@ -1008,6 +1016,7 @@
 
 				_self.setViewList = function(list, index) {
 					if (list.length < 5) {
+						$scope.initIndex = index;
 						$scope.viewBuffLength = list.length;
 						return list;
 					}
@@ -1052,17 +1061,21 @@
   		link: function(scope, elem, attrs, ctrl, transclude) {
   			var width = attrs.width;
   			var height = attrs.height;
-  			if ( ( width && !angular.isNumber(parseInt(width)) ) || 
-  					 ( height && !angular.isNumber(parseInt(height)) ) ) {
-  				throw 'Illegal value: attribute width/height must be a number.';
+  			if ( ( width && !angular.isNumber(parseInt(width)) && !isPercentage(width) ) || 
+  					 ( height && !angular.isNumber(parseInt(height)) && !isPercentage(height) ) ) {
+  				throw 'Illegal value: attribute width/height must be a number or percentage.';
   			}
   			// var wrapper = elem.find('div');
   			if (width && height) {
-  				elem.css({width: width+'px', height: height+'px'});
+  				var w = isPercentage(width) ? width : width+'px';
+  				var h = isPercentage(height) ? height : height+'px';
+  				elem.css({width: w, height: h});
   			} else if (width) {
-  				elem.css({width: width+'px', height: width+'px'});
+  				var w = isPercentage(width) ? width : width+'px';
+  				elem.css({width: w, height: w});
   			} else if (height) {
-  				elem.css({width: height+'px', height: height+'px'});
+  				var h = isPercentage(height) ? height : height+'px';
+  				elem.css({width: h, height: h});
   			}
   			elem.find('div').replaceWith(transclude());
 
@@ -1083,6 +1096,10 @@
   				}
   				img.attr('src', newVal);
   			});
+
+  			function isPercentage(value) {
+  				return value.indexOf('%') !== -1;
+  			}
   		}
   	};
   }]);
@@ -1092,7 +1109,7 @@
    *
    * @description Article compound of text, image, audio, video, links, and other files.
    */
-  jangularUI.directive('richArticle', ['$compile', '$timeout', function($compile, $timeout) {
+  jangularUI.directive('richArticle', ['$compile', '$timeout', '$filter', function($compile, $timeout, $filter) {
   	return {
   		restrict: 'EA',
   		require: 'ngModel',
@@ -1102,17 +1119,37 @@
   			article: '=ngModel',
   		},
   		link: function(scope, elem, attrs, ngModel) {
-  			var $imgElem = angular.element('<responsive-img width="150">'+(scope.editable ? '<i class="button-icon icon ion-close-circled close"></i>' : '')+'</responsive-img>');
-  			var $textElem = angular.element(scope.editable ? '<textarea msd-elastic="\\n"></textarea>' : '<div class="textarea"></div>');
+  			var $imgElem = angular.element('<responsive-img width="48%" height="150">'+(scope.editable ? '<i class="button-icon icon ion-close-circled close"></i>' : '')+'</responsive-img>');
+  			var $textElem = angular.element(scope.editable ? '<textarea msd-elastic="\\n"></textarea>' : '<p class="textarea"></p>');
   			var $audioElem = angular.element('<div class="audio"><audio controls></div>');
-  			var $videoElem = angular.element('<div class="video"><video'+(device.platform == 'iOS' ? ' controls' : '')+'>'+(scope.editable ? '<i class="button-icon icon ion-close></i>' : '')+'<div>');
+  			var $videoElem = angular.element('<div class="video"><video'+(device.platform == 'iOS' ? ' controls' : '')+'></video>'+(device.platform == 'iOS' ? '' : '<i class="icon ion-play"></i>')+'<div>');
 
   			scope.delParagraph = function(idx) {
   				// console.log('click to delete '+idx);
 					scope.article.splice(idx, 1);
-  			}
+  			};
+  			function viewImgs(imgObj) {
+  				var imgList = $filter('filter')(scope.article, {type: 'img'});
+					var imgIdx = imgList.indexOf(imgObj);
+					console.log(imgObj);
+					console.log(imgList);
+					console.log('selected index: '+imgIdx);
+					scope.options.img.click(imgList, imgIdx);
+  			};
   			function isTextParagraph(p) {
   				return p && p.type === 'text';
+  			}
+  			function addTextParagraph() {
+  				scope.article.push({type: 'text', content: ''});
+  			}
+  			function playVideo($videoElem) {
+  				if ($videoElem[0].paused) {
+						$videoElem[0].play();
+						requestFullScreen($videoElem[0]);
+					}
+  			}
+  			function getLastChildElem() {
+  				return elem.children()[elem.children().length-1];
   			}
   			function parseParagraph(p, idx) {
   				var $pElem = null;
@@ -1132,13 +1169,36 @@
   						$pElem = $audioElem.clone();
   						$pElem.find('audio').attr('src', p.content);
   						scope.editable && (function() {
-  							$pElem.append('<i class="button-icon icon ion-close" ng-click="delParagraph('+idx+')"></i>')
+  							$pElem.append('<i class="button-icon icon ion-close" ng-click="delParagraph('+idx+')"></i>');
   						})();
   						break;
   					case 'video':
+  						$pElem = $videoElem.clone();
+  						$pElem.find('video').attr('src', p.content);
+  						scope.editable && (function() {
+  							$pElem.append('<i class="button-icon icon ion-close-circled close" ng-click="delParagraph('+idx+')"></i>');
+  						})();
   						break;
   				}
+  				// newParagraph($pElem, idx);
   				elem.append( $compile($pElem)(scope) );
+
+  				// Binding the action on Video
+  				if (p.type === 'img') {
+  					$pElem.on('click', function() {
+							viewImgs(p);
+  					});
+  				} else if	(p.type === 'video') {
+  					$pElem.on('click', function() {
+  						playVideo($pElem.find('video'));
+  					});
+  					$pElem.find('video').on('webkitfullscreenchange mozfullscreenchange fullscreenchange', function() {
+					    var isFullscreen = document.fullScreen || document.mozFullScreen || document.webkitIsFullScreen;
+					    if (!isFullscreen) {
+								this.pause();
+					    }
+						});
+  				}
   			}
   			function setArticle() {
   				elem.html('');
@@ -1149,15 +1209,39 @@
 	  			});
   			}
 
+  			// console.log(scope.article);
   			if (!scope.article) scope.article = [];
   			if ( !isTextParagraph(scope.article[scope.article.length-1]) )
-  				scope.article.push({type: 'text', content: ''});
+  				addTextParagraph();
   			// Setting the basic class
   			elem.addClass('rich-article');
+				scope.editable && elem.addClass('editable');
 
-  			scope.$watchCollection('article', function(newVal) {
+  			scope.$watchCollection('article', function(newVal, oldVal) {
   				console.log('watch article');
-  				newVal && setArticle();
+  				if (!newVal) return;
+  				var newComing = newVal.length - oldVal.length;
+  				// console.log(newComing);
+  				if (newVal.length > 1 && newComing > 0) {
+  					// var newComingHeadIdx = newVal.length-newComing;
+  					var checkIdx = newVal.length-newComing-1;
+  					if (checkIdx > 0) {
+  						if (newVal[checkIdx].type === 'text') {
+	  						if (newVal[checkIdx].content === '') {
+	  							newVal.splice(checkIdx, 1);
+	  						}
+	  						addTextParagraph();
+	  					}
+  					} else {
+  						addTextParagraph();
+  					}
+  				} else if (newComing < 0
+  						&& isTextParagraph(newVal[newVal.length-1]) && isTextParagraph(newVal[newVal.length-2]) ) {
+  					newVal.splice(newVal.length-1, 1);
+  				} else if (newVal.length == 0) {
+  					addTextParagraph();
+  				}
+  				setArticle();
   			});
   		}
   	};

@@ -1,5 +1,17 @@
-function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountService, User, ENV, RoomService, FriendService) {
+function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountService, User, ENV, RoomService, FriendService, $ionicTabsDelegate, $animate, $filter) {
   console.log('AccountCtrl')
+
+  function slideinTabs() {
+    var tabs = null;
+    var tabHandles = $filter('filter')($ionicTabsDelegate._instances, { $$delegateHandle: 'chatDelegate' });
+    if (tabHandles.length) {
+      tabs = tabHandles[0].$tabsElement;
+      if (tabs) {
+        // Re-add tabs.
+        $animate.removeClass(tabs, 'slideout');
+      }
+    }
+  }
 
   /**
    * @name logout()
@@ -59,6 +71,7 @@ function AccountCtrl($scope, User, $location, $gridMenu, $NUChatObject, AccountS
   /* Onload */
   // Life Cycle
   $scope.$on('$ionicView.enter', function() {
+    slideinTabs();
     $scope.currentUser = User.getCachedCurrent();
   });
   // Regitsterint watchers

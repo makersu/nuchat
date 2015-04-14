@@ -10,5 +10,44 @@
 			</fa-view>
 		</fa-scroll-view>
 	</fa-app> -->
-	<ion-content></ion-content>
+	<ion-content>
+		<div class="card" ng-repeat="article in articleList">
+			<div class="item item-avatar">
+		    <img ng-src="{{ article.authorThumbnail }}">
+		    <h2>{{ ::article.author.username }}</h2>
+		    <p am-time-ago="::article.posted"></p>
+		    <i class="icon ion-chevron-down edit" ng-click="openArticleOption(article, $event)"></i>
+		  </div>
+
+		  <div class="item item-body">
+		    <rich-article ng-model="article.content" rich-option="articleOption"></rich-article>
+		  </div>
+
+		  <div class="item tabs tabs-secondary tabs-icon-left">
+		    <a class="tab-item" href="#">
+		      <i class="icon ion-thumbsup"></i>
+		      Like
+		    </a>
+		    <a class="tab-item" href="#">
+		      <i class="icon ion-chatbox"></i>
+		      Comment
+		    </a>
+		    <a class="tab-item" href="#">
+		      <i class="icon ion-share"></i>
+		      Share
+		    </a>
+		  </div>
+		</div>
+	</ion-content>
 </ion-view>
+
+<script id="editPopover.html" type="text/ng-template">
+  <ion-popover-view class="row-2">
+    <ion-content>
+      <ion-list>
+      	<ion-item class="item-icon-left" ng-click="editArticle()"><i class="icon ion-edit"></i>{{ ::'EDIT' | translate }}</ion-item>
+      	<ion-item class="item-icon-left" ng-click="delArticle()"><i class="icon ion-trash-b"></i>{{ ::'DELETE' | translate }}</ion-item>
+      </ion-list>
+    </ion-content>
+  </ion-popover-view>
+</script>

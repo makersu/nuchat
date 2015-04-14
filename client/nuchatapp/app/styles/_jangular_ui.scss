@@ -304,16 +304,24 @@ grid-menu {
 		width: 100%;
 		padding: 10px;
 	}
+	textarea, .textarea {
+		margin: 5px 0;
+	}
 	// Image element
 	.img-wrapper {
 		display: inline-block;
-		margin: 5px 0 0 5px;
+		margin: 5px 5px 0 0;
 		vertical-align: top;
 		.close {
 			@include opacity(.8);
 			&.button-icon {
 				padding: 0;
 			}
+		}
+	}
+	&.editable {
+		.img-wrapper {
+			margin: 5px 0 0 5px;
 		}
 	}
 	// Audio element
@@ -326,13 +334,41 @@ grid-menu {
 		}
 		.button-icon {
 			&.icon:before {
-				font-size: 24px;
+				font-size: $richArticleAudioDel_icon_size;
 				vertical-align: top;
 				padding: 8px 5px;
 			}
 		}
 	}
+	// Video element
 	.video {
-
+		padding: 5px;
+		position: relative;
+		height: 200px;
+		overflow: hidden;
+		video {
+			width: 100%;
+		}
+		.ion-play {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      @include translate3d(-50%, -50%, 0);
+      border: 1px solid $videoIcon_color;
+      @include border-radius(50%);
+      font-size: $videoIcon_font_size;
+      padding: 0 12px;
+      color: $videoIcon_color;
+    }
+		.close {
+			@include opacity(.9);
+			color: $richArticleVideoDel_icon_color;
+			position: absolute;
+			top: 5px;
+			right: 0;
+		}
+	}
+	.audio, .video {
+		margin: 5px 0;
 	}
 }

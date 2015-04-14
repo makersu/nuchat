@@ -7,13 +7,13 @@
     </div>
   </ion-header-bar>
   <ion-content>
-    <rich-article ng-model="article" editable="editable"></rich-article>
+    <rich-article ng-model="article.content" rich-option="articleOption" editable="editable"></rich-article>
   </ion-content>
   <ion-footer-bar>
   	<div class="buttons">
   		<!-- <button class="button-icon icon ion-happy"></button> -->
   		<button class="button-icon icon ion-image" ng-click="insertImg($event)"></button>
-  		<button class="button-icon icon ion-film-marker"></button>
+  		<button class="button-icon icon ion-film-marker" ng-click="captureVideo()"></button>
   		<button class="button-icon icon ion-headphone" ng-click="captureAudio()"></button>
   		<button class="button-icon icon ion-link"></button>
   		<!-- <button class="button-icon icon ion-ios-location"></button> -->
@@ -22,7 +22,7 @@
 </ion-modal-view>
 
 <script id="insertImgPopover.html" type="text/ng-template">
-  <ion-popover-view>
+  <ion-popover-view class="row-1">
     <ion-content>
       <button class="button-icon icon ion-images" ng-click="chooseImgs()"></button>
       <button class="button-icon icon ion-camera" ng-click="captureImg()"></button>

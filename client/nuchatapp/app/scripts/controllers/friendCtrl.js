@@ -1,8 +1,22 @@
-function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User, LBSocket, FriendService, RoomService, $filter, $timeout){
+function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User, LBSocket, FriendService, RoomService, $filter, $timeout, $ionicTabsDelegate, $animate){
 	console.log('FriendCtrl');
   /* Variables */
   $scope.modalTitle = $filter('translate')('NEW_FRIENDS');
 	$scope.friends = [];
+
+  /* Methods */
+  // Private
+  function slideinTabs() {
+    var tabs = null;
+    var tabHandles = $filter('filter')($ionicTabsDelegate._instances, { $$delegateHandle: 'chatDelegate' });
+    if (tabHandles.length) {
+      tabs = tabHandles[0].$tabsElement;
+      if (tabs) {
+        // Re-add tabs.
+        $animate.removeClass(tabs, 'slideout');
+      }
+    }
+  }
 
 	$scope.friendChat = function(friendId){
 		console.log(friendId);//
@@ -100,6 +114,7 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
   /* OnLoad */
   // OnResume
   $scope.$on('$ionicView.enter', function() {
+    slideinTabs();
     FriendService.getFriends()
       .then(function(friends) {
         $scope.friends = friends;
