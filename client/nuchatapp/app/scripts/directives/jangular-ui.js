@@ -963,6 +963,7 @@
 							} else if (index === 0 && prevIdx === $scope.viewBuffLength-1) {
 								$scope.currentIndex++;
 							} else {
+								if (index >= $scope.viewBuffLength) index = $scope.viewBuffLength-1;
 								$scope.currentIndex += index - prevIdx;
 							}
 							prevIdx = index;
@@ -975,7 +976,7 @@
 
 							// console.log('currentIndex: '+$scope.currentIndex);
 							// console.log('slide changed');
-							updateView($scope.currentIndex);
+							updateView(index);
 							// console.log('after updated: ');
 							// console.log($scope.viewList);
 
@@ -998,6 +999,7 @@
 
 				_self.show = function(imgList, index, options) {
 					$scope.imgList = imgList;
+					// console.log('total: '+imgList.length);
 					parseOptions(options);
 					$scope.viewList = _self.setViewList($scope.imgList, index);
 					$scope.currentIndex = index;
