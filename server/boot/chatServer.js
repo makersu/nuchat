@@ -115,7 +115,7 @@ module.exports = function(app) {
           console.log(user)
 
           var filter={
-            fields: {id: true, username: true, email:true, avatarThumbnail:true }, 
+            fields: {id: true, username: true, email:true, avatarThumbnail:true, avatarOriginal:true }, 
             "where": { 
                 id:{ inq: user.friends}      
             }
@@ -683,7 +683,7 @@ module.exports = function(app) {
       var createLetterAvatar = function(data, cb){
         console.log('createLetterAvatar')
         console.log(data)
-        var color="#" + md5(data.username).substring(0, 6)
+        var color="#" + md5(data.email).substring(0, 6)
         console.log(color)
         var thumbnailFilename = Math.random().toString(36).substring(7)+'.png';
         var thumbnailFilePath = '/tmp/'+thumbnailFilename//TODO
