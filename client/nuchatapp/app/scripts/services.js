@@ -12,6 +12,52 @@ angular.module('Nuchatapp.services', [])
 .factory('$scrolls', ScrollService)
 .factory('$imageFilters', ImageFilterService)
 .factory('$utils', UtilService)
+.factory('signaling', function (socketFactory) {
+    console.log('signaling')
+    var socket = io.connect('http://54.92.67.230:3000/');
+    
+    var socketFactory = socketFactory({
+      ioSocket: socket
+    });
+
+    return socketFactory;
+})
+.factory('ContactsService', function (signaling) {
+  console.log('ContactsService')
+  var onlineUsers = [];
+
+  //addto onlineUsers if someone online
+  signaling.on('online', function (name) {
+    console.log('signaling.on online')
+    console.log(name)
+    if (onlineUsers.indexOf(name) === -1) {
+      onlineUsers.push(name);
+    }
+  });
+
+  //remove from onlineUsers if someone offline
+  signaling.on('signaling.on offline', function (name) {
+    var index = onlineUsers.indexOf(name);
+    if (index !== -1) {
+      onlineUsers.splice(index, 1);
+    }
+  });
+
+  return {
+    onlineUsers: onlineUsers,
+    setOnlineUsers: function (users, currentName) {
+      console.log('setOnlineUsers')
+      this.currentName = currentName;
+      
+      onlineUsers.length = 0;
+      users.forEach(function (user) {
+        if (user !== currentName) {
+          onlineUsers.push(user);
+        }
+      });
+    }
+  }
+})
 .factory('$localstorage', ['$window', function($window) {
   return {
     set: function(key, value) {

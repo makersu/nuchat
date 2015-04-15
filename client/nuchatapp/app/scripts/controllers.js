@@ -10,4 +10,5 @@ angular.module('Nuchatapp.controllers', [])
 .controller('DirArticleCtrl', DirArticleCtrl)
 .controller('DirFilesCtrl', DirFilesCtrl)
 .controller('DirLinksCtrl', DirLinksCtrl)
-.controller('DirCalendarCtrl', DirCalendarCtrl);
+.controller('DirCalendarCtrl', DirCalendarCtrl)
+.controller('VideoCallCtrl', VideoCallCtrl);

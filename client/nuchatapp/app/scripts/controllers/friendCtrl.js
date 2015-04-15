@@ -26,6 +26,11 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
 
 	}
 
+  $scope.friendVideoCall = function(usernme){
+    console.log(usernme);//
+    $state.go('videocall',{ isCalling: true, contactName: usernme },{location: 'replace'}); 
+  }
+
   $scope.doRefresh = function() {
     console.log('doRefresh')
     FriendService.getFriends();

@@ -8,7 +8,7 @@
       on-refresh="doRefresh()">
     </ion-refresher>
     <ion-list>
-      <ion-item class="item-avatar item-icon-right" collection-repeat="friend in friends" type="item-text-wrap" ng-click="friendChat(friend.id)">
+      <ion-item class="item-avatar item-icon-right" collection-repeat="friend in friends" type="item-text-wrap" ng-click="friendVideoCall(friend.username)">
         <img ng-src="{{ friend.avatarThumbnail || 'images/profile.png' }}">
         {{friend.username}}
         <i class="icon ion-chevron-right icon-accessory"></i>

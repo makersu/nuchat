@@ -1,4 +1,4 @@
-function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService) {
+function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService, signaling, ContactsService) {
   console.log('LoginCtrl');
 
   $scope.credentials = {};
@@ -6,7 +6,7 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
   /**
    * Redirect user to the app if already logged in
    */
-  console.log(User.getCachedCurrent());//
+  console.log('User.getCachedCurrent()='+User.getCachedCurrent());//
   if (User.getCachedCurrent()!==null) {
     // Getting the friend list
     FriendService.getFriends();
@@ -36,9 +36,12 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
    * sign-in function for users which created an account
    */
   $scope.login = function () {
-    console.log($scope.credentials);//
+    // console.log($scope.credentials);//
     $scope.loginResult = User.login({include: 'user', rememberMe: true}, $scope.credentials,
       function () {
+        console.log('signaling.emit login')//
+        signaling.emit('login', User.getCachedCurrent().username);//
+
         $scope.credentials={}
         AccountService.setAvatarUrl()
         console.log('self:join');//
@@ -64,5 +67,20 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
     console.log('goToRegister');
     $location.path('register');
   };
+
+  signaling.on('login_error', function (message) {
+      $scope.loading = false;
+      var alertPopup = $ionicPopup.alert({
+        title: 'Error',
+        template: message
+      });
+    });
+
+  signaling.on('login_successful', function (users) {
+    console.log('login_successful')
+    console.log(users)
+    ContactsService.setOnlineUsers(users, User.getCachedCurrent().username);
+    // $state.go('app.contacts');
+  });
 
 }

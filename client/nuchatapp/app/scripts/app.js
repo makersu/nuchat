@@ -8,7 +8,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
-    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap'])
+    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap','btford.socket-io'])
 .run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
@@ -111,11 +111,17 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     });
   });
 })
-//.run(function ($rootScope, User) {
-//  $rootScope.currentUser = User.getCurrent();
-//  console.log($rootScope.currentUser)
-//})    
-
+.run(function ($state, signaling) {
+    signaling.on('messageReceived', function (name, message) {
+      switch (message.type) {
+        case 'call':
+          if ($state.current.name === 'videocall') { return; }
+          
+          $state.go('videocall', { isCalling: false, contactName: name });
+          break;
+      }
+    });
+  })  
 .config(function($stateProvider, $urlRouterProvider, $httpProvider) {
 
   // Ionic uses AngularUI Router which uses the concept of states
@@ -133,14 +139,12 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       templateUrl: 'templates/login.html',
       controller: 'LoginCtrl'
     })
-
     // setup an abstract state for the tabs directive
     .state('tab', {
       url: '/tab',
       abstract: true,
       templateUrl: 'templates/tabs.html'
     })
-
     // Each tab has its own nav history stack:
     .state('tab.friends', {
       url: '/friends',
@@ -151,7 +155,13 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         }
       }
     })
-
+    //
+    .state('videocall', {
+        url: '/videocall/:contactName?isCalling',
+        controller: 'VideoCallCtrl',
+        templateUrl: 'templates/videoCall.html'
+    })
+    //
     .state('tab.chats', {
       url: '/chats',
       views: {
@@ -161,7 +171,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         }
       }
     })
-
+    //
     .state('tab.createRoom', {
       url: '/createRoom',
       views: {
@@ -171,7 +181,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         }
       }
     })
-
+    //
     .state('tab.chatRoom', {
       url: '/room/:roomId',
       views: {
@@ -230,7 +240,6 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         }
       }
     })
-
     .state('tab.account', {
       url: '/account',
       views: {
@@ -240,6 +249,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         }
       }
     });
+    
 
   // if none of the above states are matched, use this as the fallback
   $urlRouterProvider.otherwise('/login');//

@@ -60,7 +60,8 @@
     "org.apache.cordova.camera",
     "org.apache.cordova.splashscreen",
     "https://github.com/katzer/cordova-plugin-local-notifications",
-    "./engine/cordova-crosswalk-engine-c0.7.1"
+    "./engine/cordova-crosswalk-engine-c0.7.1",
+    "https://github.com/alongubkin/phonertc.git"
   ],
   "cordovaPlatforms": [
     {
