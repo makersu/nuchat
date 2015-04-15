@@ -8,7 +8,7 @@
       on-refresh="doRefresh()">
     </ion-refresher>
     <ion-list>
-      <ion-item class="item-avatar item-icon-right" collection-repeat="friend in friends" type="item-text-wrap" ng-click="friendChat(friend.id)">
+      <ion-item class="item-avatar item-icon-right" collection-repeat="friend in friends" type="item-text-wrap" ng-click="friendAction(friend.id)">
         <img ng-src="{{ friend.avatarThumbnail || 'images/profile.png' }}">
         {{friend.username}}
         <i class="icon ion-chevron-right icon-accessory"></i>
@@ -16,3 +16,24 @@
     </ion-list>
   </ion-content>
 </ion-view>
+
+<script id="friendModal.html" type="text/ng-template">
+  <ion-modal-view class="modal-center">
+    <ion-content scroll="false">
+      <div class="profile">
+        <div class="profile-bg">
+          <img ng-src="{{ selected.profile || selected.avatarThumbnail }}">
+        </div>
+        <img class="thumbnail" ng-src="{{ selected.avatarThumbnail }}">
+        <div class="name">{{ ::selected.username }}</div>
+      </div>
+      <div class="actions">
+        <div class="tabs tabs-royal tabs-icon-top">
+          <div class="tab-item"><i class="icon ion-chatbubble-working" ng-click="friendChat(selected.id)"></i>{{ ::'CHAT' | translate }}</div>
+          <div class="tab-item"><i class="icon ion-ios-telephone"></i>{{ ::'AUDIO_CHAT' | translate }}</div>
+          <div class="tab-item"><i class="icon ion-ios-videocam"></i>{{ ::'VIDEO_CHAT' | translate }}</div>
+        </div>
+      </div>
+    </ion-content>
+  </ion-modal-view>
+</script>

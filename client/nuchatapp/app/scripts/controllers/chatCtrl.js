@@ -2,11 +2,6 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
             $ionicScrollDelegate, $ionicTabsDelegate, $ionicNavBarDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
             $ionicModal, $location, $utils, FriendService, $imageViewer, $checkFormat) {
 
-	console.log('ChatCtrl');
-	console.log($stateParams.roomId);
-  RoomService.getRoomMessages($stateParams.roomId)
-  $scope.friends=FriendService.friends;
-
   // var data = {}
   // data.roomId=$stateParams.roomId
   // var lastMessage= RoomService.getLastMessage($stateParams.roomId)
@@ -135,12 +130,8 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
       //LBSocket.emit('room:messages:new', $scope.input);
       RoomService.createMessage($scope.input);
     }
-    RoomService.getLastGroup($scope.room).open = true;
-    $timeout(function() {
-      scrollHandle.scrollBottom();
-    });
 
-    $scope.input={};
+    $scope.input = {};
 
     if ($scope.metaMenu.isShown()) {
       $scope.closeMetaMenu();
@@ -277,16 +268,21 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
 
   /* OnLoad */
 	//$scope.room = Room.findById({ id: $stateParams.roomId });
+  // console.log('ChatCtrl');
+  // console.log($stateParams.roomId);
   RoomService.setCurrentRoom($stateParams.roomId);
   $scope.room = RoomService.getCurrentRoom();
-  $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
-    return $filter('amChatGrouping')(msg.created);
-  });
 
   // OnResume
   $scope.$on('$ionicView.enter', function() {
     console.log('enter controller');
     console.log($scope.room);//
+    $scope.friends = FriendService.friends;
+    RoomService.getRoomMessages($scope.room.id);
+    $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
+      return $filter('amChatGrouping')(msg.created);
+    });
+    console.log($scope.room.groupedMessages);
     // Initializing NUChatObject service
     $NUChatObject.init($scope.room, $scope.currentUser);
 
@@ -356,6 +352,13 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
       } else {
         console.error('Cannot find the user('+args.msg.ownerId+') from the friend list');
       }
+    } else {  // If sent by self, scrolling to the bottom.
+      RoomService.getLastGroup($scope.room) && (function() {
+        RoomService.getLastGroup($scope.room).open = true;
+      })();
+      $timeout(function() {
+        scrollHandle.scrollBottom();
+      });
     }
 
     if (args.msg.type !== METATYPE.LINK) {

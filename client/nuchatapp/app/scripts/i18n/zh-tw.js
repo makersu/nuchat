@@ -5,6 +5,8 @@ var chtTranslate = function ($translateProvider) {
 		DELETE: '刪除',
 		COMPLETE: '完成',
 		CHAT: '聊天',
+		AUDIO_CHAT: '通話',
+		VIDEO_CHAT: '視訊',
 		TODAY: '今天',
 		YESTERDAY: '昨天',
 		MORE: '更多',

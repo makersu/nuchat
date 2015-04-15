@@ -320,6 +320,8 @@
 					scope.msg.isImg = true;
 					var imgSrc = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
 					scope.uploading = !scope.msg.thumbnailFileId;
+					console.log('parseImg uploading? '+scope.uploading);
+					console.log(scope.msg);
 					var $imgElem = angular.element('<img id="img'+scope.msg.id+'" src="'+imgSrc+'">');
 					_msgContent.append($imgElem).append( $compile('<ion-spinner ng-if="uploading"></ion-spinner>' )(scope) );
 					$imgElem.on('click', scope.metaOption.imgSetting.clickHandler ? function() {

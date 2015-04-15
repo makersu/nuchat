@@ -45,6 +45,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   LBSocket.on('room:messages:new', function(newMessageInfo) {
   	console.log('room:messages:new');
   	console.log(newMessageInfo);
+  	console.log(_currentRoomId);
   	updateLatestMessageInfo(newMessageInfo);
   	if (newMessageInfo.message.roomId == _currentRoomId && !$rootScope.isInBackground) {
   		// syncMessage(data.message)
@@ -94,6 +95,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   	// console.log('addMessage');
 		// console.log(message);
 		var room = getRoom(message.roomId);
+		if (!message.id) message.id = new Date().getTime();
 		// console.log(room);
 		room.messages[message.id] = message;
 		// console.log(room.messages);

@@ -18,6 +18,23 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
     }
   }
 
+  $scope.friendAction = function(friendId) {
+    $scope.selected = FriendService.get(friendId);
+    if (!$scope.friendModal) {
+      $ionicModal.fromTemplateUrl('friendModal.html', {
+        scope: $scope,
+      }).then(function(modal) {
+        $scope.friendModal = modal;
+        $scope.friendModal.show();
+      });
+    } else {
+      $scope.friendModal.show();
+    }
+  };
+  $scope.closeFriendModal = function() {
+    $scope.friendModal.hide();
+  };
+
 	$scope.friendChat = function(friendId){
 		console.log(friendId);//
 
@@ -33,6 +50,7 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
         console.log($ionicHistory.backView())
         console.log($ionicHistory.currentView())
       	//$ionicHistory.currentView($ionicHistory.backView());
+        $scope.friendModal.isShown() && $scope.closeFriendModal();
       	$state.go('tab.chatRoom',{roomId:room.id},{location: 'replace'});	
         // $location.path('/tab/room/'+room.id);
       }

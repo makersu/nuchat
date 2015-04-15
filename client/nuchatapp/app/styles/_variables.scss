@@ -4,6 +4,8 @@ $cover_font_color: #fff;
 $chatNotification_font_color: #fff;
 $chatNotification_bg_color: rgba(0, 0, 0, 0.4);
 $videoIcon_color: #fff;
+$modalCenter_border_color: #999;
+$modalProfile_border_color: #fff;
 
 /* Font Size */
 $timestamp_fontSize: 10px;
@@ -13,6 +15,8 @@ $audioControlIcon_font_size: 30px;
 $navIcon_font_size: 24px;
 $cover_font_size: 20px;
 $videoIcon_font_size: 28px;
+$modalProfileName_font_size: 22px;
+$modalProfileAction_font_size: 12px;
 
 /* Layouts */
 $directoryCover_height: 150px;
@@ -20,3 +24,4 @@ $searchInput_height: 36px;
 $inputBar_height: 64px;
 $chatNotification_bottom: 44px;
 $messageImg_max_width: 160px;
+$modalProfile_height: 176px;

@@ -5,6 +5,8 @@ var enTranslate = function ($translateProvider) {
 		DELETE: 'Delete',
 		COMPLETE: 'Complete',
 		CHAT: 'Chat',
+		AUDIO_CHAT: 'Audio Chat',
+		VIDEO_CHAT: 'Video Chat',
 		TODAY: 'Today',
 		YESTERDAY: 'Yesterday',
 		MORE: 'More',
