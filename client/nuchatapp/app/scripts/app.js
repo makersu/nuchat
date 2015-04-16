@@ -111,17 +111,17 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     });
   });
 })
-.run(function ($state, signaling) {
-    signaling.on('messageReceived', function (name, message) {
-      switch (message.type) {
-        case 'call':
-          if ($state.current.name === 'videocall') { return; }
+// .run(function ($state, signaling) {
+    // signaling.on('messageReceived', function (name, message) {
+    //   switch (message.type) {
+    //     case 'call':
+    //       if ($state.current.name === 'videocall') { return; }
           
-          $state.go('videocall', { isCalling: false, contactName: name });
-          break;
-      }
-    });
-  })  
+    //       $state.go('videocall', { isCalling: false, contactName: name });
+    //       break;
+    //   }
+    // });
+  // })  
 .config(function($stateProvider, $urlRouterProvider, $httpProvider) {
 
   // Ionic uses AngularUI Router which uses the concept of states
@@ -159,7 +159,8 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     .state('videocall', {
         url: '/videocall/:contactName?isCalling',
         controller: 'VideoCallCtrl',
-        templateUrl: 'templates/videoCall.html'
+        templateUrl: 'templates/videoCall.html',
+        cache:false
     })
     //
     .state('tab.chats', {
