@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $ionicTabsDelegate, $ionicNavBarDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
+            $ionicScrollDelegate, $ionicTabsDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
             $ionicModal, $location, $utils, FriendService, $imageViewer, $checkFormat) {
 
   // var data = {}
@@ -101,8 +101,6 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
             handle.$element.removeClass('has-tabs-top');
           });
         }
-        // Re-add the navbar back.
-        $ionicNavBarDelegate.showBar(true);
       });
     }
   }

@@ -16,3 +16,9 @@
 		}
 	}
 }
+
+.tab-item {
+	&.tab-assertive {
+		background-color: $assertive;
+	}
+}

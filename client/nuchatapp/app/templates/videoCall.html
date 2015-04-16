@@ -1,0 +1,58 @@
+<ion-view title="Call" hide-back-button="true" hide-nav-bar="true">
+  <ion-content scroll="false">
+    <div class="calling-container" ng-if="isCalling && !callInProgress">
+      <p>Calling to <span class="balanced">{{ ::contactTarget.username }}</span>...</p>
+
+      <button class="button button-assertive" ng-click="ignore()">
+        Nevermind
+      </button>
+    </div>
+
+    <div class="calling-container" ng-if="!isCalling && !callInProgress">
+      <p><span class="balanced">{{ ::contactTarget.username }}</span> is calling you</p>
+
+      <button class="button button-positive" ng-click="answer()">
+        Answer
+      </button>
+
+      <button class="button button-assertive" ng-click="ignore()">
+        Ignore
+      </button>
+    </div>
+
+    <div class="calling-container" ng-if="callInProgress">
+      <p>
+        Call in progress...
+      </p>
+
+      <button class="button button-assertive" ng-click="end()">
+        End
+      </button>
+    </div>
+
+    <video-view></video-view>
+
+  </ion-content>
+  <collapse-buttons class="button-royal" float="bottom left">
+    <a class="button button-royal icon ion-plus button-float add-one" expand-to="right" ng-click="openSelectContactModal()"></a>
+    <a class="button button-royal icon button-float tags" ng-class="{ 'ion-ios-mic-off': muted, 'ion-ios-mic': !muted }" expand-to="top" ng-click="toggleMute()"></a>
+  </collapse-buttons>
+</ion-view>
+<script id="callingModal.html" type="text/ng-template">
+  <ion-modal-view class="modal-center">
+    <ion-content scroll="false">
+      <div class="profile">
+        <div class="profile-bg">
+          <img ng-src="{{ contactTarget.profile || contactTarget.avatarThumbnail }}">
+        </div>
+        <div class="name">{{ ::contactTarget.username }}</div>
+      </div>
+      <div class="actions">
+        <div class="tabs tabs-royal tabs-icon-top">
+          <div class="tab-item tab-assertive" ng-if="!callInProgress"><i class="icon ion-ios-telephone hang-up" ng-click="ignore()"></i>{{ ::'IGNORE' | translate }}</div>
+          <div class="tab-item" ng-if="!isCalling && !callInProgress"><i class="icon ion-ios-videocam" ng-click="answer()"></i>{{ ::'ANSWER' | translate }}</div>
+        </div>
+      </div>
+    </ion-content>
+  </ion-modal-view>
+</script>

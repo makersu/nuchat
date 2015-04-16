@@ -58,6 +58,13 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
 
 	}
 
+  $scope.friendVideoCall = function(friend){
+    console.log(friend);//
+    $scope.friendModal.isShown() && $scope.closeFriendModal();
+    console.log('closeModal');
+    $state.go('videocall',{ isCalling: true, contactTarget: angular.toJson(friend) },{location: 'replace'}); 
+  }
+
   $scope.doRefresh = function() {
     console.log('doRefresh')
     FriendService.getFriends();

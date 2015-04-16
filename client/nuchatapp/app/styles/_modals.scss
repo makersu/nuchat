@@ -81,6 +81,11 @@
 				font-size: $modalProfileAction_font_size;
 				i {
 					margin-bottom: 3px;
+					&.ion-ios-telephone {
+						&.hang-up {
+							@include rotateZ(135deg);
+						}
+					}
 				}
 			}
 		}
@@ -90,4 +95,17 @@
 // Backdrop
 .modal-backdrop {
 	background-color: rgba(0, 0, 0, 0.5);
+}
+
+// Platform specific
+.platform-ios {
+	.modal {
+		.profile {
+			.profile-bg {
+				img {
+					@include border-radius(5% 5% 0 0);
+				}
+			}
+		}
+	}
 }

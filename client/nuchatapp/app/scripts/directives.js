@@ -1,4 +1,28 @@
 angular.module('Nuchatapp.directives', [])
+	.directive('videoView', function ($rootScope, $timeout) {
+    return {
+      restrict: 'E',
+      template: '<div class="video-container"></div>',
+      replace: true,
+      link: function (scope, element, attrs) {
+        function updatePosition(event, args) {
+        	var callInProgress = args.callInProgress || false;
+        	var local = callInProgress ? {
+        		position: [verge.viewportW()-120, verge.viewportH()-120],
+            size: [100, 100]
+        	} : {};
+        	console.log('updatePosition');
+          cordova.plugins.phonertc.setVideoView({
+            container: element[0],
+            local: local
+          });
+        }
+
+        $timeout(updatePosition, 500);
+        $rootScope.$on('videoView.updatePosition', updatePosition);
+      }
+    }
+  })
 	.directive('linkinapp', function($jmTools, $timeout) {
 		return {
 			restrict: 'A',

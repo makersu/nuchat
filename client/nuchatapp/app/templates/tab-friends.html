@@ -31,7 +31,7 @@
         <div class="tabs tabs-royal tabs-icon-top">
           <div class="tab-item"><i class="icon ion-chatbubble-working" ng-click="friendChat(selected.id)"></i>{{ ::'CHAT' | translate }}</div>
           <div class="tab-item"><i class="icon ion-ios-telephone"></i>{{ ::'AUDIO_CHAT' | translate }}</div>
-          <div class="tab-item"><i class="icon ion-ios-videocam"></i>{{ ::'VIDEO_CHAT' | translate }}</div>
+          <div class="tab-item"><i class="icon ion-ios-videocam" ng-click="friendVideoCall(selected)"></i>{{ ::'VIDEO_CHAT' | translate }}</div>
         </div>
       </div>
     </ion-content>

@@ -18,6 +18,11 @@ var enTranslate = function ($translateProvider) {
 		SENT_IMG: 'Sent an image',
 		SENT_AUDIO: 'Send an Audio',
 		SENT_VIDEO: 'Send a Video',
+
+		// Video Chat
+		IGNORE: 'Ignore',
+		ANSWER: 'Answer',
+
 		// Tags
 		TAGS: 'Tags',
 		MANAGE_TAGS: 'Manage Tags',

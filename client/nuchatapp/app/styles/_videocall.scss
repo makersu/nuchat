@@ -1,0 +1,10 @@
+.video-container {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 0;
+	right: 0;
+  background-color: #000;
+  @include background-image(linear-gradient(to bottom, #000, #313131));
+  z-index: 99;
+}

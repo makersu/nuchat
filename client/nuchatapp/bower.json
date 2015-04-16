@@ -13,7 +13,8 @@
     "bootstrap-css-only": "~3.3.2",
     "font-awesome": "~4.3.0",
     "verge": "~1.9.1",
-    "underscore": "~1.8.2"
+    "underscore": "~1.8.2",
+    "angular-socket-io": "~0.7.0"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.17",

@@ -1,4 +1,4 @@
-function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $timeout, $NUChatTags, $ionicNavBarDelegate) {
+function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $timeout, $NUChatTags) {
 	/* Variables */
 	// Private
 
@@ -20,6 +20,6 @@ function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $timeout, 
 	$scope.room = RoomService.getCurrentRoom();
 	// OnResume
 	$scope.$on('$ionicView.enter', function() {
-    $ionicNavBarDelegate.showBar(false);
+
 	});
 }
