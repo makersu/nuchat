@@ -1,4 +1,4 @@
-function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $stateParams, signaling, ContactsService) {
+function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $stateParams, signaling, SignalingService) {
   console.log('VideoCallCtrl')
 
     var duplicateMessages = [];
@@ -8,7 +8,7 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
     $scope.isCalling = $stateParams.isCalling === 'true';
     $scope.contactName = $stateParams.contactName;
 
-    $scope.allContacts = ContactsService.onlineUsers;
+    $scope.allContacts = SignalingService.onlineUsers;
     console.log($scope.allContacts)//
     $scope.contacts = {};
     $scope.hideFromContactList = [$scope.contactName];
@@ -23,8 +23,6 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
 
     function call(isInitiator, contactName) {
     	console.log('function call')//
-      console.log(isInitiator)//
-      console.log(contactName)//
 
       console.log(new Date().toString() + ': calling to ' + contactName + ', isInitiator: ' + isInitiator);
 
@@ -41,10 +39,14 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
         }
       };
 
+      console.log(config)
+
       var session = new cordova.plugins.phonertc.Session(config);
       
       session.on('sendMessage', function (data) {
         console.log('session.on sendMessage')//
+        console.log('signaling.emit sendMessage')//
+        console.log(JSON.stringify(data))
         signaling.emit('sendMessage', contactName, { 
           type: 'phonertc_handshake',
           data: JSON.stringify(data)
@@ -52,12 +54,15 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
       });
 
       session.on('answer', function () {
-        console.log('Answered!');
+        console.log('session.on Answered!');
       });
 
       session.on('disconnect', function () {
+        console.log('session.on disconnect');//
         if ($scope.contacts[contactName]) {
+          console.log('$scope.contacts')
           delete $scope.contacts[contactName];
+          console.log('$scope.contacts')
         }
 
         if (Object.keys($scope.contacts).length === 0) {
@@ -73,15 +78,20 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
 
     if ($scope.isCalling) {
     	console.log($scope.isCalling)//
+      console.log('signaling.emit sendMessage:call')
       signaling.emit('sendMessage', $stateParams.contactName, { type: 'call' });
     };
 
     $scope.ignore = function () {
+      console.log('$scope.ignore')
       var contactNames = Object.keys($scope.contacts);
+      console.log(contactNames)
       if (contactNames.length > 0) { 
         $scope.contacts[contactNames[0]].disconnect();
       } else {
+        console.log('signaling.emit sendMessage:ignore')
         signaling.emit('sendMessage', $stateParams.contactName, { type: 'ignore' });
+        console.log('$state.go tab.friends')
         $state.go('tab.friends');
       }
     };
@@ -174,6 +184,7 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
         case 'ignore':
           console.log('message.type ignore')
           var len = Object.keys($scope.contacts).length;
+          console.log(len)
           if (len > 0) { 
             if ($scope.contacts[name]) {
               $scope.contacts[name].close();
@@ -197,6 +208,7 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
         case 'phonertc_handshake':
           console.log('message.type phonertc_handshake')
           if (duplicateMessages.indexOf(message.data) === -1) {
+            console.log($scope.contacts[name]);//session
             $scope.contacts[name].receiveMessage(JSON.parse(message.data));
             duplicateMessages.push(message.data);
           }
@@ -213,7 +225,7 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
               $timeout(function () {
                 signaling.emit('sendMessage', contact, { 
                   type: 'add_to_group',
-                  contacts: [ContactsService.currentName],
+                  contacts: [SignalingService.currentName],//???
                   isInitiator: true
                 });
               }, 1500);
