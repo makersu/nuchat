@@ -46,6 +46,9 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
       stop: { img: 'images/audiowave.png', icon: 'icon ion-play' }, 
       play: { img: 'images/audiowave.gif', icon: 'icon ion-pause' }
     },
+    linkSetting: {
+      clickHandler: $rootScope.openInappbrowser,
+    },
     remote: ENV.GRIDFS_BASE_URL,
   };
   console.log($scope.currentUser);

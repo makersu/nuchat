@@ -12,7 +12,7 @@
 						<div class="img-left face front">
 							<a class="url-view" ng-click="openInappbrowser(link.linkView.url)">
 								<div class="content">
-  								<img ng-src="{{ link.linkView.image }}" ng-if="link.linkView.image">
+  								<div class="graph"><img ng-src="{{ link.linkView.image }}" ng-if="link.linkView.image"></div>
   								<div class="info">
 	  								<h5 class="title" ng-bind-html="link.linkView.title"></h5>
 	  								<p class="descript" ng-bind-html="link.linkView.description | limitTo:28"></p>

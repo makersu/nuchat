@@ -3,6 +3,7 @@ var chtTranslate = function ($translateProvider) {
 		// Global
 		EDIT: '編輯',
 		DELETE: '刪除',
+		CANCEL: '取消',
 		COMPLETE: '完成',
 		CHAT: '聊天',
 		AUDIO_CHAT: '通話',
@@ -37,6 +38,8 @@ var chtTranslate = function ($translateProvider) {
 		FILES: '檔案',
 		LINKS: '連結',
 		CALENDAR: '行事曆',
+		ADD_LINK: '新增連結',
+		EDIT_LINK: '編輯連結',
 
 		// Friends
 		SEARCH_OR_ADD_FRIENDS: '搜尋/新增好友',

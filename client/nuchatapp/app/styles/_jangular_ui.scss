@@ -39,10 +39,12 @@
 		.content {
 			@include display-flex;
 		}
-		img {
+		.graph {
 			@include flex(1);
 			display: inline-block;
 			margin: 5px 5px 0 2px;
+		}
+		img {
 			height: 100%;
 		}
 		.info {
@@ -321,11 +323,6 @@ grid-menu {
 			}
 		}
 	}
-	&.editable {
-		.img-wrapper {
-			margin: 5px 0 0 5px;
-		}
-	}
 	// Audio element
 	.audio {
 		width: 100%;
@@ -372,5 +369,30 @@ grid-menu {
 	}
 	.audio, .video {
 		margin: 5px 0;
+	}
+	// Link element
+	.link {
+		position: relative;
+		.close {
+			position: absolute;
+			top: 5px;
+			right: 0;
+			z-index: 9;
+			@include opacity(.6);
+			& + .close {
+				right: 35px;
+			}
+		}
+	}
+
+	// Editable
+	&.editable {
+		.img-wrapper {
+			margin: 5px 0 0 5px;
+		}
+		.link {
+			width: 97%;
+			margin: auto;
+		}
 	}
 }

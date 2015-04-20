@@ -3,6 +3,7 @@ var enTranslate = function ($translateProvider) {
 		// Global
 		EDIT: 'Edit',
 		DELETE: 'Delete',
+		CANCEL: 'Cancel',
 		COMPLETE: 'Complete',
 		CHAT: 'Chat',
 		AUDIO_CHAT: 'Audio Chat',
@@ -42,6 +43,8 @@ var enTranslate = function ($translateProvider) {
 		FILES: 'Files',
 		LINKS: 'Links',
 		CALENDAR: 'Calendar',
+		ADD_LINK: 'Add a link',
+		EDIT_LINK: 'Edit a link',
 
 		// Friends
 		SEARCH_OR_ADD_FRIENDS: 'Search/Add Friends',

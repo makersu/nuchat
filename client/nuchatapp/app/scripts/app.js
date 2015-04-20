@@ -15,6 +15,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     // for form inputs)
     if(window.cordova && window.cordova.plugins.Keyboard) {
       cordova.plugins.Keyboard.hideKeyboardAccessoryBar(true);
+      cordova.plugins.Keyboard.disableScroll(true)
     }
     if(window.StatusBar) {
       // org.apache.cordova.statusbar required
@@ -23,6 +24,8 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
 
     // InAppBrowser
     $rootScope.openInappbrowser = function(link, useSys) {
+      console.log('click to');
+      console.log(link);
       window.open(link, useSys ? '_system' : '_blank', 'location=no,enableViewportScale=yes')
     }
 

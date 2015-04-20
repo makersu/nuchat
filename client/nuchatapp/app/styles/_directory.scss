@@ -41,6 +41,13 @@
 	}
 }
 
+/* Files */
+.files {
+	.img-wrapper {
+		border: 2px solid $directoryFile_border_color;
+	}
+}
+
 /* Links */
 .item-link {
 	margin: 5px 4px;

@@ -37,6 +37,84 @@
 		}
 	}
 
+	// Getting the useful meta attributes and assigning into the object.
+	function getMetaAttr(meta, obj) {
+		if (meta) {
+			var property = meta.getAttribute('property') || meta.getAttribute('name') || meta.getAttribute('rel');
+			var content = meta.getAttribute('content') || meta.getAttribute('href');
+			switch (property) {
+				case 'og:title':
+				case 'twitter:title':
+				case 'title':
+					if (!obj.title) {
+						obj.title = content;
+					}
+					break;
+				case 'og:description':
+				case 'twitter:description':
+				case 'description':
+					if (!obj.description) {
+						obj.description = content;
+					}
+					break;
+				case 'og:image':
+				case 'twitter:image':
+				case 'image':
+				case 'img_src':
+				case 'shortcut icon':
+				case 'icon':
+					if (!obj.image) {
+						obj.image = content;
+						console.log(content);
+					}
+					break;
+				case 'og:url':
+				case 'twitter:url':
+				case 'url':
+				case 'canonical':
+					if (!obj.url) {
+						// console.log('url property: '+property);
+						// console.log('url content: '+content);
+						obj.url = content;
+					}
+					break;
+			}
+		}
+	}
+
+	function parseSummaryLink(link, obj, $http) {
+		var promise = null;
+		if (link && link.match(/^http(s)?:\/\/.*/)) {
+			promise = $http.get(link)
+				.then(function(response) {
+					var html = angular.element(response.data);
+					angular.forEach(html, function(e) {
+						if (e.tagName) {
+							if (e.tagName == 'META' || e.tagName == 'LINK') {
+								getMetaAttr(e, obj);
+							} else if (e.tagName == 'TITLE') {
+								if (!obj.title) {
+									obj.title = e.innerText;
+								}
+							}
+						}
+					});
+					if (!obj.url) {
+						obj.url = link;
+					}
+					if (!obj.image) {
+						obj.image = obj.url+(obj.url.lastIndexOf('/') === (obj.url.length-1) ? '' : '/')+'favicon.ico';
+					} else if (obj.image.indexOf('/') == 0 || obj.image.indexOf('http') != 0) {
+						obj.image = obj.url+(obj.image.indexOf('/') === 0 ? '' : '/')+obj.image;
+					}
+					return obj;
+				}, function(err) {
+					return err;
+				});
+		}
+		return promise;
+	}
+
 	function isIOS() {
 		return device.platform == 'iOS';
 	}
@@ -137,6 +215,7 @@
 			link: function(scope, elem, attrs) {
 				var _audioSetting = scope.metaOption.audioSetting || {};
 				var _foldingThres = scope.metaOption.foldingThres || FOLDING_LINE_THRES;
+				var _linkSetting = scope.metaOption.linkSetting || {};
 				var _remoteSrv = scope.metaOption.remote || ''; // Empty if use the local file for development...
 				var _originMsg = scope.message = scope.msg.text;
 				var _msgContent = elem.find('div');
@@ -164,6 +243,10 @@
 		      $location.hash(scope.msg.id);
 		      _scrollHandle.$anchorScroll();
 				};
+				scope.linkClickHandler = function() {
+					console.log(scope.msg.text);
+					_linkSetting.clickHandler && _linkSetting.clickHandler(scope.msg.text);
+				};
 
 				// Metatype parsing
 				function parse(type) {
@@ -174,7 +257,7 @@
 								.then(function(linkView) {
 									scope.msg.linkView = linkView;
 									// $urlView.setContentObj(scope.msg);
-									q.resolve($compile('<url-view content-obj="msg"></url-view>')(scope));
+									q.resolve($compile('<url-view content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope));
 								}, function(err) {
 									q.reject(err);
 								});
@@ -213,7 +296,7 @@
 								scope.msg.linkView = linkView;
 								// $urlView.setContentObj(scope.msg);
 								// console.log('set Link view back');
-								q.resolve($compile('<url-view content-obj="msg"></url-view>')(scope));
+								q.resolve($compile('<url-view content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope));
 							}, function(err) {
 								q.reject(err);
 							});
@@ -236,82 +319,46 @@
 					var cacheView = { id: scope.msg.id };
 					scope.msg.type = METATYPE.LINK;
 					angular.forEach(links, function(link) {
-						if (link && link.match(/^http(s)?:\/\/.*/)) {
-							scope.message = scope.message.replace(link, '<a href="'+link+'">'+link+'</a>');
-							$http.get(link)
-								.then(function(response) {
-									var html = angular.element(response.data);
-									angular.forEach(html, function(e) {
-										if (e.tagName) {
-											if (e.tagName == 'META' || e.tagName == 'LINK') {
-												getMetaAttr(e, cacheView);
-											} else if (e.tagName == 'TITLE') {
-												if (!cacheView.title) {
-													cacheView.title = e.innerText;
-												}
-											}
-										}
-									});
-									if (!cacheView.url) {
-										cacheView.url = link;
-									}
-									if (!cacheView.image) {
-										cacheView.image = cacheView.url+'/favicon.ico';
-									} else if (cacheView.image.indexOf('/') == 0 || cacheView.image.indexOf('http') != 0) {
-										cacheView.image = cacheView.url+'/'+cacheView.image;
-									}
-									q.resolve(cacheView);
-								}, function(err) {
-									q.reject(err);
-								});
+						var promise = parseSummaryLink(link, cacheView, $http);
+						if (promise) {
+							promise.then(function(result) {
+								scope.message = scope.message.replace(link, '<a href="'+link+'">'+link+'</a>');
+								q.resolve(result);
+							}, function(err) {
+								q.reject(err);
+							});
 						}
+						// if (link && link.match(/^http(s)?:\/\/.*/)) {
+						// 	scope.message = scope.message.replace(link, '<a href="'+link+'">'+link+'</a>');
+						// 	$http.get(link)
+						// 		.then(function(response) {
+						// 			var html = angular.element(response.data);
+						// 			angular.forEach(html, function(e) {
+						// 				if (e.tagName) {
+						// 					if (e.tagName == 'META' || e.tagName == 'LINK') {
+						// 						getMetaAttr(e, cacheView);
+						// 					} else if (e.tagName == 'TITLE') {
+						// 						if (!cacheView.title) {
+						// 							cacheView.title = e.innerText;
+						// 						}
+						// 					}
+						// 				}
+						// 			});
+						// 			if (!cacheView.url) {
+						// 				cacheView.url = link;
+						// 			}
+						// 			if (!cacheView.image) {
+						// 				cacheView.image = cacheView.url+'/favicon.ico';
+						// 			} else if (cacheView.image.indexOf('/') == 0 || cacheView.image.indexOf('http') != 0) {
+						// 				cacheView.image = cacheView.url+'/'+cacheView.image;
+						// 			}
+						// 			q.resolve(cacheView);
+						// 		}, function(err) {
+						// 			q.reject(err);
+						// 		});
+						// }
 					});
 					return q.promise;
-				}
-
-				// Getting the useful meta attributes and assigning into the object.
-				function getMetaAttr(meta, obj) {
-					if (meta) {
-						var property = meta.getAttribute('property') || meta.getAttribute('name') || meta.getAttribute('rel');
-						var content = meta.getAttribute('content') || meta.getAttribute('href');
-						switch (property) {
-							case 'og:title':
-							case 'twitter:title':
-							case 'title':
-								if (!obj.title) {
-									obj.title = content;
-								}
-								break;
-							case 'og:description':
-							case 'twitter:description':
-							case 'description':
-								if (!obj.description) {
-									obj.description = content;
-								}
-								break;
-							case 'og:image':
-							case 'twitter:image':
-							case 'image':
-							case 'img_src':
-							case 'shortcut icon':
-							case 'icon':
-								if (!obj.image) {
-									obj.image = content;
-									console.log(content);
-								}
-								break;
-							case 'og:url':
-							case 'twitter:url':
-							case 'url':
-							case 'canonical':
-								if (!obj.url) {
-									// console.log('url property: '+property);
-									// console.log('url content: '+content);
-									obj.url = content;
-								}
-								break;
-						}
-					}
 				}
 
 				// Assuming the img uri provided.
@@ -412,6 +459,7 @@
 					var text = scope.message;
 					var lines = scope.message.split('\n');
 					if (lines.length > _foldingThres || scope.message.length > FOLDING_CHAR_THRES) {
+						text = '';
 						for (var i = 0; i < lines.length && i < _foldingThres && text.length < FOLDING_CHAR_THRES; i++) {
 							text += lines[i]+'<br>';
 						}
@@ -1114,7 +1162,7 @@
    *
    * @description Article compound of text, image, audio, video, links, and other files.
    */
-  jangularUI.directive('richArticle', ['$compile', '$timeout', '$filter', function($compile, $timeout, $filter) {
+  jangularUI.directive('richArticle', ['$compile', '$timeout', '$filter', '$http', function($compile, $timeout, $filter, $http) {
   	return {
   		restrict: 'EA',
   		require: 'ngModel',
@@ -1128,6 +1176,7 @@
   			var $textElem = angular.element(scope.editable ? '<textarea msd-elastic="\\n"></textarea>' : '<p class="textarea"></p>');
   			var $audioElem = angular.element('<div class="audio"><audio controls></div>');
   			var $videoElem = angular.element('<div class="video"><video'+(device.platform == 'iOS' ? ' controls' : '')+'></video>'+(device.platform == 'iOS' ? '' : '<i class="icon ion-play"></i>')+'<div>');
+  			var $linkElem = angular.element('<div class="link img-left"><url-view click-handler="linkClickHandler"></url-view>'+(scope.editable ? '<i class="button-icon icon ion-close-circled close"></i>' : '')+'</div>');
 
   			scope.delParagraph = function(idx) {
   				// console.log('click to delete '+idx);
@@ -1136,9 +1185,9 @@
   			function viewImgs(imgObj) {
   				var imgList = $filter('filter')(scope.article, {type: 'img'});
 					var imgIdx = imgList.indexOf(imgObj);
-					console.log(imgObj);
-					console.log(imgList);
-					console.log('selected index: '+imgIdx);
+					// console.log(imgObj);
+					// console.log(imgList);
+					// console.log('selected index: '+imgIdx);
 					scope.options.img.click(imgList, imgIdx);
   			};
   			function isTextParagraph(p) {
@@ -1184,6 +1233,25 @@
   							$pElem.append('<i class="button-icon icon ion-close-circled close" ng-click="delParagraph('+idx+')"></i>');
   						})();
   						break;
+  					case 'link':
+  						$pElem = $linkElem.clone();
+  						scope.linkClickHandler = function() {
+  							scope.options.link.click(p.content);
+  						};
+  						var promise = parseSummaryLink(p.content, {}, $http);
+							if (promise) {
+								promise.then(function(result) {
+									scope.summaryLink = { id: new Date().getTime(), linkView: result };
+									// console.log($pElem.find('url-view'));
+								}, function(err) {
+									console.error(err);
+								});
+								$pElem.find('url-view').attr('content-obj', 'summaryLink');
+							}
+							scope.editable && (function() {
+  							$pElem.find('i').attr('ng-click', 'delParagraph('+idx+')');
+  						})();
+							break;
   				}
   				// newParagraph($pElem, idx);
   				elem.append( $compile($pElem)(scope) );
@@ -1262,8 +1330,9 @@
   		scope: {
   			contentObj: '=',
   			maxLength: '=',
+  			clickHandler: '=',
   		},
-  		template: '<a class="url-view" href="{{ ::view.url }}">'+
+  		template: '<a class="url-view" ng-click="clickHandler()">'+
   								'<div class="content">'+
 	  								'<div class="graph"><img ng-src="{{ ::view.image }}" ng-if="::view.image"></div>'+
 	  								'<div class="info">'+
@@ -1294,6 +1363,10 @@
 			  			var params = {};
 			  			params[scope.content.id] = true;
 			  			$rootScope.$broadcast('urlViewLoaded', params);
+	  				} else {
+	  					var watcher = scope.$watch('contentObj', function(newVal) {
+	  						newVal && applyView() && watcher();
+	  					});
 	  				}
 	  			});
   			}
