@@ -37,31 +37,44 @@ button {
 }
 
 /* Float buttons */
-// .button-float {
-//   z-index: 12;
-//   position: fixed;
-//   border-radius: 50%;
-//   @include box-shadow( 0 2px 5px 0 rgba(0, 0, 0, 0.26) );
+.button-float {
+  z-index: 100;
+  position: fixed;
+  min-width: 47px;
 //   @include translate3d(0, 0, 0);
 //   @include transition(0.2s linear);
 //   @include transition-property(transform, all);
 //   &.float-right {
 //   	right: 15px;
 //   }
-//   &.float-bottom {
-//   	bottom: 20px;
-//   }
+  &.float-bottom {
+  	bottom: 20px;
+  }
+  &.float-center {
+    left: 50%;
+    @include translateX(-50%);
+  }
 //   &.float-top {
 //   	top: 20px;
 //   }
 //   &.float-left {
 //   	left: 15px;
 //   }
-//   &:hover {
-//   	@include translate3d(0, -1px, 0);
-//   	@include box-shadow( 0 4px 8px 0 rgba(0, 0, 0, 0.4) );
-//     background: darken(#886aea, 10%);
-//   }
+  .button {
+    border-radius: 50%;
+    position: relative;
+    min-width: 47px;
+    z-index: 101;
+    @include box-shadow( 0 2px 5px 0 rgba(0, 0, 0, 0.26) );
+    &:hover {
+      @include translate3d(-50%, -1px, 0);
+      @include box-shadow( 0 4px 8px 0 rgba(0, 0, 0, 0.4) );
+      background: darken(#886aea, 10%);
+    }
+    &.ion-ios-telephone {
+      @include rotateZ(135deg);
+    }
+  }
 //   &.expand-left {
 //     right: 85px;
 //     @include transition(all 0.2s ease-out);
@@ -74,7 +87,7 @@ button {
 //     @include rotate3d(0, 0, 1, 360deg);
 //     z-index: 10;
 //   }
-// }
+}
 
 /* add this to keep your footer buttons down 
 at the bottom as the textarea resizes */

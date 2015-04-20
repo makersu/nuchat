@@ -111,17 +111,16 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     });
   });
 })
-.run(function ($state, signaling) {
-    signaling.on('messageReceived', function (name, message) {
-      switch (message.type) {
-        case 'call':
-          if ($state.current.name === 'videocall') { return; }
-          
-          $state.go('videocall', { isCalling: false, contactName: name });
-          break;
-      }
-    });
-  })  
+// .run(function ($state, signaling) {
+    // signaling.on('messageReceived', function (name, message) {
+    //   switch (message.type) {
+    //     case 'call':
+    //       if ($state.current.name === 'videocall') { return; }
+    //       $state.go('videocall', { isCalling: false, contactName: name });
+    //       break;
+    //   }
+    // });
+  // })  
 .config(function($stateProvider, $urlRouterProvider, $httpProvider, $ionicConfigProvider) {
   // Disable the swipe to go back.
   $ionicConfigProvider.views.swipeBackEnabled(false);

@@ -15,7 +15,7 @@
   								<img ng-src="{{ link.linkView.image }}" ng-if="link.linkView.image">
   								<div class="info">
 	  								<h5 class="title" ng-bind-html="link.linkView.title"></h5>
-	  								<p class="descript" ng-bind-html="link.linkView.description | limitTo:30"></p>
+	  								<p class="descript" ng-bind-html="link.linkView.description | limitTo:28"></p>
 	  								<div class="comment">{{ link.linkView.comment }}</div>
 	  								<div class="tags"><span class="badge" ng-repeat="tag in link.tags | limitTo:5">{{ tag }}</span><span ng-if="link.tags.length > 5">...</span></div>
 	  							</div>

@@ -1,6 +1,6 @@
-<ion-view title="Call" hide-back-button="true" hide-nav-bar="true">
+<ion-view class="video-call" title="Call" hide-back-button="true" hide-nav-bar="true">
   <ion-content scroll="false">
-    <div class="calling-container" ng-if="isCalling && !callInProgress">
+    <!-- <div class="calling-container" ng-if="isCalling && !callInProgress">
       <p>Calling to <span class="balanced">{{ ::contactTarget.username }}</span>...</p>
 
       <button class="button button-assertive" ng-click="ignore()">
@@ -28,17 +28,28 @@
       <button class="button button-assertive" ng-click="end()">
         End
       </button>
-    </div>
+    </div> -->
 
     <video-view></video-view>
 
+    <div class="calling-view">
+      <img ng-src="{{ contactTarget.profile || contactTarget.avatarThumbnail }}">
+    </div>
+
+    <div class="button-float float-bottom float-center">
+      <a class="button button-assertive icon ion-ios-telephone hang-up" ng-click="ignore()"></a>
+      <a class="button button-balanced icon ion-ios-videocam" ng-click="answer()" ng-if="!isCalling && !callInProgress"></a>
+      <a class="button button-royal icon ion-plus button-float add-one" ng-if="callInProgress" ng-click="openSelectContactModal()"></a>
+      <a class="button button-royal icon button-float" ng-class="{ 'ion-ios-mic-off': muted, 'ion-ios-mic': !muted }" ng-if="callInProgress" ng-click="toggleMute()"></a>
+    </div>
+
   </ion-content>
-  <collapse-buttons class="button-royal" float="bottom left">
+  <!-- <collapse-buttons class="button-royal" float="bottom left">
     <a class="button button-royal icon ion-plus button-float add-one" expand-to="right" ng-click="openSelectContactModal()"></a>
-    <a class="button button-royal icon button-float tags" ng-class="{ 'ion-ios-mic-off': muted, 'ion-ios-mic': !muted }" expand-to="top" ng-click="toggleMute()"></a>
-  </collapse-buttons>
+    <a class="button button-royal icon button-float" ng-class="{ 'ion-ios-mic-off': muted, 'ion-ios-mic': !muted }" expand-to="top" ng-click="toggleMute()"></a>
+  </collapse-buttons> -->
 </ion-view>
-<script id="callingModal.html" type="text/ng-template">
+<!--<script id="callingModal.html" type="text/ng-template">
   <ion-modal-view class="modal-center">
     <ion-content scroll="false">
       <div class="profile">
@@ -55,4 +66,4 @@
       </div>
     </ion-content>
   </ion-modal-view>
-</script>
+</script>-->

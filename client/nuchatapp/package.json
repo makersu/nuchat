@@ -58,10 +58,9 @@
     "org.apache.cordova.file",
     "org.apache.cordova.device",
     "org.apache.cordova.camera",
-    "org.apache.cordova.splashscreen",
     "https://github.com/katzer/cordova-plugin-local-notifications",
-    "./engine/cordova-crosswalk-engine-c0.7.1",
-    "https://github.com/alongubkin/phonertc.git"
+    "https://github.com/alongubkin/phonertc.git",
+    "org.apache.cordova.network-information"
   ],
   "cordovaPlatforms": []
 }

@@ -12,9 +12,12 @@ angular.module('Nuchatapp.services', [])
 .factory('$scrolls', ScrollService)
 .factory('$imageFilters', ImageFilterService)
 .factory('$utils', UtilService)
-.factory('signaling', function (socketFactory) {
+.factory('signaling', function (socketFactory,ENV) {
     console.log('signaling')
-    var socket = io.connect('http://54.92.67.230:3000/');
+    var url='http://54.92.67.230:3000/';//aws
+    // var url=ENV.BASE_URL
+    console.log(url)
+    var socket = io.connect(url);
     
     var socketFactory = socketFactory({
       ioSocket: socket
@@ -22,42 +25,43 @@ angular.module('Nuchatapp.services', [])
 
     return socketFactory;
 })
-.factory('ContactsService', function (signaling) {
-  console.log('ContactsService')
-  var onlineUsers = [];
+.factory('SignalingService', SignalingService)
+// .factory('ContactsService', function (signaling) {
+//   console.log('ContactsService')
+//   var onlineUsers = [];
 
-  //addto onlineUsers if someone online
-  signaling.on('online', function (name) {
-    console.log('signaling.on online')
-    console.log(name)
-    if (onlineUsers.indexOf(name) === -1) {
-      onlineUsers.push(name);
-    }
-  });
+//   //addto onlineUsers if someone online
+//   signaling.on('online', function (name) {
+//     console.log('signaling.on online')
+//     console.log(name)
+//     if (onlineUsers.indexOf(name) === -1) {
+//       onlineUsers.push(name);
+//     }
+//   });
 
-  //remove from onlineUsers if someone offline
-  signaling.on('signaling.on offline', function (name) {
-    var index = onlineUsers.indexOf(name);
-    if (index !== -1) {
-      onlineUsers.splice(index, 1);
-    }
-  });
+//   //remove from onlineUsers if someone offline
+//   signaling.on('signaling.on offline', function (name) {
+//     var index = onlineUsers.indexOf(name);
+//     if (index !== -1) {
+//       onlineUsers.splice(index, 1);
+//     }
+//   });
 
-  return {
-    onlineUsers: onlineUsers,
-    setOnlineUsers: function (users, currentName) {
-      console.log('setOnlineUsers')
-      this.currentName = currentName;
+//   return {
+//     onlineUsers: onlineUsers,
+//     setOnlineUsers: function (users, currentName) {
+//       console.log('setOnlineUsers')
+//       this.currentName = currentName;
       
-      onlineUsers.length = 0;
-      users.forEach(function (user) {
-        if (user !== currentName) {
-          onlineUsers.push(user);
-        }
-      });
-    }
-  }
-})
+//       onlineUsers.length = 0;
+//       users.forEach(function (user) {
+//         if (user !== currentName) {
+//           onlineUsers.push(user);
+//         }
+//       });
+//     }
+//   }
+// })
 .factory('$localstorage', ['$window', function($window) {
   return {
     set: function(key, value) {

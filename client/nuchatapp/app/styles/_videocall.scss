@@ -1,10 +1,29 @@
+.video-call {
+	background-color: #313131;
+}
+
 .video-container {
 	position: absolute;
 	top: 0;
-	bottom: 0;
+	bottom: 80px;
 	left: 0;
 	right: 0;
   background-color: #000;
   @include background-image(linear-gradient(to bottom, #000, #313131));
   z-index: 99;
+}
+
+.calling-view {
+	position: absolute;
+	left: 50%;
+	width: 250px;
+	height: 250px;
+	overflow: hidden;
+	z-index: 100;
+	@include translate3d(-50%, 20%, 0);
+	img {
+		width: 100%;
+		border: 2px solid #fff;
+		@include border-radius(5px);
+	}
 }

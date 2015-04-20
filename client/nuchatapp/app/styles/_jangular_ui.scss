@@ -152,7 +152,9 @@ grid-menu {
 		@include box-shadow( 0 2px 5px 0 rgba(0, 0, 0, 0.26) );
 	  @include translate3d(0, 0, 0);
 	  @include transition(0.2s ease-out);
-	  @include transition-property(transform, all);
+	  @include transition-property(prefixed-for-transition(-webkit, transform), all);
+	  width: 0;
+	  height: 0;
 	  &:hover {
 	  	@include translate3d(0, -1px, 0);
 	  	@include box-shadow( 0 4px 8px 0 rgba(0, 0, 0, 0.4) );

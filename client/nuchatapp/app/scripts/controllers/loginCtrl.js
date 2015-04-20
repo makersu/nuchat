@@ -1,4 +1,4 @@
-function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService, signaling, ContactsService) {
+function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService, signaling, SignalingService) {
   console.log('LoginCtrl');
 
   $scope.credentials = {};
@@ -68,19 +68,19 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
     $location.path('register');
   };
 
-  signaling.on('login_error', function (message) {
-      $scope.loading = false;
-      var alertPopup = $ionicPopup.alert({
-        title: 'Error',
-        template: message
-      });
-    });
+  // signaling.on('login_error', function (message) {
+  //     $scope.loading = false;
+  //     var alertPopup = $ionicPopup.alert({
+  //       title: 'Error',
+  //       template: message
+  //     });
+  //   });
 
-  signaling.on('login_successful', function (users) {
-    console.log('login_successful')
-    console.log(users)
-    ContactsService.setOnlineUsers(users, User.getCachedCurrent().username);
-    // $state.go('app.contacts');
-  });
+  // signaling.on('login_successful', function (users) {
+  //   console.log('login_successful')
+  //   console.log(users)
+  //   SignalingService.setOnlineUsers(users, User.getCachedCurrent().username);
+  //   // $state.go('app.contacts');
+  // });
 
 }
