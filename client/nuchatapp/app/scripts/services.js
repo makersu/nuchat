@@ -14,10 +14,14 @@ angular.module('Nuchatapp.services', [])
 .factory('$utils', UtilService)
 .factory('signaling', function (socketFactory,ENV) {
     console.log('signaling')
-    var url='http://54.92.67.230:3000/';//aws
-    // var url=ENV.BASE_URL
+    // var url='http://54.92.67.230:3000/';//aws
+    var url=ENV.BASE_URL
     console.log(url)
-    var socket = io.connect(url);
+
+    // var socket = io.connect(url);
+    var socket = io(url, {
+      transports: [ 'websocket' ]
+    });
     
     var socketFactory = socketFactory({
       ioSocket: socket

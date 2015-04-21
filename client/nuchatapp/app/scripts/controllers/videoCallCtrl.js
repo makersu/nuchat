@@ -24,7 +24,7 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
       var config = { 
         isInitiator: isInitiator,
         turn: {
-          host: 'turn:54.92.67.230:3478',
+          host: 'turn:140.123.4.17:3478',
           username: 'mark',
           password: 'mark99'
         },
@@ -66,11 +66,10 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
         }
       });
 
-      session.call();
-      console.log('session.call');
-      console.log(contactName);
       console.log(session)//
+      session.call();
       $scope.contacts[contactName] = session; 
+      console.log($scope.contacts);//
     };//end call
 
     $scope.ignore = function () {
@@ -135,6 +134,8 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
     };
 
     $scope.addContact = function (newContact) {
+      console.log('addContact')
+      console.log(newContact)
       $scope.hideFromContactList.push(newContact);
       signaling.emit('sendMessage', newContact, { type: 'call' });
 
@@ -171,8 +172,13 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
             $timeout($scope.updateVideoPosition, 1000);
           });
 
+          console.log($scope.contacts)
           var existingContacts = Object.keys($scope.contacts);
+          console.log('existingContacts');
+          console.log(existingContacts);
+
           if (existingContacts.length !== 0) {
+            console.log('signaling.emit sendMessage add_to_group');//
             signaling.emit('sendMessage', name, {
               type: 'add_to_group',
               contacts: existingContacts,
@@ -210,8 +216,11 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
         case 'phonertc_handshake':
           console.log('message.type phonertc_handshake')
           if (duplicateMessages.indexOf(message.data) === -1) {
+            console.log(message.data)
+            console.log(name)
+            console.log($scope.contacts)
             console.log($scope.contacts[name]);//session
-            $scope.contacts[name].receiveMessage(JSON.parse(message.data));
+            $scope.contacts[name].receiveMessage(JSON.parse(message.data));//session.receiveMessage
             duplicateMessages.push(message.data);
           }
           
