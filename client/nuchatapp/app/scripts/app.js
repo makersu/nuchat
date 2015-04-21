@@ -9,7 +9,7 @@
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
     'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap','btford.socket-io'])
-.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags) {
+.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags, $location, $ionicScrollDelegate) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -64,6 +64,8 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     $rootScope.closeTagsModal = function() {
       $rootScope.search = {};
       $rootScope.tagModal.hide();
+      $location.hash($rootScope.currentMsg.id);
+      $ionicScrollDelegate.anchorScroll();
     };
 
     // Registering app/activity events.

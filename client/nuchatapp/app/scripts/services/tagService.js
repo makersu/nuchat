@@ -46,6 +46,37 @@ function TagService($filter) {
 			});
 		});
 	}
+	// Special Tags
+	function isFavorite(item) {
+		return item.tags ? (item.tags.indexOf('Favorite') > -1) : false;
+	}
+	function setFavorite(item) {
+		if (item.tags) {
+			var idx = item.tags.indexOf('Favorite');
+			if (idx === -1) {
+				add(item, 'Favorite');
+			} else {
+				remove(item, idx);
+			}
+		} else {
+			add(item, 'Favorite');
+		}
+	}
+	function isLike(item) {
+		return item.tags ? (item.tags.indexOf('Like') > -1) : false;
+	}
+	function setLike(item) {
+		if (item.tags) {
+			var idx = item.tags.indexOf('Like');
+			if (idx === -1) {
+				add(item, 'Like');
+			} else {
+				remove(item, idx);
+			}
+		} else {
+			add(item, 'Like');
+		}
+	}
 
 	/* Instance */
 	var _service = {
@@ -55,6 +86,10 @@ function TagService($filter) {
 		setItemList: setItemList,
 		filterList: filterList,
 		getFilteredList: getFilteredList,
+		setFavorite: setFavorite,
+		isFavorite: isFavorite,
+		setLike: setLike,
+		isLike: isLike,
 	};
 
 	return _service;

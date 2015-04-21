@@ -240,6 +240,12 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
   $scope.editTags = function(msg) {
     $rootScope.editTags(msg, true);
   };
+  $scope.star = $NUChatTags.setFavorite;
+  $scope.isFavorite = function(msg) {
+    return $NUChatTags.isFavorite(msg) ? 'ion-ios-star' : 'ion-ios-star-outline';
+  };
+  $scope.like = $NUChatTags.setLike;
+  $scope.isLike = $NUChatTags.isLike;
 
   /* Trigger functions */
   $scope.viewCalendar = function(callback) {

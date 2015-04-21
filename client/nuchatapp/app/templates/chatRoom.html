@@ -23,7 +23,7 @@
 		<accordion close-others="false">
 			<accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}">
 				<accordion-heading>{{ ::group.name }}<i class="icon" ng-class="{'ion-chevron-down': !group.open, 'ion-chevron-up': group.open}"></i></accordion-heading>
-				<div ng-repeat="message in group.items track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" in-view-window="message in #msgContainer">
+				<div ng-repeat="message in group.items track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" in-view-window="message in #msgContainer" id="{{ ::message.id }}">
 
 					<div ng-if="::currentUser.id !== message.ownerId">
 						<img ng-click="viewProfile(message)" class="profile-pic left" 
@@ -36,7 +36,11 @@
 								class="bold">{{toUser.username}}</span>, -->
 								<span am-time-ago="::message.created"></span>
 								<!-- <a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a> -->
-								<a href="javascript:" ng-click="editTags(message)">{{ ::'TAGS' | translate }}</a>
+							</div>
+							<div class="actions royal">
+								<span class="act-icon" href="javascript:" ng-click="editTags(message)"><i class="button-icon icon ion-pricetag"></i></span>
+								<span class="act-icon" href="javascript:" ng-click="star(message)"><i class="button-icon icon" ng-class="isFavorite(message)"></i></span>
+								<span class="act-icon" href="javascript:" ng-click="like(message)"><i class="button-icon icon ion-thumbsup" ng-class="{'outline': !isLike(message)}"></i></span>
 							</div>
 						</div>
 					</div>
@@ -52,7 +56,11 @@
 								class="bold">{{currentUser.username}}</span>,  -->
 								<span am-time-ago="::message.created"></span>
 								<!-- <a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a> -->
-								<a href="javascript:" ng-click="editTags(message)">{{ ::'TAGS' | translate }}</a>
+							</div>
+							<div class="actions royal">
+								<span class="act-icon" href="javascript:" ng-click="editTags(message)"><i class="button-icon icon ion-pricetag"></i></span>
+								<span class="act-icon" href="javascript:" ng-click="star(message)"><i class="button-icon icon" ng-class="isFavorite(message)"></i></span>
+								<span class="act-icon" href="javascript:" ng-click="like(message)"><i class="button-icon icon ion-thumbsup" ng-class="{'outline': !isLike(message)}"></i></span>
 							</div>
 						</div>
 					</div>

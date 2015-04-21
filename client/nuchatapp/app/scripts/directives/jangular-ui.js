@@ -211,7 +211,8 @@
 			},
 			template: '<div class="content" id="{{ ::msg.id }}"></div>\
 								 <a class="extend" ng-if="hasMore && !extended" ng-click="extend()">...{{ ::\'MORE\' | translate }}</a>\
-								 <a class="extend" ng-if="extended" ng-click="hide()">...{{ ::\'LESS\' | translate }}</a>',
+								 <a class="extend" ng-if="extended" ng-click="hide()">...{{ ::\'LESS\' | translate }}</a>\
+								 <div class="tags" ng-if="notLink()"><span class="badge" ng-repeat="tag in msg.tags | limitTo:5">{{ tag }}</span><span ng-if="msg.tags.length > 5">...</span></div>',
 			link: function(scope, elem, attrs) {
 				var _audioSetting = scope.metaOption.audioSetting || {};
 				var _foldingThres = scope.metaOption.foldingThres || FOLDING_LINE_THRES;
@@ -221,10 +222,7 @@
 				var _msgContent = elem.find('div');
 				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope.scrollHandle);
 
-				parse(scope.type)
-					.then(function(view) {
-						elem.append(view);
-					}, errorHandler);
+				parse(scope.type);
 
 				// Registering events.
 				scope.$on('uploaded', function() {
@@ -241,26 +239,21 @@
 					scope.message = _originMsg;
 					parseText();
 		      $location.hash(scope.msg.id);
-		      _scrollHandle.$anchorScroll();
+		      _scrollHandle.anchorScroll();
 				};
-				scope.linkClickHandler = function() {
+				scope.linkClickHandler = function(link) {
 					console.log(scope.msg.text);
-					_linkSetting.clickHandler && _linkSetting.clickHandler(scope.msg.text);
+					_linkSetting.clickHandler && _linkSetting.clickHandler(link || scope.msg.text);
+				};
+				scope.notLink = function() {
+					return scope.msg.type && scope.msg.type !== METATYPE.LINK || !scope.msg.type;
 				};
 
 				// Metatype parsing
 				function parse(type) {
-					var q = $q.defer();
 					switch (type) {
 						case METATYPE.LINK:
-							parseLink()
-								.then(function(linkView) {
-									scope.msg.linkView = linkView;
-									// $urlView.setContentObj(scope.msg);
-									q.resolve($compile('<url-view content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope));
-								}, function(err) {
-									q.reject(err);
-								});
+							parseLink();
 							break;
 						case METATYPE.IMG:
 							parseImg();
@@ -276,30 +269,16 @@
 						case METATYPE.FILE:
 							break;
 						default:
-							parseUnknown()
-								.then(function(view) {
-									q.resolve(view);
-								}, function(err) {
-									q.reject(err);
-								});;
+							parseUnknown();
 							break;
 					}
-					return q.promise;
 				}
 
 				function parseUnknown() {
 					var q = $q.defer();
 					var links = getLinks(scope.message);
 					if (links) {
-						parseLink(links)
-							.then(function(linkView) {
-								scope.msg.linkView = linkView;
-								// $urlView.setContentObj(scope.msg);
-								// console.log('set Link view back');
-								q.resolve($compile('<url-view content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope));
-							}, function(err) {
-								q.reject(err);
-							});
+						parseLink(links);
 					} else if ( isImg(scope.msg.type) ) { //
 						parseImg();
 					} else if ( isAudio(scope.msg.type) ) {
@@ -315,18 +294,18 @@
 				// Appending the summary block after the links.
 				function parseLink(links) {
 					// console.log(links);
-					var q = $q.defer();
+					// var q = $q.defer();
 					var cacheView = { id: scope.msg.id };
 					scope.msg.type = METATYPE.LINK;
 					angular.forEach(links, function(link) {
 						var promise = parseSummaryLink(link, cacheView, $http);
 						if (promise) {
 							promise.then(function(result) {
-								scope.message = scope.message.replace(link, '<a href="'+link+'">'+link+'</a>');
-								q.resolve(result);
-							}, function(err) {
-								q.reject(err);
-							});
+								scope.message = scope.message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
+								$compile(_msgContent.html('').append(scope.message))(scope);
+								scope.msg.linkView = result;
+								elem.append( $compile('<url-view content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+							}, errorHandler);
 						}
 						// if (link && link.match(/^http(s)?:\/\/.*/)) {
 						// 	scope.message = scope.message.replace(link, '<a href="'+link+'">'+link+'</a>');
@@ -358,7 +337,7 @@
 						// 		});
 						// }
 					});
-					return q.promise;
+					// return q.promise;
 				}
 
 				// Assuming the img uri provided.
@@ -392,7 +371,7 @@
 						if (scope.msg.isPlaying) {
 							_audioSetting.play.fn(audioUrl)
 								.then(function() {
-									console.log('played');
+									// console.log('played');
 									scope.msg.isPlaying = false;
 									setView();
 								});
