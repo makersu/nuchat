@@ -37,7 +37,8 @@
     </div>
 
     <div class="button-float float-bottom float-center">
-      <a class="button button-assertive icon ion-ios-telephone hang-up" ng-click="ignore()"></a>
+      <a class="button button-assertive icon ion-ios-telephone hang-up" ng-if="!isCalling && !callInProgress" ng-click="ignore()"></a>
+      <a class="button button-assertive icon ion-ios-telephone hang-up" ng-if="callInProgress" ng-click="end()"></a>
       <a class="button button-balanced icon ion-ios-videocam" ng-click="answer($event)" ng-if="!isCalling && !callInProgress"></a>
       <a class="button button-royal icon ion-plus button-float add-one" ng-if="callInProgress" ng-click="openSelectContactModal()"></a>
       <a class="button button-royal icon button-float" ng-class="{ 'ion-ios-mic-off': muted, 'ion-ios-mic': !muted }" ng-if="callInProgress" ng-click="toggleMute()"></a>
