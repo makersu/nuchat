@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $ionicTabsDelegate, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
+            $ionicScrollDelegate, $ionicTabsDelegate, $ionicGesture, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
             $ionicModal, $location, $utils, FriendService, $imageViewer, $checkFormat) {
 
   // var data = {}
@@ -25,6 +25,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
   var audioInterval = null;
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
+  $scope.otherUsers = [];
   // console.log($scope.currentUser)//
   $scope.input = {};
   $scope.messageOptions = {
@@ -107,6 +108,16 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
       });
     }
   }
+  /* Getting the all the users joined this room except the currentUser
+   */
+  function getRoomUsers() {
+    if ( RoomService.isPrivate($scope.room) ) {
+      $scope.otherUsers.push($scope.friends[$scope.room.ownerId === $scope.currentUser.id ? $scope.room.friend : $scope.room.ownerId]);
+    } else {
+      // TODO: Getting user in the group.
+    }
+  }
+
   // Scope Public
   // $scope.joinRoom = function(id, switchRoom) {
   //   console.log(id)
@@ -265,6 +276,9 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
       $scope.clearNotification();
     }
   };
+  $scope.toggleRightMenu = function() {
+    console.log('toggleRightMenu');
+  };
 
   /* Inline Notification */
   $scope.clearNotification = function() {
@@ -285,6 +299,9 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
     console.log('enter controller');
     console.log($scope.room);//
     $scope.friends = FriendService.friends;
+    // Getting the other users joined the room.
+    getRoomUsers();
+    console.log($scope.otherUsers);
     RoomService.getRoomMessages($scope.room.id);
     $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
       return $filter('amChatGrouping')(msg.created);
@@ -392,6 +409,10 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
     // console.log(data.roomId);
     // Saving the message into the Directory by type.
   });
+  // TODO: swipe to open the right menu.
+  // $ionicGesture.on('swipeleft', function(e) {
+  //   console.log('swipeleft');
+  // }, $document);
 
   var footerBar = document.body.querySelector('#userMessagesView .bar-footer');
   var scroller = document.body.querySelector('#userMessagesView .scroll-content');

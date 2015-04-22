@@ -67,7 +67,7 @@ button {
     z-index: 101;
     @include box-shadow( 0 2px 5px 0 rgba(0, 0, 0, 0.26) );
     &:hover {
-      @include translate3d(-50%, -1px, 0);
+      @include translate3d(0, -1px, 0);
       @include box-shadow( 0 4px 8px 0 rgba(0, 0, 0, 0.4) );
       background: darken(#886aea, 10%);
     }

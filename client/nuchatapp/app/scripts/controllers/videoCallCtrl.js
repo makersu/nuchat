@@ -75,7 +75,8 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
     $scope.ignore = function () {
       console.log('$scope.ignore')
       var contactNames = Object.keys($scope.contacts);
-      console.log(contactNames)
+      console.log(contactNames);
+      console.log($scope.contacts);
       if (contactNames.length > 0) { 
         $scope.contacts[contactNames[0]].disconnect();
       } else {
@@ -101,7 +102,8 @@ function VideoCallCtrl($scope, $state, $rootScope, $timeout, $ionicModal, $state
       // $scope.callingModal.isShown() && $scope.callingModal.hide();
     };
 
-    $scope.answer = function () {
+    $scope.answer = function ($event) {
+      $event.stopPropagation();
       console.log('$scope.answer')//
       if ($scope.callInProgress) { return; }
 
