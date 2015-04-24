@@ -1,4 +1,4 @@
-function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout, ENV) {
+function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout, $compile, ENV) {
 	var DEBUG = false;
 	var _prevLatestMsg = null;
 	console.log('RoomService');
@@ -87,6 +87,16 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 	    for(var i=0;i<messages.messages.length;i++){
 	    	addMessage(messages.messages[i])//updateLatestMessageInfo?
 	    }
+
+	    $timeout(function() {
+	    	// Insert the Unread-Note before the 1st message.
+		    if (messages.messages.length) {
+		    	var firstMsgEl = document.getElementById(messages.messages[0].id);
+		    	var parentEl = angular.element(firstMsgEl).parent()[0];
+		    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
+		    	parentEl.insertBefore(note, firstMsgEl);
+		    }
+	    });
 	  });
   }
 
@@ -126,7 +136,9 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   }
 
   function getLastGroup(room) {
-  	return room.groupedMessages[room.groupedMessages.length-1];
+  	if (room.groupedMessages && room.groupedMessages.length)
+  		return room.groupedMessages[room.groupedMessages.length-1];
+  	return null;
   }
 
   function isPrivate(room) {

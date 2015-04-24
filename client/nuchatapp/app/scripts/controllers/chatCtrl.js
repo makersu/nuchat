@@ -1,6 +1,6 @@
-function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $ionicTabsDelegate, $ionicGesture, $gridMenu, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
-            $ionicModal, $location, $utils, FriendService, $imageViewer, $checkFormat) {
+function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate, User, LBSocket, RoomService, $localstorage, $q, $filter,
+            $ionicScrollDelegate, $ionicTabsDelegate, $ionicGesture, $gridMenu, $sidePanel, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
+            $location, $utils, FriendService, $imageViewer, $checkFormat) {
 
   // var data = {}
   // data.roomId=$stateParams.roomId
@@ -25,6 +25,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
   var audioInterval = null;
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
+  $scope.currentUser.avatarThumbnail = ENV.GRIDFS_BASE_URL+$scope.currentUser.avatarThumbnail;
   $scope.otherUsers = [];
   // console.log($scope.currentUser)//
   $scope.input = {};
@@ -111,6 +112,7 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
   /* Getting the all the users joined this room except the currentUser
    */
   function getRoomUsers() {
+    $scope.otherUsers = [];
     if ( RoomService.isPrivate($scope.room) ) {
       $scope.otherUsers.push($scope.friends[$scope.room.ownerId === $scope.currentUser.id ? $scope.room.friend : $scope.room.ownerId]);
     } else {
@@ -148,6 +150,16 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
     if ($scope.metaMenu.isShown()) {
       $scope.closeMetaMenu();
     }
+
+    // Scrolling down to see the sent message.
+    $timeout(function() {
+      scrollHandle.scrollBottom();
+      $scope.notify = false;
+    }, 500);
+  };
+  $scope.gotoDirectory = function() {
+    $scope.closeRightMenu();
+    $state.go('tab.directory.article', { roomId: $scope.room.id });
   };
 
   // Grouping
@@ -158,17 +170,34 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
   };
 
   /* Grid Menu */
-  $gridMenu.fromTemplateUrl('metamenu.html', {
-    scope: $scope,
-    hasHeader: true
-  }).then(function(menu) {
-    $scope.metaMenu = menu;
-  });
+  if (!$scope.metaMenu) {
+    $gridMenu.fromTemplateUrl('metamenu.html', {
+      scope: $scope,
+      hasHeader: true
+    }).then(function(menu) {
+      $scope.metaMenu = menu;
+    });
+  }
   $scope.openMetaMenu = function() {
     $scope.metaMenu.show();
   };
   $scope.closeMetaMenu = function() {
     $scope.metaMenu.hide();
+  };
+  /* Side Menu */
+  if (!$scope.rightMenu) {
+    $sidePanel.fromTemplateUrl('rightMenu.html', {
+      scope: $scope,
+      container: document.getElementById('msgContainer'),
+    }).then(function(menu) {
+      $scope.rightMenu = menu;
+    });
+  }
+  $scope.openRightMenu = function() {
+    $scope.rightMenu.show();
+  };
+  $scope.closeRightMenu = function() {
+    $scope.rightMenu.hide();
   };
   /* Choose files from device or cloud drive? */
   $scope.choosePhoto = function() {
@@ -258,6 +287,17 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
   $scope.like = $NUChatTags.setLike;
   $scope.isLike = $NUChatTags.isLike;
 
+  /* Filtering */
+  $scope.filterByUser = function(user) {
+    angular.forEach($scope.room.groupedMessages, function(group) {
+      if (!group.originalItems) {
+        group.originalItems = angular.copy(group.items);
+      }
+      group.items = $filter('filter')(group.originalItems, { ownerId: user.id });
+      console.log(group.items);
+    });
+  };
+
   /* Trigger functions */
   $scope.viewCalendar = function(callback) {
     $scope.selectTime = true;
@@ -275,9 +315,6 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
     if ( lastGroup && lastGroup.open && scrollHandle.getScrollPosition().top >= (bound/2) ) {
       $scope.clearNotification();
     }
-  };
-  $scope.toggleRightMenu = function() {
-    console.log('toggleRightMenu');
   };
 
   /* Inline Notification */
@@ -297,11 +334,11 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
   // OnResume
   $scope.$on('$ionicView.enter', function() {
     console.log('enter controller');
-    console.log($scope.room);//
+    // console.log($scope.room);//
     $scope.friends = FriendService.friends;
     // Getting the other users joined the room.
     getRoomUsers();
-    console.log($scope.otherUsers);
+    // console.log($scope.otherUsers);
     RoomService.getRoomMessages($scope.room.id);
     $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
       return $filter('amChatGrouping')(msg.created);
@@ -314,6 +351,22 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
     $NUChatLinks.reset();
 
     slideoutTabs();
+
+    // Scrolling to the start of unread messages.
+    $location.hash('unreadStart');
+    scrollHandle.anchorScroll();
+    // console.log('scrolling to unreadStart');
+
+  });
+
+  // OnPause
+  $scope.$on('#ionicView.leave', function(e) {
+
+  });
+
+  $scope.$on('$destroy', function() {
+    $scope.metaMenu.remove();
+    $scope.rightMenu.remove();
   });
 
   // Reading unread messages from storage(or TODO: DB?)
@@ -380,9 +433,9 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
       RoomService.getLastGroup($scope.room) && (function() {
         RoomService.getLastGroup($scope.room).open = true;
       })();
-      $timeout(function() {
-        scrollHandle.scrollBottom();
-      });
+      // $timeout(function() {
+      //   scrollHandle.scrollBottom();
+      // });
     }
 
     if (args.msg.type !== METATYPE.LINK) {
@@ -409,10 +462,6 @@ function ChatCtrl($scope, $rootScope, $state, $stateParams, $animate, User, LBSo
     // console.log(data.roomId);
     // Saving the message into the Directory by type.
   });
-  // TODO: swipe to open the right menu.
-  // $ionicGesture.on('swipeleft', function(e) {
-  //   console.log('swipeleft');
-  // }, $document);
 
   var footerBar = document.body.querySelector('#userMessagesView .bar-footer');
   var scroller = document.body.querySelector('#userMessagesView .scroll-content');

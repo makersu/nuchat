@@ -396,3 +396,81 @@ grid-menu {
 		}
 	}
 }
+
+/* Side Panel */
+.panel-backdrop {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 100%;
+	height: 100%;
+	display: none;
+	background-color: rgba(0, 0, 0, .3);
+	&.active {
+		display: block;
+	}
+}
+.side-panel {
+	position: absolute;
+	top: 0;
+	display: none;
+	width: 66.7%;
+	height: 100%;
+	background-color: $sidePanel_bg_color;
+
+	.item {
+		width: 100% !important;
+		margin: -1px 0;
+		border-width: 1px 0;
+		&.bar {
+			padding: 10px;
+			background-color: $sidePanelHeaderBar_bg_color;
+		}
+		&.item-avatar {
+			padding-left: 58px;
+			min-height: 58px;
+			img {
+				max-width: $sidePanelAvatarImg_max_width;
+				max-height: $sidePanelAvatarImg_max_width;
+			}
+		}
+	}
+
+	// Animations
+	&.ng-enter, &.ng-leave {
+	  -webkit-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.3s;
+	  transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.3s;
+	}
+	// Left Panel
+	&.side-panel-left {
+		left: 0;
+		@include box-shadow(1px 0 2px rgba(0, 0, 0, .3));
+		&.ng-enter,
+		&.ng-leave.ng-leave-active {
+			@include translateX(-100%);
+		  opacity: 0;
+		}
+
+		&.ng-leave,
+		&.ng-enter.ng-enter-active {
+			@include translateX(0);
+		  opacity: 1;
+		}
+	}
+	// Right Panel
+	&.side-panel-right {
+		right: 0;
+		@include box-shadow(-1px 0 2px rgba(0, 0, 0, .3));
+		&.ng-enter,
+		&.ng-leave.ng-leave-active {
+			@include translateX(100%);
+		  opacity: 0;
+		}
+
+		&.ng-leave,
+		&.ng-enter.ng-enter-active {
+			@include translateX(0);
+		  opacity: 1;
+		}
+	}
+}

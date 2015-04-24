@@ -25,6 +25,10 @@ $flipItemBackFace_font_color: #fff;
 // Rich Article
 $richArticleVideoDel_icon_color: #bdbdbd;
 
+// Side Panel
+$sidePanel_bg_color: #fff;
+$sidePanelHeaderBar_bg_color: lighten($royal, 10%);
+
 /* Font Size */
 // Url View
 $urlViewComment_font_size: 12px;
@@ -42,3 +46,6 @@ $urlViewLeftImg_width: 100px;
 
 // Collapse Buttons
 $collapseBtnPos_offset: 70px;
+
+// Side Panel
+$sidePanelAvatarImg_max_width: 25px;

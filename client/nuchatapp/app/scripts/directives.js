@@ -40,4 +40,10 @@ angular.module('Nuchatapp.directives', [])
 				});
 			}
 		}
-	});
+	})
+  .directive('unreadNote', ['$filter', function($filter) {
+    return {
+      restrict: 'E',
+      template: '<div class="unread-note"><hr>'+$filter('translate')('FOLLOWING_UNREAD')+'<hr></div>',
+    };
+  }]);

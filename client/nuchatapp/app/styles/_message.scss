@@ -76,6 +76,20 @@
   }
 }
 
+/* Unread Note */
+.unread-note {
+  text-align: center;
+  padding: 10px;
+  color: $unreadNote_font_color;
+  hr {
+    width: 10%;
+    display: inline-block;
+    vertical-align: middle;
+    border-color: $unreadNote_border_color;
+    margin: auto 5px;
+  }
+}
+
 /* Message Container */
 #msgContainer {
   .panel-group {

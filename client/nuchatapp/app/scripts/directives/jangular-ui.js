@@ -14,6 +14,7 @@
  *  8)  Image Viewer
  *  9)  Center Image
  *  10) Rich Article
+ *  11) Side Panel
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
@@ -190,6 +191,17 @@
 		a = b;
 		b = temp;
 	}
+
+	jangularUI.factory('$jgTemplate', ['$http', '$templateCache', function($http, $templateCache) {
+		var _service = {};
+		_service.fetchTemplate = function(url) {
+			return $http.get(url, {cache: $templateCache})
+		    .then(function(response) {
+		      return response.data && response.data.trim();
+		    });
+		  };
+		return _service;
+	}]);
 
 	/**
 	 * Meta Message
@@ -567,13 +579,13 @@
 			template: '<div class="menu-wrapper"><div class="grid-menu" ng-transclude></div></div>',
 		};
 	});
-	jangularUI.factory('$gridMenu', function($http, $templateCache, $document, $compile, $timeout) {
+	jangularUI.factory('$gridMenu', function($jgTemplate, $document, $compile, $timeout) {
 		var _self = this;
 
 		var _instances = [];
 
 		_self.fromTemplateUrl = function(url, options) {
-			return fetchTemplate(url).then(function(templateString) {
+			return $jgTemplate.fetchTemplate(url).then(function(templateString) {
 				return createMenu(templateString, options);
 			});
 		};
@@ -630,12 +642,22 @@
 			return this._isShown;
 		};
 
-		function fetchTemplate(url) {
-	    return $http.get(url, {cache: $templateCache})
-	    .then(function(response) {
-	      return response.data && response.data.trim();
-	    });
-	  }
+		/**
+     * @ngdoc method
+     * @name gridMenu#remove
+     * @description Remove this gridMenu instance from the DOM and clean up.
+     * @returns {promise} A promise which is resolved when the gridMenu is finished animating out.
+     */
+    function remove() {
+      var self = this;
+      self.scope.$parent && self.scope.$parent.$broadcast(self.viewType + '.removed', self);
+
+      return self.hide().then(function() {
+        self.scope.$destroy();
+        self.$el.remove();
+      });
+    }
+
 	  function createMenu(templateString, options) {
 	  	var scope = options.scope && options.scope.$new() || $rootScope.$new(true);
 	  	var element = $compile(templateString)(scope);
@@ -651,6 +673,7 @@
 	  		show: show,
 	  		hide: hide,
 	  		isShown: isShown,
+	  		remove: remove,
 	  		hasHeader: options.hasHeader || false
 	  	};
 
@@ -1376,6 +1399,141 @@
 
   	return _self;
   });
+
+  jangularUI.directive('sidePanel', [function() {
+  	return {
+  		restrict: 'E',
+  		transclude: 'true',
+  		replace: true,
+  		template: '<div class="panel-backdrop"><div class="side-panel" ng-transclude></div></div>',
+  		link: function(scope, elem, attrs) {
+  			var panel = elem.find('div').eq(0);
+  			console.log('sidePanel');
+  			console.log(panel);
+  			panel.addClass( 'side-panel-'+(attrs.side || 'right') );
+  		}
+  	};
+  }]).service('$sidePanel', ['$jgTemplate', '$compile', '$timeout', '$ionicGesture', function($jgTemplate, $compile, $timeout, $ionicGesture) {
+	  var _$container = null;
+	  var _showListener = {};
+	  var _hideListener = {};
+
+  	function createSidePanel(templateString, options) {
+  		var scope = options.scope && options.scope.$new() || $rootScope.$new(true);
+	  	var element = $compile(templateString)(scope);
+	  	if (!options.container) {
+	  		throw 'The container of the side-panel must be specified.';
+	  	}
+	  	_$container = angular.element(options.container);
+	  	// var menu = angular.element(wrapper.querySelector('.grid-menu'));
+
+	  	var sidePanel = {
+	  		$el: element.children().eq(0),
+	  		el: element.children()[0],
+	  		$backdrop: element,
+	  		backdrop: element[0],
+	  		// $panel: panel,
+	  		scope: scope,
+	  		show: show,
+	  		hide: hide,
+	  		isShown: isShown,
+	  		remove: remove,
+	  		// hasHeader: options.hasHeader || false
+	  	};
+
+	  	// Binding the Events
+	  	_showListener = function() {
+  			show(sidePanel);
+	  	};
+	  	_hideListener = function() {
+  			hide(sidePanel);	  		
+	  	};
+	  	$ionicGesture.on('swipeleft', sidePanel.$el.hasClass('side-panel-right') ? _showListener : _hideListener, _$container);
+	  	$ionicGesture.on('swiperight', sidePanel.$el.hasClass('side-panel-right') ? _hideListener : _showListener, _$container);
+	  	_$container.on('click', _hideListener);
+
+	  	return sidePanel;
+  	}
+
+  	function show(panelInstance) {
+			var self = panelInstance || this;
+			// if (self.hasHeader) {
+			// 	angular.element(self.el.querySelector('.panel-wrapper')).addClass('has-header');
+			// }
+
+			// Append to body if not present.
+			if (!self.backdrop.parentElement) {
+				_$container.append(self.backdrop);
+			}
+
+			self.$backdrop.addClass('active');
+			self.$el.css('display', 'block');
+			// To ensure the content would fit the panel
+  		self.$el.children().eq(0).removeClass('has-header has-footer has-tabs-top');
+			self._isShown = true;
+
+			self.$el.addClass('ng-enter')
+             		.removeClass('ng-leave ng-leave-active');
+
+      $timeout(function() {
+      	self.$el.addClass('ng-enter-active');
+      });
+
+			return $timeout(function() {
+        //After animating in, allow hide on backdrop click
+        self.$el.on('click', function(e) {
+          if (e.target === self.wrapper) {
+            self.hide();
+          }
+        });
+      }, 400);
+		};
+		function hide(panelInstance) {
+			var self = panelInstance || this;
+
+			self.$el.addClass('ng-leave');
+
+      $timeout(function() {
+      	self.$el.addClass('ng-leave-active')
+      						.removeClass('ng-enter ng-enter-active');
+      }, 20);
+
+			self._isShown = false;
+
+			return $timeout(function() {
+        // self.$el.removeClass('has-header');
+				self.$el.css('display', 'none');
+				self.$backdrop.removeClass('active');
+      }, self.hideDelay || 120);
+		};
+		function isShown() {
+			return this._isShown;
+		};
+
+  	/**
+     * @ngdoc method
+     * @name sidePanel#remove
+     * @description Remove this sidePanel instance from the DOM and clean up.
+     * @returns {promise} A promise which is resolved when the sidePanel is finished animating out.
+     */
+    function remove() {
+      var self = this;
+      self.scope.$parent && self.scope.$parent.$broadcast(self.viewType + '.removed', self);
+
+      return self.hide().then(function() {
+        self.scope.$destroy();
+        self.$el.remove();
+     //    $ionicGesture.off('swipeleft', _showListener, _$container);
+	  		// $ionicGesture.off('swiperight', _hideListener, _$container);
+      });
+    }
+
+  	this.fromTemplateUrl = function(url, options) {
+			return $jgTemplate.fetchTemplate(url).then(function(templateString) {
+				return createSidePanel(templateString, options);
+			});
+		};
+  }]);
 
   // Service of type
   jangularUI.factory('$checkFormat', function() {

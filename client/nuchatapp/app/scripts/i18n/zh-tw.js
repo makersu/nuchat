@@ -19,6 +19,14 @@ var chtTranslate = function ($translateProvider) {
 		SENT_IMG: '傳送了圖片',
 		SENT_AUDIO: '傳送了聲音',
 		SENT_VIDEO: '傳送了影片',
+		MEMBERS: '成員',
+		ALL_MESSAGES: '所有訊息',
+		FOLLOWING_UNREAD: '以下訊息為未讀',
+
+		// Video Chat
+		IGNORE: '中斷',
+		ANSWER: '回應',
+
 		// Tags
 		TAGS: '標籤',
 		MANAGE_TAGS: '管理標籤',

@@ -19,6 +19,9 @@ var enTranslate = function ($translateProvider) {
 		SENT_IMG: 'Sent an image',
 		SENT_AUDIO: 'Send an Audio',
 		SENT_VIDEO: 'Send a Video',
+		MEMBERS: 'Members',
+		ALL_MESSAGES: 'All Messages',
+		FOLLOWING_UNREAD: 'The following messages as unread',
 
 		// Video Chat
 		IGNORE: 'Ignore',
