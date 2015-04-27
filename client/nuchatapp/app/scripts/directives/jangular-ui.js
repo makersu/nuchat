@@ -24,6 +24,7 @@
 		IMG: 			'image',
 		AUDIO:    'audio',
 		VIDEO:    'video',
+		ARTICLE:  'article',
 		CALENDAR: 'calendar',
 		MAP:      'map',
 		FILE:     'file', // Including documents?
@@ -67,7 +68,7 @@
 				case 'icon':
 					if (!obj.image) {
 						obj.image = content;
-						console.log(content);
+						// console.log(content);
 					}
 					break;
 				case 'og:url':
@@ -87,10 +88,12 @@
 	function parseSummaryLink(link, obj, $http) {
 		var promise = null;
 		if (link && link.match(/^http(s)?:\/\/.*/)) {
-			promise = $http.get(link)
+			promise = $http.get(link, {cache: true})
 				.then(function(response) {
-					var html = angular.element(response.data);
-					angular.forEach(html, function(e) {
+					var parser = new DOMParser();
+					var head = angular.element( parser.parseFromString(response.data, "text/html") ).find('head');
+					// var html = angular.element(response.data);
+					angular.forEach(head.children(), function(e) {
 						if (e.tagName) {
 							if (e.tagName == 'META' || e.tagName == 'LINK') {
 								getMetaAttr(e, obj);
