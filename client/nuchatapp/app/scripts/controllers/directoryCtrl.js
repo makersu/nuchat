@@ -1,4 +1,4 @@
-function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $timeout, $NUChatTags) {
+function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $timeout, $NUChatTags, $ionicHistory) {
 	/* Variables */
 	// Private
 
@@ -20,6 +20,7 @@ function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $timeout, 
 	$scope.room = RoomService.getCurrentRoom();
 	// OnResume
 	$scope.$on('$ionicView.enter', function() {
-
+		// console.log('enter directory');
+		$scope.filterByType = $ionicHistory.currentStateName() === 'tab.directory.files';
 	});
 }

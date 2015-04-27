@@ -5,7 +5,7 @@ button {
   }
 }
 .button {
-  .button-circle {
+  .button-circle, &.button-circle {
     @include border-radius(50%);
   }
 }

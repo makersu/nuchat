@@ -48,6 +48,7 @@ var chtTranslate = function ($translateProvider) {
 		CALENDAR: '行事曆',
 		ADD_LINK: '新增連結',
 		EDIT_LINK: '編輯連結',
+		MANAGE_FILE: '管理檔案',
 
 		// Friends
 		SEARCH_OR_ADD_FRIENDS: '搜尋/新增好友',

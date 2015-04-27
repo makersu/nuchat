@@ -1,4 +1,4 @@
-function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $filter, ENV) {
+function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $filter, $ionicActionSheet) {
 	/* Variables */
 	// Private
 
@@ -7,13 +7,7 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 	/* Methods */
 	// Private
 	var getOrderedFiles = function() {
-		var list = $filter('orderBy')($NUChatFiles.getFiles(), '-created');
-		angular.forEach(list, function(file) {
-			if (file.thumbnailFileId && !file.thumbUrl) {
-				file.thumbUrl = ENV.GRIDFS_BASE_URL+file.thumbnailFileId;
-			}
-		});
-		return list;
+		return $filter('orderBy')($NUChatFiles.getFiles($scope.room.messages), '-created');
 	}
 	// Scope public
 	$scope.editTags = function(file) {
@@ -21,15 +15,52 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 		file.isFlipped = false;
 	};
 	$scope.play = function(file) {
-
+		$NUChatFiles.playFile(file);
+	};
+	$scope.edit = function(file) {
+		$ionicActionSheet.show({
+	   	buttons: [
+	     	{ text: '<i class="icon ion-edit"></i> '+$filter('translate')('MANAGE_TAGS') },
+	   	],
+	   	destructiveText: $filter('translate')('DELETE'),
+	   	titleText: $filter('translate')('MANAGE_FILE'),
+	   	cancelText: $filter('translate')('CANCEL'),
+	   	cancel: function() {
+	   		file.isFlipped = false;
+	    },
+	   	buttonClicked: function(index) {
+	   		file.isFlipped = false;
+	   		switch (index) {
+	   			case 0:
+	   				$rootScope.editTags(file, true);
+	   				break;
+	   		}
+	     	return true;
+	   	}
+	 	});
 	};
 
 	/* Onload */
 	// Events
 	$scope.$on('$ionicView.enter', function() {
+		// console.log('enter directory file');
 		$NUChatTags.setItemList($scope.fileList = getOrderedFiles());
 		$scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
 		$scrolls.resize();
+
+		// Rebinding the global functions
+		$rootScope.filterImages = function() {
+			$scope.fileList = $NUChatFiles.getImages( $NUChatTags.getFilteredList() );
+		};
+		$rootScope.filterVideos = function() {
+			$scope.fileList = $NUChatFiles.getVideos( $NUChatTags.getFilteredList() );
+		};
+		$rootScope.filterAudios = function() {
+			$scope.fileList = $NUChatFiles.getAudios( $NUChatTags.getFilteredList() );
+		};
+		$rootScope.reset = function() {
+			$scope.fileList = $NUChatTags.getOriginalList();
+		};
   });
   $scope.$on('onTagFiltered', function() {
 		$scope.fileList = $NUChatTags.getFilteredList();

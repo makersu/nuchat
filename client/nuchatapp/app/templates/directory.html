@@ -20,6 +20,10 @@
 	</ion-tabs>
 	<collapse-buttons class="button-royal">
 		<a class="button button-royal icon ion-plus button-float add-one" expand-to="left" ng-click="addDir()"></a>
+		<a class="button button-royal icon ion-ios-reload button-float" collapse-if="filterByType" expand-to="left" ng-click="reset()"></a>
 		<a class="button button-royal icon ion-pricetags button-float tags" expand-to="top" ng-click="filterTags()"></a>
+		<a class="button button-royal icon ion-images button-float" collapse-if="filterByType" expand-to="top" ng-click="filterImages()"></a>
+		<a class="button button-royal icon ion-videocamera button-float" collapse-if="filterByType" expand-to="top" ng-click="filterVideos()"></a>
+		<a class="button button-royal icon ion-music-note button-float" collapse-if="filterByType" expand-to="top" ng-click="filterAudios()"></a>
 	</collapse-buttons>
 </ion-view>

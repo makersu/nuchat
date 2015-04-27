@@ -48,6 +48,7 @@ var enTranslate = function ($translateProvider) {
 		CALENDAR: 'Calendar',
 		ADD_LINK: 'Add a link',
 		EDIT_LINK: 'Edit a link',
+		MANAGE_FILE: 'Manage the file',
 
 		// Friends
 		SEARCH_OR_ADD_FRIENDS: 'Search/Add Friends',

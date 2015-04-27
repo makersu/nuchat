@@ -41,6 +41,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
         });
         var selectedList = $filter('filter')(imgList, { id: id });
         var index = selectedList.length ? imgList.indexOf(selectedList[0]) : 0;
+        imgList = $filter('orderBy')(imgList, 'created');
         $imageViewer.show(imgList, index, { imgSrcProp: 'originalFileId', base: ENV.GRIDFS_BASE_URL });
       }
     },
@@ -312,7 +313,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   $scope.checkScroll = function() {
     var bound = scrollHandle.element.scrollHeight;
     var lastGroup = RoomService.getLastGroup($scope.room);
-    if ( lastGroup && lastGroup.open && scrollHandle.getScrollPosition().top >= (bound/2) ) {
+    if ( lastGroup && lastGroup.open && scrollHandle.getScrollPosition().top >= (bound*4/5) ) {
       $scope.clearNotification();
     }
   };

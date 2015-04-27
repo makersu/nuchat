@@ -157,6 +157,7 @@ grid-menu {
 	  @include transition-property(prefixed-for-transition(-webkit, transform), all);
 	  width: 0;
 	  height: 0;
+	  padding: 0 10px;
 	  &:hover {
 	  	@include translate3d(0, -1px, 0);
 	  	@include box-shadow( 0 4px 8px 0 rgba(0, 0, 0, 0.4) );
@@ -417,6 +418,7 @@ grid-menu {
 	width: 66.7%;
 	height: 100%;
 	background-color: $sidePanel_bg_color;
+	z-index: 1;
 
 	.item {
 		width: 100% !important;

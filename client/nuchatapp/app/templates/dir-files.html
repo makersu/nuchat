@@ -1,10 +1,11 @@
 <ion-view>
 	<ion-content class="files">
 		<!-- Collection Repeat -->
-		<div collection-repeat="file in fileList"
+		<flip-item collection-repeat="file in fileList" is-flipped="file.isFlipped"
 			item-width="33.3%"
-			item-height="120">
-			<responsive-img img-src="{{ file.thumbUrl || file.typeImg }}"></responsive-img>
-		</div>
+			item-height="120" ng-click="play(file)" on-hold="edit(file)">
+			<div class="face front"><responsive-img img-src="{{ file.thumbUrl || file.typeImg }}"></responsive-img><i class="icon icon-top icon-right ion-pricetags" ng-if="file.tags && file.tags.length" ng-click=""></i><i ng-if="file.isVideo" class="button button-circle icon ion-play"></i></div>
+			<div class="face back check-grey"><i class="checkbox-icon"></i></div>
+		</flip-item>
 	</ion-content>
 </ion-view>

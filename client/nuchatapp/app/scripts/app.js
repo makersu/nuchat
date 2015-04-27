@@ -24,8 +24,6 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
 
     // InAppBrowser
     $rootScope.openInappbrowser = function(link, useSys) {
-      console.log('click to');
-      console.log(link);
       window.open(link, useSys ? '_system' : '_blank', 'location=no,enableViewportScale=yes')
     }
 

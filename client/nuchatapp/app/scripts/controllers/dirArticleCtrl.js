@@ -165,8 +165,9 @@ function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $ionicPo
   // On modal shown.
   $scope.$on('modal.shown', function() {
     // Getting the content container.
-    console.log(document.querySelector('.article'));
-    $contentContainer = angular.element( document.querySelector('.article .scroll') );
+    if (document.querySelector('.article')) {
+      $contentContainer = angular.element( document.querySelector('.article .scroll') );
+    }
   });
   //Cleanup the modal when we're done with it!
   $scope.$on('$destroy', function() {

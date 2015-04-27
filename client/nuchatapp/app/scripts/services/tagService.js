@@ -17,16 +17,18 @@ function TagService($filter) {
 				// console.log(item.tags);
 			}
 		});
+		updateTags();
 	}
 	function remove(item, idx) {
 		item.tags.splice(idx, 1);
+		updateTags();
 	}
 	function getTagList() {
 		return { tags: _tags };
 	}
 	function setItemList(list) {
-		_itemList = list;
-		extractTags();
+		_filteredList = _itemList = list;
+		updateTags();
 	}
 	function filterList() {
 		var filterTags = $filter('filter')(_tags, {selected: true});
@@ -35,7 +37,10 @@ function TagService($filter) {
 	function getFilteredList() {
 		return _filteredList;
 	}
-	function extractTags() {
+	function getOriginalList() {
+		return _itemList;
+	}
+	function updateTags() {
 		_tags = [];
 		angular.forEach(_itemList, function(item) {
 			angular.forEach(item.tags, function(tag) {
@@ -86,6 +91,7 @@ function TagService($filter) {
 		setItemList: setItemList,
 		filterList: filterList,
 		getFilteredList: getFilteredList,
+		getOriginalList: getOriginalList,
 		setFavorite: setFavorite,
 		isFavorite: isFavorite,
 		setLike: setLike,
