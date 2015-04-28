@@ -1,4 +1,4 @@
-function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $ionicPopup, $scrolls, $timeout, $filter, $NUChatObject, $compile, $imageViewer, User, ENV) {
+function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $scrolls, $timeout, $filter, $NUChatObject, $compile, $imageViewer, User, ENV) {
 	/* Variables */
 	// Private
   var $contentContainer = null;
@@ -114,37 +114,10 @@ function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $ionicPo
     $imageViewer.show(imgs, idx, { imgSrcProp: 'content' });
   };
   $scope.editLink = function(isEdit) {
-    $scope.data = {};
-    var linkPopup = $ionicPopup.show({
-      templateUrl: 'editLinkPopup.html',
-      title: $filter('translate')(isEdit ? 'EDIT_LINK' : 'ADD_LINK'),
-      scope: $scope,
-      buttons: [
-        { text: $filter('translate')('CANCEL') },
-        {
-          text: '<b>'+$filter('translate')('COMPLETE')+'</b>',
-          type: 'button-royal',
-          onTap: function(e) {
-            console.log($scope.data.httpUrl);
-            console.log($scope.data.httpsUrl);
-            if ($scope.data.httpUrl) {
-              return 'http://'+$scope.data.httpUrl;
-            } else if ($scope.data.httpsUrl) {
-              return 'https://'+$scope.data.httpsUrl;
-            } else {
-              return null;
-            }
-          }
-        }
-      ]
-    }).then(function(result) {
-      result && $scope.article.content.push({type: 'link', content: result});
-    });
-  };
-  // Override Global
-  $rootScope.addDir = function() {
-    $scope.article = { content: [] };
-    $scope.openModal();
+    $scope.toEditLink($scope, isEdit)
+      .then(function(result) {
+        result && $scope.article.content.push({type: 'link', content: result});
+      });
   };
 
 	/* Onload */
@@ -161,6 +134,11 @@ function DirArticleCtrl($scope, $rootScope, $ionicModal, $ionicPopover, $ionicPo
     $timeout(function() {
       $scrolls.bindScrollToFixed('.directory .view-container[nav-view="active"] .scroll-content', '.flip[nav-view="active"]');
     }, 1000);
+    // Rebinding the global functions
+    $rootScope.addDir = function() {
+      $scope.article = { content: [] };
+      $scope.openModal();
+    };
   });
   // On modal shown.
   $scope.$on('modal.shown', function() {

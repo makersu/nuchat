@@ -1,4 +1,4 @@
-function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout, $compile, ENV) {
+function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout, $compile, ENV, METATYPE) {
 	var DEBUG = false;
 	var _prevLatestMsg = null;
 	console.log('RoomService');
@@ -49,8 +49,9 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   	updateLatestMessageInfo(newMessageInfo);
   	if (newMessageInfo.message.roomId == _currentRoomId && !$rootScope.isInBackground) {
   		// syncMessage(data.message)
-  		// Checking the owner of the coming message, processing if not self or only text.
-  		if (newMessageInfo.message.ownerId != User.getCachedCurrent().id || !newMessageInfo.message.type) {
+  		// Checking the owner of the coming message, processing if not self or only text or link type.
+  		if (newMessageInfo.message.ownerId != User.getCachedCurrent().id ||
+  			!newMessageInfo.message.type || newMessageInfo.message.type === METATYPE.LINK) {
   			addMessage(newMessageInfo.message);
   		} else if ( $checkFormat.isImg(newMessageInfo.message.type) ||
   								$checkFormat.isAudio(newMessageInfo.message.type) ||
@@ -95,6 +96,14 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		    	var parentEl = angular.element(firstMsgEl).parent()[0];
 		    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
 		    	parentEl.insertBefore(note, firstMsgEl);
+		    } else {
+		    	var msgContainer = document.getElementById('msgContainer');
+		    	var unread = document.getElementById('unreadStart');
+		    	if (unread) {
+		    		angular.element(unread).remove();
+		    	}
+		    	console.log('set unreadstart');
+		    	angular.element(msgContainer).find('div').eq(0).append('<div id="unreadStart"></div>');
 		    }
 	    });
 	  });

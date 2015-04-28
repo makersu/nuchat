@@ -1544,6 +1544,7 @@
 		};
   }]);
 
+	// Services
   // Service of type
   jangularUI.factory('$checkFormat', function() {
   	var _self = this;
@@ -1554,6 +1555,14 @@
   	
   	return _self;
   });
+  jangularUI.factory('$juiUtility', ['$http', function($http) {
+  	function getSummaryLink(link, obj) {
+  		return parseSummaryLink(link, obj, $http);
+  	}
+  	return {
+  		getSummaryLink: getSummaryLink,
+  	};
+  }]);
 
   // Filters
   // Grouping by the property.

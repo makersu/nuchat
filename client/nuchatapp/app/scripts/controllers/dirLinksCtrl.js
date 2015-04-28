@@ -1,4 +1,4 @@
-function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $filter) {
+function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $filter, RoomService, User, $juiUtility, METATYPE) {
 	/* Variables */
 	// Private
 
@@ -19,6 +19,12 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 		$NUChatLinks.remove(link.id);
 		$scope.linkList = getOrderedLinks();
 	};
+	$scope.addLink = function(isEdit) {
+		$scope.toEditLink($scope, isEdit)
+			.then(function(result) {
+				RoomService.createMessage({ type: METATYPE.LINK, roomId: $scope.room.id, ownerId: User.getCachedCurrent().id, text: result });
+			});
+	};
 
 	/* Onload */
 	// Events
@@ -30,8 +36,25 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 		$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
 		$scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
 		$scrolls.resize();
+		// Rebind the global functions
+		$rootScope.addDir = $scope.addLink;
 	});
 	$scope.$on('onTagFiltered', function() {
 		$scope.linkList = $NUChatTags.getFilteredList();
+	});
+	$scope.$on('onNewMessage', function(event, args) {
+		console.log('onNewMessage');
+		// To compile the linkView.
+		if (args.msg.type === METATYPE.LINK) {
+			$juiUtility.getSummaryLink(args.msg.text, {id: args.msg.id})
+				.then(function(result) {
+					args.msg.linkView = result;
+					$scope.room.messages[args.msg.id] = args.msg;
+					$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
+					console.log($scope.linkList);
+				}, function(err) {
+					console.error(err);
+				});
+		}
 	});
 }

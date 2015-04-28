@@ -110,6 +110,11 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       });
     }
   }
+  var openTheLastGroup = function() {
+    RoomService.getLastGroup($scope.room) && (function() {
+      RoomService.getLastGroup($scope.room).open = true;
+    })();
+  };
   /* Getting the all the users joined this room except the currentUser
    */
   function getRoomUsers() {
@@ -352,11 +357,12 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     $NUChatLinks.reset();
 
     slideoutTabs();
+    openTheLastGroup();
 
     // Scrolling to the start of unread messages.
     $location.hash('unreadStart');
     scrollHandle.anchorScroll();
-    // console.log('scrolling to unreadStart');
+    console.log('scrolling to unreadStart');
 
   });
 
@@ -430,10 +436,9 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       } else {
         console.error('Cannot find the user('+args.msg.ownerId+') from the friend list');
       }
-    } else {  // If sent by self, scrolling to the bottom.
-      RoomService.getLastGroup($scope.room) && (function() {
-        RoomService.getLastGroup($scope.room).open = true;
-      })();
+    } else {  // If sent by self, opening the group.
+      openTheLastGroup();
+      $scope.notify = false;
       // $timeout(function() {
       //   scrollHandle.scrollBottom();
       // });
