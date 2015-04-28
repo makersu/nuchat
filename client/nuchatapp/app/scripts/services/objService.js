@@ -97,39 +97,50 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
 	function choosePhotosUpload(success, error, options) {
 		window.imagePicker.getPictures(
       function(results) {
-        success.call(this, results);
+        var newMessages = [];
         // Uploading all the files.
         angular.forEach(results, function(photo) {
         	console.log('Image URI: ' + photo);
-        	uploadFile(photo);
+        	uploadFile(photo, function(msg) {
+            console.log('callback from uploadFile');
+            msg.text = photo;
+            newMessages.push(msg);
+          });
         });
+        success.call(this, newMessages);
       }, error, options);
 	}
 	function capturePhotoUpload(success, error) {
 		$cordovaCapture.captureImage()
       .then(function(imgData) {
-        success.call(this, imgData[0].fullPath);
         // Uploading the captured.
-        uploadFile(imgData[0].fullPath);
+        uploadFile(imgData[0].fullPath, function(msg) {
+          msg.text = imgData[0].fullPath;
+          success.call(this, msg);
+        });
       }, error);
 	}
 	function captureAudioUpload(success, error) {
 		$cordovaCapture.captureAudio()
       .then(function(audioData) {
-        success.call(this, audioData[0].localURL);
         // Uploading the captured.
-        uploadFile(audioData[0].localURL);
+        uploadFile(audioData[0].localURL, function(msg) {
+          msg.text = audioData[0].localURL;
+          success.call(this, msg);
+        });
       }, error);
 	}
 	function captureVideoUpload(success, error) {
 		$cordovaCapture.captureVideo()
       .then(function(videoData) {
-        success.call(this, videoData[0].fullPath);
         // Uploading the captured.
-        uploadFile(videoData[0].localURL);
+        uploadFile(videoData[0].localURL, function(msg) {
+          msg.text = videoData[0].localURL;
+          success.call(this, msg);
+        });
       }, error);
 	}
-	function uploadFile(localUri) {
+	function uploadFile(localUri, callback) {
 		window.resolveLocalFileSystemURL(
       localUri, 
       function(fileEntry){
@@ -148,9 +159,12 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
             data.filename = file.name;
             data.type = file.type || $utils.getMimeType(file);
             data.size = file.size;
+            data.timestamp = new Date().getTime();
             console.log(data);
 
             LBSocket.emit('room:files:new', data);
+            console.log(callback);
+            callback && callback(data);
           }
 
           //_fileReader.readAsDataURL(file);

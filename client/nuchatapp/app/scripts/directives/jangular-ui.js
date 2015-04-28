@@ -241,8 +241,12 @@
 				parse(scope.type);
 
 				// Registering events.
-				scope.$on('uploaded', function() {
-					scope.uploading = false;
+				scope.$on('uploaded', function(event, args) {
+					if (scope.msg.roomId === args.msg.roomId && scope.msg.ownerId === args.msg.ownerId) {
+						console.log(args.msg);
+						console.log(scope.msg);
+						scope.uploading = false;
+					}
 				});
 
 				scope.extend = function() {
@@ -320,7 +324,7 @@
 								scope.message = scope.message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
 								$compile(_msgContent.html('').append(scope.message))(scope);
 								scope.msg.linkView = result;
-								elem.append( $compile('<url-view content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+								elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
 							}, errorHandler);
 						}
 						// if (link && link.match(/^http(s)?:\/\/.*/)) {

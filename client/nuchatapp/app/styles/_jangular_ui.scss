@@ -63,6 +63,16 @@
 			margin: 3px 0 2px;
 		}
 	}
+	&.brief {
+		h5 {
+			white-space: nowrap;
+			overflow: hidden;
+		}
+		p {
+			white-space: nowrap;
+			overflow: hidden;
+		}
+	}
 }
 
 /* Grid Menu */

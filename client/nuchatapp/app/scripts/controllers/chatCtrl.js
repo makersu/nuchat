@@ -144,7 +144,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     console.log($scope.input);
 
     if (isLocal) {
-      $scope.input.created = new Date();
+      $scope.input.created = new Date().toISOString();
       RoomService.addMessage($scope.input);
     } else {
       //LBSocket.emit('room:messages:new', $scope.input);
@@ -210,9 +210,10 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     $NUChatObject.choosePhotosUpload(
       function(results) {
         // Sending message to local
-        angular.forEach(results, function(imgUri) {
-          $scope.input.text = imgUri;
-          $scope.input.type = METATYPE.IMG;
+        angular.forEach(results, function(msg) {
+          console.log(msg);
+          $scope.input = msg;
+          // $scope.input.type = METATYPE.IMG;
           $scope.sendMessage(true);
         });
         if ($scope.metaMenu.isShown()) {
@@ -224,10 +225,11 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     );
   };
   $scope.capturePhoto = function() {
-    $NUChatObject.capturePhotoUpload(function(imgUri) {
+    $NUChatObject.capturePhotoUpload(function(msg) {
+      console.log(msg);
       // Sending message to local
-      $scope.input.text = imgUri;
-      $scope.input.type = METATYPE.IMG;
+      $scope.input = msg;
+      // $scope.input.type = METATYPE.IMG;
       $scope.sendMessage(true);
       if ($scope.metaMenu.isShown()) {
         $scope.closeMetaMenu();
@@ -235,10 +237,10 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     }, errorHandler);
   };
   $scope.captureVoice = function() {
-    $NUChatObject.captureAudioUpload(function(audioUri) {
+    $NUChatObject.captureAudioUpload(function(msg) {
       // Sending message to local
-      $scope.input.text = audioUri;
-      $scope.input.type = METATYPE.AUDIO;
+      $scope.input = msg;
+      // $scope.input.type = METATYPE.AUDIO;
       $scope.sendMessage(true);
       if ($scope.metaMenu.isShown()) {
         $scope.closeMetaMenu();
@@ -246,10 +248,10 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     }, errorHandler);
   };
   $scope.captureVideo = function() {
-    $NUChatObject.captureVideoUpload(function(videoUri) {
+    $NUChatObject.captureVideoUpload(function(msg) {
       // Sending message to local
-      $scope.input.text = videoUri;
-      $scope.input.type = METATYPE.VIDEO;
+      $scope.input = msg;
+      // $scope.input.type = METATYPE.VIDEO;
       $scope.sendMessage(true);
       if ($scope.metaMenu.isShown()) {
         $scope.closeMetaMenu();

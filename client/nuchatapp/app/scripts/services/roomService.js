@@ -53,10 +53,13 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   		if (newMessageInfo.message.ownerId != User.getCachedCurrent().id ||
   			!newMessageInfo.message.type || newMessageInfo.message.type === METATYPE.LINK) {
   			addMessage(newMessageInfo.message);
-  		} else if ( $checkFormat.isImg(newMessageInfo.message.type) ||
-  								$checkFormat.isAudio(newMessageInfo.message.type) ||
-  								$checkFormat.isVideo(newMessageInfo.message.type) ) {
-  			$rootScope.$broadcast('uploaded');
+  		} else if ( newMessageInfo.message.ownerId == User.getCachedCurrent().id &&
+  								( $checkFormat.isImg(newMessageInfo.message.type) ||
+  								  $checkFormat.isAudio(newMessageInfo.message.type) ||
+  								  $checkFormat.isVideo(newMessageInfo.message.type) )
+  							) {
+  			addMessage(newMessageInfo.message);
+  			$rootScope.$broadcast('uploaded', {msg: newMessageInfo.message});
   		}
   	}
   	else{
@@ -114,9 +117,19 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   	// console.log('addMessage');
 		// console.log(message);
 		var room = getRoom(message.roomId);
-		if (!message.id) message.id = new Date().getTime();
+		if (!message.id) {
+			console.log('local adding');
+			console.log(message);
+			room.messages[message.timestamp] = message;
+		} else {
+			room.messages[message.id] = message;
+			if (message.timestamp) {
+				console.log('timestamp');
+				console.log(room.messages[message.timestamp]);
+				delete room.messages[message.timestamp];
+			}
+		}
 		// console.log(room);
-		room.messages[message.id] = message;
 		// console.log(room.messages);
 		grouping(room, message);
 		
