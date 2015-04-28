@@ -7,8 +7,9 @@ module.exports = function(app) {
 		app.sio.on('connection', function(socket){
 			console.log('Signaling connection');
 
-			socket.on('login', function (name) {
+			socket.on('login', function (userId) {
 				console.log('Signaling login');
+				console.log(userId);
 				console.log(socket.id);
 				console.log(users);
 				// if this socket is already connected,
@@ -19,45 +20,87 @@ module.exports = function(app) {
 
 				// if this name is already registered,
 				// send a failed login message
-				if (_.findIndex(users, { name: name }) !== -1) {
+				if (_.findIndex(users, { id: userId }) !== -1) {
 					socket.emit('login_error', 'This name already exists.');
 					return;
 				}
 
 				users.push({
-					name: name,
+					id: userId,
 					socket: socket.id
 				});
 				console.log(users);
-				socket.emit('login_successful', _.pluck(users, 'name'));
-				socket.broadcast.emit('online', name);
+				socket.emit('login_successful', _.pluck(users, 'id'));
 
-				console.log(name + ' logged in');
+				// socket.broadcast.emit('online', name);
+				socket.broadcast.emit('online', userId);
+
+				// console.log(name + ' logged in');
+				console.log(userId + ' logged in');
+
 			});//socket.on login
 
-			socket.on('sendMessage', function (name, message) {
-				console.log('Signaling sendMessage');
+			// socket.on('sendMessage', function (name, message) {
+			// 	console.log('*Signaling sendMessage');
+			// 	console.log('to:'+name)
+			// 	var currentUser = _.find(users, { socket: socket.id });
+			// 	console.log('currentUser')
+			// 	console.log(currentUser)
+			// 	if (!currentUser) { return; }
+
+			// 	console.log('users')
+			// 	console.log(users)
+				
+			// 	var contact = _.find(users, { name: name });
+			// 	console.log('contact')
+			// 	console.log(contact)
+			// 	if (!contact) { return; }
+
+			// 	app.sio
+			// 	.to(contact.socket)
+			// 	.emit('messageReceived', currentUser.name, message);
+
+			// });//socket.on sendMessage
+
+			socket.on('sendMessage', function (toUserId, message) {
+				console.log('*Signaling sendMessage');
+				console.log('toUserId=');//
+				console.log(toUserId);//
+				console.log('message=');//
+				console.log(message);//
+
 				var currentUser = _.find(users, { socket: socket.id });
+				console.log('currentUser=');//
+				console.log(currentUser);//
 				if (!currentUser) { return; }
 
-				var contact = _.find(users, { name: name });
-				if (!contact) { return; }
+				console.log('users=');//
+				console.log(users);//
+				
+				var toUser = _.find(users, { id: toUserId });
+				console.log('toUser=');//
+				console.log(toUser);//
+				//TODO: if user is not online?
+				if (!toUser) { return; }
 
 				app.sio
-				.to(contact.socket)
-				.emit('messageReceived', currentUser.name, message);
+				.to(toUser.socket)
+				.emit('messageReceived', currentUser.id, message);
 
 			});//socket.on sendMessage
 
 			socket.on('disconnect', function () {
 				console.log('Signaling disconnect');
+				console.log(users);
 				var index = _.findIndex(users, { socket: socket.id });
+				// console.log(index)
 				if (index !== -1) {
-					socket.broadcast.emit('offline', users[index].name);
-					console.log(users[index].name + ' disconnected');
+					console.log('Signaling emit offline');
+					socket.broadcast.emit('offline', users[index].id);
+					console.log(users[index].id + ' disconnected');
 					users.splice(index, 1);
 				}
-				console.log(users)
+				console.log(users);
 			});//socket.on disconnect
 
 		});//app.sio.on connection

@@ -515,6 +515,35 @@ module.exports = function(app) {
       });//end socket.on
 
       //
+      // update tags of message
+      //
+      socket.on('room:message:tags', function(data, cb) {
+        console.log('room:message:tags');
+        console.log(data);
+        // cb(data);
+        app.models.message.findById(data.id,function(err, existedObj){          
+          if(existedObj){
+            existedObj.tags=data.tags;
+
+            // console.log(existedObj);
+            app.models.message.upsert(existedObj,function(err,updatedObj){ //upsert if not master?
+              if(err){
+                console.log(err);
+                cb(err);
+              }
+              cb(updatedObj);
+            });
+          }
+          else{
+            console.log('room:message:tags not existed!');
+            cb('room:message:tags not existed!');
+          }  
+
+        });
+        
+      });//end socket.on
+
+      //
       // New File
       //
       socket.on('room:files:new', function(data) {

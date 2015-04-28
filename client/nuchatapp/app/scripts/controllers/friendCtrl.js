@@ -39,31 +39,32 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
 		console.log(friendId);//
 
 		var privateroom={
-  		user: User.getCachedCurrent().id,
-  		friend: friendId
-  	}
+      user: User.getCachedCurrent().id,
+      friend: friendId
+    };
 
-  	LBSocket.emit('friend:join', privateroom, function(room) {
-      console.log('friend:join callback')
-  		console.log(room)
+    LBSocket.emit('friend:join', privateroom, function(room) {
+      console.log('friend:join callback');
+      console.log(room);
       if(room.id){
-        console.log($ionicHistory.backView())
-        console.log($ionicHistory.currentView())
+        console.log($ionicHistory.backView());
+        console.log($ionicHistory.currentView());
       	//$ionicHistory.currentView($ionicHistory.backView());
         $scope.friendModal.isShown() && $scope.closeFriendModal();
-      	$state.go('tab.chatRoom',{roomId:room.id},{location: 'replace'});	
+        $state.go('tab.chatRoom',{roomId:room.id},{location: 'replace'});
         // $location.path('/tab/room/'+room.id);
       }
 		});
 
-	}
+	};
 
+  //0
   $scope.friendVideoCall = function(friend){
+    console.log('$scope.friendVideoCall');
     console.log(friend);//
-    $scope.friendModal.isShown() && $scope.closeFriendModal();
-    console.log('closeModal');
-    $state.go('videocall',{ isCalling: true, contactTarget: angular.toJson(friend) },{location: 'replace'}); 
-  }
+    $scope.friendModal.isShown() && $scope.closeFriendModal(); //?
+    $state.go('videocall',{ isCalling: true, contactTarget: angular.toJson(friend) },{location: 'replace'});
+  };
 
   $scope.doRefresh = function() {
     console.log('doRefresh')

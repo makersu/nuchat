@@ -39,11 +39,15 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
     // console.log($scope.credentials);//
     $scope.loginResult = User.login({include: 'user', rememberMe: true}, $scope.credentials,
       function () {
-        console.log('signaling.emit login')//
-        signaling.emit('login', User.getCachedCurrent().username);//
+        console.log('signaling.emit login');//
+        // signaling.emit('login', User.getCachedCurrent().username);//
+        // console.log(User.getCachedCurrent())
+        // var user = { id: User.getCachedCurrent().id, name: User.getCachedCurrent().username}
+        signaling.emit('login', User.getCachedCurrent().id);//
 
-        $scope.credentials={}
-        AccountService.setAvatarUrl()
+
+        $scope.credentials={};
+        AccountService.setAvatarUrl();
         console.log('self:join');//
         LBSocket.emit('self:join', User.getCachedCurrent().id);//
 
@@ -51,7 +55,7 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
         FriendService.getFriends();
 
         $ionicHistory.nextViewOptions({disableBack: true});//
-        console.log($location.nextAfterLogin)//
+        // console.log($location.nextAfterLogin)//
         var next = $location.nextAfterLogin || '/tab/chats';
         $location.nextAfterLogin = null;
         $location.path(next);

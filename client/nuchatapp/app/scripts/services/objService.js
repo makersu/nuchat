@@ -1,6 +1,7 @@
 function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountService, METATYPE, $utils) {
 	var _currentRoom = null;
 	var _currentOwner = null;
+  var _fileReader = new FileReader();
   
 	function init(room, user) {
 		_currentRoom = room;
@@ -42,9 +43,8 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
         // console.log(fileEntry);
         fileEntry.file(function(file) {
           //console.log(file)
-          var reader = new FileReader();
 
-          reader.onloadend = function(event) {
+          _fileReader.onloadend = function(event) {
             console.log('onload')
             var data = {};
             data.userId = User.getCachedCurrent().id;//refactoring?
@@ -61,7 +61,7 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
             });
           }//onloadend
 
-          reader.readAsArrayBuffer(file);
+          _fileReader.readAsArrayBuffer(file);
         });
       }, 
       function(error){
@@ -136,9 +136,8 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
         // console.log(fileEntry);
         fileEntry.file(function(file) {
           //console.log(file)
-          var reader = new FileReader();
 
-          reader.onloadend = function(event) {
+          _fileReader.onloadend = function(event) {
             console.log('onload')
             //console.log(event.target)
             console.log('room:files:new')
@@ -154,8 +153,8 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
             LBSocket.emit('room:files:new', data);
           }
 
-          //reader.readAsDataURL(file);
-          reader.readAsArrayBuffer(file);
+          //_fileReader.readAsDataURL(file);
+          _fileReader.readAsArrayBuffer(file);
         });
       }, 
       function(error){
