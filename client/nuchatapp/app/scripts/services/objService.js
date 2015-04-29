@@ -163,7 +163,6 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
             console.log(data);
 
             LBSocket.emit('room:files:new', data);
-            console.log(callback);
             callback && callback(data);
           }
 
