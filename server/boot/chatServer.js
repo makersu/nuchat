@@ -532,6 +532,7 @@ module.exports = function(app) {
                 cb(err);
               }
               cb(updatedObj);
+              // app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); //???
             });
           }
           else{
@@ -675,29 +676,20 @@ module.exports = function(app) {
 
       };//writeFileWithThumbnailToGridStore
 
-      // var createRoomMessage = function(newMessage){
-      //   app.models.message.create(newMessage,function(err, obj){
-      //     if(err){
-      //       console.log(err)
-      //       return;
-      //     }
-      //     console.log('room:messages:new')
-      //     console.log(obj)
-      //     var data={}
-      //     data.message=obj
-      //     app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
-      //   });
-      // };//createRoomMessage
-
-      var createRoomMessage = function(newMessage){
+      //createRoomMessage
+      var createRoomMessage = function(newMessage, returnTimestamp){
         app.models.message.create(newMessage,function(err, obj){
           if(err){
             console.log(err)
             return;
           }
-          console.log(obj)
+          console.log(obj);
+          
           var data={}
           data.message=obj
+          if(returnTimestamp){
+              data.message.timestamp=returnTimestamp;
+          }
           app.models.message.count({roomId: obj.roomId},function(err,count){
             console.log(count)
             data.total=count
@@ -848,7 +840,7 @@ module.exports = function(app) {
             newMessage.type = data.type
             console.log(newMessage)
 
-            createRoomMessage(newMessage)
+            createRoomMessage(newMessage,data.timestamp)
 
           })//end writeFileWithThumbnailToGridStore
 
@@ -897,9 +889,9 @@ module.exports = function(app) {
                 newMessage.originalFileId = originalFileId
                 newMessage.thumbnailFileId = thumbnailFileId
                 newMessage.type = data.type
-                console.log(newMessage)
+                console.log(newMessage);
 
-                createRoomMessage(newMessage)
+                createRoomMessage(newMessage, data.timestamp)
 
               })
 
@@ -929,9 +921,9 @@ module.exports = function(app) {
           newMessage.ownerId = data.ownerId; 
           newMessage.originalFileId = originalFileId
           newMessage.type = data.type
-          console.log(newMessage)
+          console.log(newMessage);
 
-          createRoomMessage(newMessage)
+          createRoomMessage(newMessage, data.timestamp)
 
         });
        
