@@ -1,5 +1,15 @@
 @import "jangular_variables";
 
+/* Meta Message */
+meta-msg {
+	audio {
+		width: 250px;
+	}
+	ion-spinner {
+		display: none;
+	}
+}
+
 /* Url View */
 .url-view {
 	background: $urlView_bg_color;

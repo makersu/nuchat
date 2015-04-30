@@ -180,13 +180,13 @@
 	}
 	function exitFullScreen(elem) {
 		if (elem.exitFullscreen) {
-		  elem.exitFullscreen();
+		  Document.exitFullscreen();
 		} else if (elem.msExitFullscreen) {
 		  elem.msExitFullscreen();
 		} else if (elem.mozCancelFullScreen) {
 		  elem.mozCancelFullScreen();
 		} else if (elem.webkitExitFullscreen) {
-		  elem.webkitExitFullscreen();
+		  Document.webkitExitFullscreen();
 		}
 	}
 
@@ -216,7 +216,7 @@
 	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
 	 * 4) Video: ogg|mp4|webm (HTML 5 Video supports)
 	 */
-	jangularUI.directive('metaMsg', function($http, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
+	jangularUI.directive('metaMsg', function($http, $rootScope, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
 		return {
 			restrict: 'EA',
 			scope: {
@@ -243,9 +243,12 @@
 				// Registering events.
 				scope.$on('uploaded', function(event, args) {
 					if (scope.msg.roomId === args.msg.roomId && scope.msg.ownerId === args.msg.ownerId) {
-						console.log(args.msg);
-						console.log(scope.msg);
-						scope.uploading = false;
+						if (args.msg.timestamp === scope.msg.timestamp) {
+							// console.log(args.msg);
+							// console.log(scope.msg);
+							scope.msg.uploading = false;
+							$rootScope.$broadcast('updateObjMsg', { msg: args.msg });
+						}
 					}
 				});
 
@@ -362,16 +365,17 @@
 
 				// Assuming the img uri provided.
 				function parseImg() {
+					console.log('parseImg');
 					// scope.msg.type = METATYPE.IMG;
 					scope.msg.isImg = true;
 					var imgSrc = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
-					scope.uploading = !scope.msg.thumbnailFileId;
-					// console.log('parseImg uploading? '+scope.uploading);
-					// console.log(scope.msg);
+					scope.msg.uploading = !scope.msg.thumbnailFileId;
+					console.log('parseImg uploading? '+scope.msg.uploading);
+					console.log(scope.msg);
 					var $imgElem = angular.element('<img id="img'+scope.msg.id+'" src="'+imgSrc+'">');
-					_msgContent.append($imgElem).append( $compile('<ion-spinner ng-if="uploading"></ion-spinner>' )(scope) );
+					_msgContent.append($imgElem).append( $compile('<ion-spinner ng-if="msg.uploading"></ion-spinner>')(scope) );
 					$imgElem.on('click', scope.metaOption.imgSetting.clickHandler ? function() {
-						scope.metaOption.imgSetting.clickHandler(scope.msg.id);
+						scope.metaOption.imgSetting.clickHandler(scope.msg.id || scope.msg.timestamp);
 					} : {});
 				}
 
@@ -380,39 +384,40 @@
 					// TODO: if audioSetting is not set, throw the error message.
 					// scope.msg.type = METATYPE.AUDIO;
 					var audioUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
-					scope.uploading = !scope.msg.originalFileId;
+					scope.msg.uploading = !scope.msg.originalFileId;
 
 					// scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
-					_msgContent.append( $compile('<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i><ion-spinner icon="lines" ng-if="uploading"></ion-spinner>' )(scope) );
-					elem.bind('click', function() {
-						scope.msg.isPlaying = !scope.msg.isPlaying;
-						setView();
+					// _msgContent.append( $compile('<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i><ion-spinner icon="lines" ng-if="msg.uploading"></ion-spinner>' )(scope) );
+					_msgContent.append( $compile('<audio src="'+audioUrl+'" controls></audio><ion-spinner icon="lines" ng-if="msg.uploading"></ion-spinner>' )(scope) );
+					// elem.bind('click', function() {
+					// 	scope.msg.isPlaying = !scope.msg.isPlaying;
+					// 	setView();
 						
-						if (scope.msg.isPlaying) {
-							_audioSetting.play.fn(audioUrl)
-								.then(function() {
-									// console.log('played');
-									scope.msg.isPlaying = false;
-									setView();
-								});
-						} else {
-							_audioSetting.stop.fn();
-						}
+					// 	if (scope.msg.isPlaying) {
+					// 		_audioSetting.play.fn(audioUrl)
+					// 			.then(function() {
+					// 				// console.log('played');
+					// 				scope.msg.isPlaying = false;
+					// 				setView();
+					// 			});
+					// 	} else {
+					// 		_audioSetting.stop.fn();
+					// 	}
 
-						function setView() {
-							var img = elem.find('img');
-							img[0].src = scope.msg.isPlaying ? _audioSetting.play.img : _audioSetting.stop.img;
-							var icon = elem.find('i');
-							icon[0].className = scope.msg.isPlaying ? _audioSetting.play.icon : _audioSetting.stop.icon;
-						}
-					});
+					// 	function setView() {
+					// 		var img = elem.find('img');
+					// 		img[0].src = scope.msg.isPlaying ? _audioSetting.play.img : _audioSetting.stop.img;
+					// 		var icon = elem.find('i');
+					// 		icon[0].className = scope.msg.isPlaying ? _audioSetting.play.icon : _audioSetting.stop.icon;
+					// 	}
+					// });
 				}
 
 				function parseVideo() {
 					// scope.msg.type = METATYPE.VIDEO;
 					var videoUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
 					var thumbnailUrl = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
-					scope.uploading = !scope.msg.originalFileId;
+					scope.msg.uploading = !scope.msg.originalFileId;
 					var $videoElem = angular.element('<video class="video-thumb" poster="'+thumbnailUrl+'"><source src="'+videoUrl+'"></video>');
 					// $videoElem.on('loadeddata', function() {
 					// 	$videoElem[0].currentTime = 1;
@@ -445,13 +450,7 @@
 					if (!isIOS()) {
 						_msgContent.append($playBtn);
 					}
-					_msgContent.append($compile('<ion-spinner icon="crescent" ng-if="uploading"></ion-spinner>')(scope));
-					// scope.message = $sce.trustAsHtml('<video width="200" height="120" controls><source src="'+videoUrl+'"></video>');
-					// _msgContent.append( $compile('<video width="200" height="120" controls><source src="'+videoUrl+'"></video><ion-spinner ng-if="uploading"></ion-spinner>' )(scope) );
-					// _msgContent.append( $compile('<i class="icon ion-play"></i>' )(scope) );
-					// _msgContent.append( $compile('<video width="200" height="120" controls><source src="'+videoUrl+'"></video><ion-spinner ng-if="uploading"></ion-spinner>' )(scope) );
-					// console.log('parsing video');
-					// console.log(scope.message);
+					_msgContent.append($compile('<ion-spinner icon="crescent" ng-if="msg.uploading"></ion-spinner>')(scope));
 				}
 
 				function parseText() {
@@ -1074,7 +1073,7 @@
 						scope: $scope,
 						animation: 'slide-in-up'
 					});
-					// console.log($scope.modal);
+					console.log($scope.modal);
 					$scope.modal.show();
 				}
 
@@ -1106,7 +1105,9 @@
 					if (options) {
 						if (options.imgSrcProp) {
 							angular.forEach($scope.imgList, function(img) {
-								img.src = (options.base || '')+img[options.imgSrcProp];
+								var src = img[options.imgSrcProp] ?
+									( (options.base || '')+img[options.imgSrcProp] ) : img.text;
+								img.src = src;
 							});
 						}
 					}

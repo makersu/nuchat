@@ -1,12 +1,17 @@
-function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountService, METATYPE, $utils) {
+function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountService, METATYPE, $utils, $timeout) {
 	var _currentRoom = null;
 	var _currentOwner = null;
   var _fileReader = new FileReader();
+  var _uploadQueue = [];
   
 	function init(room, user) {
 		_currentRoom = room;
 		_currentOwner = user;
 	}
+
+  function readArrayBufferTask(file) {
+    _fileReader.readAsArrayBuffer(file);
+  }
 
   function chooseAvatar(success, error, options) {
     console.log('chooseAvatar');
@@ -101,11 +106,9 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
         // Uploading all the files.
         angular.forEach(results, function(photo) {
         	console.log('Image URI: ' + photo);
-        	uploadFile(photo, function(msg) {
-            console.log('callback from uploadFile');
-            msg.text = photo;
-            newMessages.push(msg);
-          });
+          var timestamp = new Date().getTime();
+        	uploadFile(photo, timestamp);
+          newMessages.push({text: photo, type: METATYPE.IMG, timestamp: timestamp});
         });
         success.call(this, newMessages);
       }, error, options);
@@ -114,60 +117,80 @@ function ObjService($cordovaCapture, $cordovaCamera, LBSocket, User, AccountServ
 		$cordovaCapture.captureImage()
       .then(function(imgData) {
         // Uploading the captured.
-        uploadFile(imgData[0].fullPath, function(msg) {
-          msg.text = imgData[0].fullPath;
-          success.call(this, msg);
-        });
+        var timestamp = new Date().getTime();
+        success.call( this, packageMessage(imgData, timestamp) );
+        uploadFile(imgData[0].fullPath, timestamp);
       }, error);
 	}
 	function captureAudioUpload(success, error) {
 		$cordovaCapture.captureAudio()
       .then(function(audioData) {
         // Uploading the captured.
-        uploadFile(audioData[0].localURL, function(msg) {
-          msg.text = audioData[0].localURL;
-          success.call(this, msg);
-        });
+        var timestamp = new Date().getTime();
+        success.call( this, packageMessage(audioData, timestamp) );
+        uploadFile(audioData[0].localURL, timestamp);
       }, error);
 	}
 	function captureVideoUpload(success, error) {
 		$cordovaCapture.captureVideo()
       .then(function(videoData) {
         // Uploading the captured.
-        uploadFile(videoData[0].localURL, function(msg) {
-          msg.text = videoData[0].localURL;
-          success.call(this, msg);
-        });
+        var timestamp = new Date().getTime();
+        success.call( this, packageMessage(videoData, timestamp) );
+        uploadFile(videoData[0].localURL, timestamp);
       }, error);
 	}
-	function uploadFile(localUri, callback) {
+  function packageMessage(objData, timestamp, refUrl) {
+    var file = objData[0];
+    return { 
+      type: file.type,
+      text: file[refUrl || 'fullPath'],
+      roomId: _currentRoom.id,
+      ownerId: _currentOwner.id,
+      filename: file.name,
+      timestamp: timestamp
+    };
+  }
+	function uploadFile(localUri, timestamp) {
 		window.resolveLocalFileSystemURL(
       localUri, 
       function(fileEntry){
         // console.log(fileEntry);
+        console.time('fileEntry.file');
         fileEntry.file(function(file) {
-          //console.log(file)
+          // console.log(file);
+          _uploadQueue.push({file: angular.copy(file), timestamp: timestamp});
 
           _fileReader.onloadend = function(event) {
             console.log('onload')
             //console.log(event.target)
-            console.log('room:files:new')
+            // console.log('room:files:new')
             var data = {};
             data.roomId = _currentRoom.id;
             data.ownerId = _currentOwner.id;
             data.file = event.target.result;
-            data.filename = file.name;
-            data.type = file.type || $utils.getMimeType(file);
-            data.size = file.size;
-            data.timestamp = new Date().getTime();
-            console.log(data);
+            data.filename = _uploadQueue[0].file.name;
+            data.type = _uploadQueue[0].file.type || $utils.getMimeType(_uploadQueue[0].file);
+            data.size = _uploadQueue[0].file.size;
+            data.timestamp = _uploadQueue[0].timestamp;
+            // console.log(data);
+
+            console.timeEnd('fileEntry.file');
 
             LBSocket.emit('room:files:new', data);
-            callback && callback(data);
+
+            _uploadQueue.splice(0, 1);
+            // To Check the task queue.
+            if (_uploadQueue.length) {
+              readArrayBufferTask(_uploadQueue[0].file);
+            }
           }
 
           //_fileReader.readAsDataURL(file);
-          _fileReader.readAsArrayBuffer(file);
+          // console.log(_fileReader.readyState);
+          if (_fileReader.readyState !== 1) {
+            readArrayBufferTask(_uploadQueue[0].file);
+          }
         });
       }, 
       function(error){

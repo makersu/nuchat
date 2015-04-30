@@ -40,6 +40,9 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
           if (chunk.length) imgList = imgList.concat(chunk);
         });
         var selectedList = $filter('filter')(imgList, { id: id });
+        if (!selectedList.length) {
+          selectedList = $filter('filter')(imgList, { timestamp: id });
+        }
         var index = selectedList.length ? imgList.indexOf(selectedList[0]) : 0;
         imgList = $filter('orderBy')(imgList, 'created');
         $imageViewer.show(imgList, index, { imgSrcProp: 'originalFileId', base: ENV.GRIDFS_BASE_URL });
@@ -220,7 +223,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
           $scope.closeMetaMenu();
         }
       }, errorHandler, {
-        width: 800
+        width: 640
       }
     );
   };
@@ -469,6 +472,19 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     // console.log($stateParams.roomId);
     // console.log(data.roomId);
     // Saving the message into the Directory by type.
+  });
+
+  $scope.$on('updateObjMsg', function(event, args) {
+    console.log('on updateObjMsg');
+    delete $scope.room.messages[args.msg.timestamp];
+    var lastGroupMsgs = RoomService.getLastGroup($scope.room).items;
+    var tempMsgs = $filter('filter')(lastGroupMsgs, {id: args.msg.timestamp});
+    if (tempMsgs.length) {
+      var idx = lastGroupMsgs.indexOf(tempMsgs[0]);
+      lastGroupMsgs.splice(idx, 1);
+    }
+    RoomService.grouping($scope.room, args.msg);
+    console.log($scope.room);
   });
 
   var footerBar = document.body.querySelector('#userMessagesView .bar-footer');

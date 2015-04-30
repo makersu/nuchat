@@ -58,7 +58,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
   								  $checkFormat.isAudio(newMessageInfo.message.type) ||
   								  $checkFormat.isVideo(newMessageInfo.message.type) )
   							) {
-  			addMessage(newMessageInfo.message);
+  			// addMessage(newMessageInfo.message);
   			$rootScope.$broadcast('uploaded', {msg: newMessageInfo.message});
   		}
   	}
@@ -120,18 +120,14 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		if (!message.id) {
 			console.log('local adding');
 			console.log(message);
+			message.id = message.timestamp; // For removing from view after updating from server.
 			room.messages[message.timestamp] = message;
 		} else {
 			room.messages[message.id] = message;
-			if (message.timestamp) {
-				console.log('timestamp');
-				console.log(room.messages[message.timestamp]);
-				delete room.messages[message.timestamp];
-			}
 		}
 		// console.log(room);
-		// console.log(room.messages);
 		grouping(room, message);
+		console.log(room);
 		
 		$rootScope.$broadcast('onNewMessage', { msg: message });
   }
@@ -157,9 +153,9 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
     _prevLatestMsg = angular.copy(newMsg);
   }
 
-  function getLastGroup(room) {
+  function getLastGroup(room, last) {
   	if (room.groupedMessages && room.groupedMessages.length)
-  		return room.groupedMessages[room.groupedMessages.length-1];
+  		return room.groupedMessages[room.groupedMessages.length-(last || 1)];
   	return null;
   }
 
@@ -329,7 +325,8 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		getLastGroup: getLastGroup,
 		isPrivate: isPrivate,
 		isGroup: isGroup,
-		removeAll: removeAll
+		removeAll: removeAll,
+		grouping: grouping,
 	};
 
 	return service;
