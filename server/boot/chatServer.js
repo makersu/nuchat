@@ -549,7 +549,7 @@ module.exports = function(app) {
       //
       socket.on('room:files:new', function(data) {
         console.log('room:files:new')
-        console.log(data.type)
+        // console.log(data.type)
         if(data.type.indexOf('image')!=-1){
           createRoomImageMessage(data)
         }
@@ -693,6 +693,7 @@ module.exports = function(app) {
           app.models.message.count({roomId: obj.roomId},function(err,count){
             console.log(count)
             data.total=count
+            console.log(data.message.timestamp)
             console.log(data)
             console.log('room:messages:new')
             app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
@@ -805,7 +806,8 @@ module.exports = function(app) {
       var createRoomImageMessage = function(data){
 
         console.log(data.type)
-
+        console.log(data.timestamp)
+        
         var thumbnailFilename = Math.random().toString(36).substring(7)+'.png';
         var thumbnailFilePath = '/tmp/'+thumbnailFilename//TODO
 
