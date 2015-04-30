@@ -1,6 +1,6 @@
 {
   "name": "nuchat",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "main": "server/server.js",
   "scripts": {
     "pretest": "jshint ."
@@ -19,6 +19,7 @@
     "loopback-datasource-juggler": "^2.7.0",
     "moment": "^2.9.0",
     "mongodb": "^1.4.33",
+    "redis": "^0.12.1",
     "serve-favicon": "^2.0.1",
     "socket.io": "^1.2.1",
     "socket.io-redis": "^0.1.4",
