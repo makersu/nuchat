@@ -43,7 +43,8 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
         // signaling.emit('login', User.getCachedCurrent().username);//
         // console.log(User.getCachedCurrent())
         // var user = { id: User.getCachedCurrent().id, name: User.getCachedCurrent().username}
-        signaling.emit('login', User.getCachedCurrent().id);//
+        console.log(User.getCachedCurrent().id);
+        signaling.emit('signalingLogin', User.getCachedCurrent().id);//
 
 
         $scope.credentials={};
