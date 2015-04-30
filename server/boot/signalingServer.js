@@ -130,6 +130,11 @@ module.exports = function(app) {
 						return;
 					}
 
+					if(!onlineUsers){
+						console.log('!onlineUsers');
+						return;
+					}
+					
 					Object.keys(onlineUsers).forEach(function(key) {
 						if(onlineUsers[key] === socket.id ){
 							console.log(key);
