@@ -119,7 +119,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		var room = getRoom(message.roomId);
 		if (!message.id) {
 			console.log('local adding');
-			console.log(message);
+			// console.log(message);
 			message.id = message.timestamp; // For removing from view after updating from server.
 			room.messages[message.timestamp] = message;
 		} else {
@@ -127,7 +127,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 		}
 		// console.log(room);
 		grouping(room, message);
-		console.log(room);
+		// console.log(room);
 		
 		$rootScope.$broadcast('onNewMessage', { msg: message });
   }

@@ -691,35 +691,263 @@
 	});
 
 	/**
-	 *  In View Window
+	 *  Page Collection
 	 *
 	 *  @description  Auto hide/show when element outside/inside the view window.
 	 *
 	 */
-	jangularUI.directive('inViewWindow', function() {
+	// var DEFAULT_RENDER_BUFFER = 5;
+	var DEFAULT_PAGE_SIZE = 10;
+	var DEFAULT_DISTANCE = '2.5%';
+	var SCROLL_THRESHOLD = 20;
+	jangularUI.directive('pageCollection', ['$parse', '$$rAF', '$rootScope', '$filter', function($parse, $$rAF, $rootScope, $filter) {
 		return {
 			restrict: 'A',
-			link: function(scope, elem, attrs) {
-				var winEl = angular.element(document.querySelector(attrs.inViewWindow));
+			transclude: 'element',
+			require: '^^$ionicScroll',
+			link: function(scope, elem, attrs, scrollCtrl, transclude) {
+				var $container = elem.parent();
+				var scrollView = scrollCtrl.scrollView;
+				if (scrollView.options.scrollingX && scrollView.options.scrollingY) {
+		      throw new Error("collection-repeat expected a parent x or y scrollView, not " +
+		                      "an xy scrollView.");
+		    }
+
+				var expression = attrs.pageCollection;
+				var match = expression.match(/^\s*([\s\S]+?)\s+in\s+([\s\S]+?)(?:\s+inside\s+([\s\S]+?))?\s*$/);
+				if (!match) {
+		      throw new Error("page-collection expected expression in form of '_item_ in " +
+		                      "_collection_[ inside _selector_]' but got '" + attr.pageCollection + "'.");
+		    }
+				// console.log(match);
+				var itemKeyExpr = match[1];
+				var collection = match[2];
+				var data = [];
+				var renderedElements = [];
+				var itemsLeaving = [];
+				var itemsEntering = [];
+				var itemsPool = [];
+				var distance = (attrs.distance || DEFAULT_DISTANCE).trim();
+				var isPercent = distance.indexOf('%') !== -1;
+				// var itemsGetter = $parse(collection);
+				var winEl = angular.element(document.querySelector(match[3]));
 				var viewWin = verge.rectangle(winEl[0], 10);
 
-				function isInViewWindow() {
-					var elRect = verge.rectangle(elem[0]);
-					return (elRect.top > viewWin.top && elRect.top < viewWin.bottom || elRect.bottom > viewWin.top && elRect.bottom < viewWin.bottom)
-						&& (elRect.left > viewWin.left && elRect.left < viewWin.right || elRect.right > viewWin.left && elRect.right < viewWin.right);
-				}
+				var renderPageExpr = attrs.pageSize;
+				var renderPageSize = angular.isDefined(renderPageExpr) ?
+		      parseInt(renderPageExpr) : DEFAULT_PAGE_SIZE;
+		    var currentPage = 0;
+		    var totalPages = 0;
+		    var renderStartIndex = 0;
+				var renderEndIndex = renderStartIndex+renderPageSize;
+				var leavingHeight = enteringHeight = 0;
+				var forwardDirection = true;
+				var oldTransformTop = 0;
 
-				winEl.on('scroll', _.debounce(function() {
-						if (isInViewWindow()) {
-							elem.css('visibility', 'visible');
-						} else {
-							elem.css('visibility', 'hidden');
-						}
-					}, 100)
-				);
+				// function isInViewWindow() {
+				// 	var elRect = verge.rectangle(elem[0]);
+				// 	return (elRect.top > viewWin.top && elRect.top < viewWin.bottom || elRect.bottom > viewWin.top && elRect.bottom < viewWin.bottom)
+				// 		&& (elRect.left > viewWin.left && elRect.left < viewWin.right || elRect.right > viewWin.left && elRect.right < viewWin.right);
+				// }
+				function getRect(elem) {
+					return verge.rectangle(elem);
+				}
+				// determine pixel refresh distance based on % or value
+			  function calculateThreshold(maximum) {
+			    return {
+			    	min: isPercent ?
+			    		maximum * parseFloat(distance) / 100 :
+			    		parseFloat(distance),
+			    	max: isPercent ?
+					    maximum * (1 - parseFloat(distance) / 100) :
+					    maximum - parseFloat(distance)
+					};
+			  }
+			  function dataChangeRequiresRefresh(newData) {
+			  	var requiresRefresh = newData.length > 0 || newData.length < data.length;
+			  	return !!requiresRefresh;
+			  }
+			  function RepeatItem() {
+			  	var self = this;
+		      this.scope = scope.$new();
+		      transclude(this.scope, function(clone) {
+		        self.el = clone[0];
+		        // TODO destroy
+		        // Batch style setting to lower repaints
+		        ionic.Utils.disconnectScope(self.scope);
+		        $container.append(self.el);
+						renderedElements.push(self);
+		      });
+			  }
+
+			  function render(forward) {
+			  	var item, scope, i;
+			  	forwardDirection = forward;
+					leavingHeight = enteringHeight = 0;
+			  	renderStartIndex = Math.max(0, renderStartIndex - renderPageSize);
+			  	renderEndIndex = Math.min(data.length - 1, renderEndIndex + renderPageSize);
+			  	console.log('start: '+renderStartIndex);
+			  	console.log('end: '+renderEndIndex);
+
+			  	if (data.length) debugger;
+			  	console.log(renderedElements);
+			  	for (i in renderedElements) {
+			  		// console.log(i);
+		        if (i < renderStartIndex || i > renderEndIndex) {
+		          item = renderedElements[i];
+		          delete renderedElements[i];
+		          itemsLeaving.push(item);
+		          item.isShown = false;
+		        }
+		      }
+			  	console.log(renderedElements);
+
+			  	for (i = renderStartIndex; i < renderEndIndex; i++) {
+						if (i >= data.length || renderedElements[i]) continue;
+
+						console.log('append item');
+						item = renderedElements[i] || ( renderedElements[i] = itemsLeaving.length ? itemsLeaving.pop() :
+					                                      itemsPool.length ? itemsPool.shift() :
+					                                      new RepeatItem() );
+						itemsEntering.push(item);
+        		item.isShown = true;
+						scope = item.scope;
+						scope.$index = i;
+						scope[itemKeyExpr] = data[i];
+						scope.$first = (i === 0);
+		        scope.$last = (i === (data.length - 1));
+		        scope.$middle = !(scope.$first || scope.$last);
+		        scope.$odd = !(scope.$even = (i&1) === 0);
+
+		        if (scope.$$disconnected) ionic.Utils.reconnectScope(item.scope);
+		        console.log(item.scope);
+		        console.log(item.el);
+		        console.log(item.el.offsetHeight);
+		        console.log(getRect(item.el));
+		        console.log(scrollCtrl.getScrollPosition());
+		        console.log(scrollView.__scrollTop);
+
+						// transclude(itemScope, function(clone) {
+						// 	// console.log(clone);
+						// 	// console.log(itemKeyExpr);
+						// 	// console.log(itemsGetter(scope));
+						// 	// console.log(collection);
+						// 	// console.log(eval('scope.'+collection));
+						// 	// console.log($compile(clone)(itemScope));
+						// 	elem.parent().append(clone);
+						// 	elements.push({el: clone, scope: itemScope});
+						// 	// ionic.Utils.disconnectScope(itemScope);
+						// });
+					}
+
+					while (itemsLeaving.length) {
+		        item = itemsLeaving.pop();
+		        console.log('From leaving');
+						console.log(item);
+						leavingHeight += item.el.offsetHeight;
+						console.log('leavingHeight: '+leavingHeight);
+		        ionic.Utils.disconnectScope(item.scope);
+		        itemsPool.push(item);
+		      }
+					console.log('leavingHeight: '+leavingHeight);
+
+		      digestEnteringItems();
+
+		      // renderedElements = $filter('orderBy')(renderedElements, 'id');
+			  }
+
+			  function digestEnteringItems() {
+		      var item;
+		      if (digestEnteringItems.running) return;
+		      digestEnteringItems.running = true;
+
+		      $$rAF(function process() {
+		        var rootScopePhase = $rootScope.$$phase;
+		        while (itemsEntering.length) {
+		          item = itemsEntering.pop();
+		          if (item.isShown) {
+		            if (!rootScopePhase) {
+		            	item.scope.$digest();
+		            	console.log('To entering');
+									console.log(item);
+									enteringHeight += item.el.offsetHeight;
+									console.log('enteringHeight: '+enteringHeight);
+		            }
+		          }
+		        }
+		        // Scrolling to original position
+						scrollCtrl.resize();
+						// if (forwardDirection) {
+						// 	console.log(scrollView.__scrollTop);
+						// 	scrollCtrl.scrollTo(0, scrollView.__scrollTop-leavingHeight);
+						// } else {
+						// 	scrollCtrl.scrollTo(0, scrollView.__scrollTop+enteringHeight);
+						// }
+		        digestEnteringItems.running = false;
+		      });
+		    }
+
+	      var checkBound = _.debounce(function() {
+					var thresholds = calculateThreshold(scrollView.getScrollMax().top);
+					if (scrollView.__scrollTop >= thresholds.min && scrollView.__scrollTop <= thresholds.max) return;
+
+					var forward = false;
+					if (scrollView.__scrollTop < thresholds.min) {
+						currentPage = Math.max(0, currentPage - 1);
+					} else if (scrollView.__scrollTop > thresholds.max) {
+						currentPage = Math.min(totalPages - 1, currentPage + 1);
+						console.log('renderStartIndex: '+renderStartIndex);
+						console.log('renderEndIndex: '+renderEndIndex);
+						forward = true;
+					}
+					renderStartIndex = currentPage * renderPageSize;
+					renderEndIndex = renderStartIndex + renderPageSize;
+					render(forward);
+				}, 300);
+
+				console.log('scrollView');
+				console.log(scrollView);
+				console.log(scrollCtrl);
+    		scrollView.__$callback = scrollView.__callback;
+				scrollView.__callback = function(transformLeft, transformTop, zoom, wasResize) {
+					console.log('scrolling callback');
+					console.log(transformTop);
+					// console.log('scrolling');
+					// console.log(scrollView.__scrollTop);
+					if (Math.abs(transformTop-oldTransformTop) > SCROLL_THRESHOLD) {
+						checkBound();
+					}
+      		scrollView.__$callback(transformLeft, transformTop, zoom, wasResize);
+      		oldTransformTop = transformTop;
+				};
+
+				scope.$watchCollection(collection, function(newVal) {
+					if ( newVal && dataChangeRequiresRefresh(newVal) ) {
+						data = angular.isArray(newVal) ? newVal : _.values(newVal);
+					}
+					console.log(data);
+					// check if elements have already been rendered
+          // if (renderedElements.length > 0){
+          //   // if so remove them from DOM, and destroy their scope
+          //   for (var i = 0; i < renderedElements.length; i++) {
+          //     renderedElements[i].$el.remove();
+          //     renderedElements[i].scope.$destroy();
+          //   };
+          //   renderedElements = [];
+          // }
+
+          totalPages = Math.ceil(data.length / renderPageSize);
+          render();
+				});
+				// winEl.on('scroll', onScroll);
+				scrollCtrl.scrollTop();
+
+				scope.$on('$destroy', function() {
+					// winEl.off('scroll', onScroll);
+				})
 			}
 		};
-	});
+	}]);
 
 	/**
 	 * Drawing
@@ -1464,7 +1692,7 @@
 	  	};
 	  	$ionicGesture.on('swipeleft', sidePanel.$el.hasClass('side-panel-right') ? _showListener : _hideListener, _$container);
 	  	$ionicGesture.on('swiperight', sidePanel.$el.hasClass('side-panel-right') ? _hideListener : _showListener, _$container);
-	  	_$container.on('click', _hideListener);
+	  	// _$container.on('click', _hideListener);
 
 	  	return sidePanel;
   	}
@@ -1495,8 +1723,11 @@
 
 			return $timeout(function() {
         //After animating in, allow hide on backdrop click
-        self.$el.on('click', function(e) {
-          if (e.target === self.wrapper) {
+        self.$backdrop.on('click', function(e) {
+        	// console.log(e.target);
+        	// console.log(self.backdrop);
+        	// console.log(e.target === self.backdrop);
+          if (e.target === self.backdrop) {
             self.hide();
           }
         });

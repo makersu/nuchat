@@ -15,15 +15,16 @@
     <a class="button icon-left ion-chevron-left button-clear" href="#/tab/chats">{{ ::'CHAT' | translate }}</a>
   </ion-nav-buttons>
   <ion-nav-buttons side="right">
+ 		<a class="button button-clear icon fa fa-filter" ng-click="openFilterPanel()"></a>
     <a class="button button-clear icon fa fa-th-large" ng-click="gotoDirectory()"></a>
   </ion-nav-buttons>
 
 	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()">
 
-		<accordion close-others="false">
-			<accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}">
-				<accordion-heading>{{ ::group.name }}<i class="icon" ng-class="{'ion-chevron-down': !group.open, 'ion-chevron-up': group.open}"></i></accordion-heading>
-				<div ng-repeat="message in group.items track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" in-view-window="message in #msgContainer" id="{{ ::message.id }}">
+		<!-- <accordion close-others="false"> -->
+			<!-- <accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}"> -->
+				<!-- <accordion-heading>{{ ::group.name }}<i class="icon" ng-class="{'ion-chevron-down': !group.open, 'ion-chevron-up': group.open}"></i></accordion-heading> -->
+				<div page-collection="message in room.viewMessages inside #msgContainer" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" id="{{ message.id }}">
 
 					<div ng-if="currentUser.id !== message.ownerId">
 						<img ng-click="viewProfile(message)" class="profile-pic left" 
@@ -69,8 +70,8 @@
 
 				</div>
 				<a class="accordion-toggle" ng-if="group.open" ng-click="collapseGroup(group)"><i class="icon ion-chevron-up"></i></a>
-			</accordion-group>
-		</accordion>
+			<!-- </accordion-group> -->
+		<!-- </accordion> -->
 	</ion-content>
 
 	<div ng-if="selectTime" class="trigger-func trigger-calendar">
@@ -122,19 +123,23 @@
 <script id="rightMenu.html" type="text/ng-template">
 	<side-panel>
 		<ion-content>
-			<ion-item class="bar bar-royal">{{ ::'MEMBERS' | translate }}</ion-item>
-			<ion-item ng-click="getAllMessages()">
-				{{ ::'ALL_MESSAGES' | translate }}
-			</ion-item>
-			<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
-				<img ng-src="{{ currentUser.avatarThumbnail }}">
-				{{ ::currentUser.username }}
-			</ion-item>
-			<ion-item class="item-avatar" collection-repeat="usr in otherUsers"
-				item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
-				<img ng-src="{{ usr.avatarThumbnail }}">
-				{{ usr.username }}
-			</ion-item>
+			<accordion>
+				<accordion-group is-open="members.open" id="members">
+					<accordion-heading>{{ ::'MEMBERS' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !members.open, 'ion-chevron-up': members.open}"></i></accordion-heading>
+					<ion-item ng-click="getAllMessages()">
+						{{ ::'ALL_MESSAGES' | translate }}
+					</ion-item>
+					<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
+						<img ng-src="{{ currentUser.avatarThumbnail }}">
+						{{ ::currentUser.username }}
+					</ion-item>
+					<ion-item class="item-avatar" collection-repeat="usr in otherUsers"
+						item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
+						<img ng-src="{{ usr.avatarThumbnail }}">
+						{{ usr.username }}
+					</ion-item>
+				</accordion-group>
+			</accordion>
 		</ion-content>
 	</side-panel>
 </script>

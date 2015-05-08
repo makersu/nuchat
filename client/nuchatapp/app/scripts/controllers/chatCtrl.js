@@ -202,10 +202,10 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       $scope.rightMenu = menu;
     });
   }
-  $scope.openRightMenu = function() {
+  $scope.openFilterPanel = function() {
     $scope.rightMenu.show();
   };
-  $scope.closeRightMenu = function() {
+  $scope.closeFilterPanel = function() {
     $scope.rightMenu.hide();
   };
   /* Choose files from device or cloud drive? */
@@ -300,23 +300,23 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
 
   /* Filtering */
   $scope.filterByUser = function(user) {
-    angular.forEach($scope.room.groupedMessages, function(group) {
-      if (!group.originalItems) {
-        group.originalItems = angular.copy(group.items);
-      }
-      group.items = $filter('filter')(group.originalItems, { ownerId: user.id });
-      console.log(group.items);
-    });
+    // angular.forEach($scope.room.groupedMessages, function(group) {
+    $scope.room.viewMessages = $filter('filter')(_.values($scope.room.messages), { ownerId: user.id });
+    //   console.log(group.items);
+    // });
+  };
+  $scope.getAllMessages = function() {
+    $scope.room.viewMessages = _.values($scope.room.messages);
   };
 
   /* Trigger functions */
   $scope.viewCalendar = function(callback) {
     $scope.selectTime = true;
-    // Define the function on date changed.
-    $scope.setDate = function(d) {
-      $scope.selectTime = false;
-      callback(d);
-    };
+  };
+  // Define the function on date changed.
+  $scope.setDate = function(d) {
+    $scope.selectTime = false;
+    callback(d);
   };
 
   /* Events */
@@ -354,7 +354,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
       return $filter('amChatGrouping')(msg.created);
     });
-    console.log($scope.room.groupedMessages);
+    console.log($scope.room);
     // Initializing NUChatObject service
     $NUChatObject.init($scope.room, $scope.currentUser);
 
@@ -427,6 +427,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
 
   // Register event listeners
   $scope.$on('onNewMessage', function(event, args) {
+    $scope.room.viewMessages = _.values($scope.room.messages);
 
     // Sending the local notification if got the message by someone.
     if (args.msg.ownerId !== $scope.currentUser.id) {
@@ -477,13 +478,14 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   $scope.$on('updateObjMsg', function(event, args) {
     console.log('on updateObjMsg');
     delete $scope.room.messages[args.msg.timestamp];
-    var lastGroupMsgs = RoomService.getLastGroup($scope.room).items;
-    var tempMsgs = $filter('filter')(lastGroupMsgs, {id: args.msg.timestamp});
-    if (tempMsgs.length) {
-      var idx = lastGroupMsgs.indexOf(tempMsgs[0]);
-      lastGroupMsgs.splice(idx, 1);
-    }
-    RoomService.grouping($scope.room, args.msg);
+    // var lastGroupMsgs = RoomService.getLastGroup($scope.room).items;
+    // var tempMsgs = $filter('filter')(lastGroupMsgs, {id: args.msg.timestamp});
+    // if (tempMsgs.length) {
+    //   var idx = lastGroupMsgs.indexOf(tempMsgs[0]);
+    //   lastGroupMsgs.splice(idx, 1);
+    // }
+    // RoomService.grouping($scope.room, args.msg);
+    $scope.room.messages[args.msg.id] = args.msg;
     console.log($scope.room);
   });
 

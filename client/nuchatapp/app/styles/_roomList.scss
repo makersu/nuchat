@@ -8,7 +8,7 @@
 		font-size: $timestamp_fontSize;
 	}
 	.badge {
-		top: inherit;
+		top: initial;
 		bottom: 16px;
 	}
 }
