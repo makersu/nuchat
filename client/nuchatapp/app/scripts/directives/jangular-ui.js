@@ -700,7 +700,10 @@
 	var DEFAULT_PAGE_SIZE = 10;
 	var DEFAULT_DISTANCE = '2.5%';
 	var SCROLL_THRESHOLD = 20;
-	jangularUI.directive('pageCollection', ['$parse', '$$rAF', '$rootScope', '$filter', function($parse, $$rAF, $rootScope, $filter) {
+	var PRIMARY = 'PRIMARY';
+  var SECONDARY = 'SECONDARY';
+  var TRANSLATE_TEMPLATE_STR = 'translate3d(SECONDARYpx,PRIMARYpx,0)';
+	jangularUI.directive('pageCollection', ['$parse', '$$rAF', '$rootScope', '$filter', '$timeout', function($parse, $$rAF, $rootScope, $filter, $timeout) {
 		return {
 			restrict: 'A',
 			transclude: 'element',
@@ -726,6 +729,7 @@
 				var renderedElements = [];
 				var itemsLeaving = [];
 				var itemsEntering = [];
+				var postRendering = [];
 				var itemsPool = [];
 				var distance = (attrs.distance || DEFAULT_DISTANCE).trim();
 				var isPercent = distance.indexOf('%') !== -1;
@@ -733,6 +737,7 @@
 				var winEl = angular.element(document.querySelector(match[3]));
 				var viewWin = verge.rectangle(winEl[0], 10);
 
+				var forceRender = false;
 				var renderPageExpr = attrs.pageSize;
 				var renderPageSize = angular.isDefined(renderPageExpr) ?
 		      parseInt(renderPageExpr) : DEFAULT_PAGE_SIZE;
@@ -740,8 +745,9 @@
 		    var totalPages = 0;
 		    var renderStartIndex = 0;
 				var renderEndIndex = renderStartIndex+renderPageSize;
+				var currentPageStart = currentPageEnd = 0;
+				var currentPageStartIndex = currentPageEndIndex = 0;
 				var leavingHeight = enteringHeight = 0;
-				var forwardDirection = true;
 				var oldTransformTop = 0;
 
 				// function isInViewWindow() {
@@ -774,22 +780,24 @@
 		        self.el = clone[0];
 		        // TODO destroy
 		        // Batch style setting to lower repaints
+        		self.el.style[ionic.CSS.TRANSFORM] = 'translate3d(-9999px,-9999px,0)';
 		        ionic.Utils.disconnectScope(self.scope);
 		        $container.append(self.el);
 						renderedElements.push(self);
 		      });
 			  }
 
-			  function render(forward) {
+			  function render() {
+			  	if (!data.length) return;
 			  	var item, scope, i;
-			  	forwardDirection = forward;
 					leavingHeight = enteringHeight = 0;
 			  	renderStartIndex = Math.max(0, renderStartIndex - renderPageSize);
 			  	renderEndIndex = Math.min(data.length - 1, renderEndIndex + renderPageSize);
+			  	currentPageStartIndex = Math.max(0, renderStartIndex - renderPageSize);
+			  	currentPageEndIndex = Math.min(data.length - 1, currentPageStartIndex + renderPageSize);
 			  	console.log('start: '+renderStartIndex);
 			  	console.log('end: '+renderEndIndex);
 
-			  	if (data.length) debugger;
 			  	console.log(renderedElements);
 			  	for (i in renderedElements) {
 			  		// console.log(i);
@@ -800,7 +808,14 @@
 		          item.isShown = false;
 		        }
 		      }
-			  	console.log(renderedElements);
+			  	console.log(itemsLeaving);
+
+			  	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex);
+			  	console.log('currentPageStart: '+currentPageStart);
+			  	console.log('currentPageEnd: '+currentPageEnd );
+			  	if (!currentPageStart && !currentPageEnd) forceRender = true;
+			  	console.log(forceRender);
+			  	console.log('currentPageStartIndex: '+currentPageStartIndex+', currentPageEndIndex: '+currentPageEndIndex);
 
 			  	for (i = renderStartIndex; i < renderEndIndex; i++) {
 						if (i >= data.length || renderedElements[i]) continue;
@@ -856,6 +871,50 @@
 		      // renderedElements = $filter('orderBy')(renderedElements, 'id');
 			  }
 
+			  function updateCurrentDimension(startIdx, endIdx) {
+			  	renderedElements[startIdx] && (function() {
+			  		var startTop = verge.rectangle(renderedElements[startIdx].el).top;
+			  		startTop > 0 && (currentPageStart = startTop || 0);
+			  	})();
+			  	renderedElements[endIdx] && (function() {
+			  		var endTop = verge.rectangle(renderedElements[endIdx].el).top;
+			  		endTop > 0 && (currentPageEnd = verge.rectangle(renderedElements[endIdx].el).top || 0);
+			  	})();
+			  	console.log(currentPageStart);
+			  	console.log(currentPageEnd);
+			  }
+
+			  function getDimension(index, pivotIndexStart, pivotIndexEnd) {
+			  	var isPrev = index-pivotIndexStart < 0;
+			  	var primaryHeight = 0;
+			  	if (isPrev) {
+			  		for (var i = index; i < pivotIndexStart; i++) {
+				  		primaryHeight += renderedElements[i].el.offsetHeight;
+				  	}
+			  		return currentPageStart-primaryHeight;
+			  	} else {
+			  		var start = index > pivotIndexEnd ? pivotIndexEnd : pivotIndexStart;
+			  		console.log(renderedElements);
+			  		console.log(pivotIndexEnd);
+			  		console.log(index);
+			  		for (var i = start; i < index; i++) {
+			  			console.log(renderedElements[i]);
+			  			console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
+			  			primaryHeight += renderedElements[i].el.offsetHeight;
+			  			console.log('primaryHeight: '+primaryHeight);
+			  		}
+			  		// do {
+			  		// 	console.log(renderedElements[i]);
+			  		// 	console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
+			  		// 	primaryHeight += renderedElements[i].el.offsetHeight;
+			  		// 	console.log('primaryHeight: '+primaryHeight);
+			  		// 	i++;
+			  		// } while(i < index);
+			  		console.log('primaryHeight( plus currentPageEnd): '+(currentPageEnd+primaryHeight) );
+			  		return currentPageEnd+primaryHeight;
+			  	}
+			  }
+
 			  function digestEnteringItems() {
 		      var item;
 		      if (digestEnteringItems.running) return;
@@ -863,26 +922,41 @@
 
 		      $$rAF(function process() {
 		        var rootScopePhase = $rootScope.$$phase;
+		        console.log('itemsEntering:');
+		        console.log(itemsEntering);
 		        while (itemsEntering.length) {
 		          item = itemsEntering.pop();
+		          postRendering.push(item);
 		          if (item.isShown) {
 		            if (!rootScopePhase) {
 		            	item.scope.$digest();
-		            	console.log('To entering');
-									console.log(item);
-									enteringHeight += item.el.offsetHeight;
-									console.log('enteringHeight: '+enteringHeight);
 		            }
 		          }
 		        }
+		        $timeout(function() {
+		        	while (postRendering.length) {
+		        		item = postRendering.pop();
+		        		console.log('item['+item.scope.$index+'] offsetHeight: '+item.el.offsetHeight);
+					  		item.el.style[ionic.CSS.TRANSFORM] = TRANSLATE_TEMPLATE_STR
+		            	.replace(PRIMARY, getDimension(item.scope.$index, currentPageStartIndex, currentPageEndIndex))
+		            	.replace(SECONDARY, 0);
+				        console.log(item.el.style[ionic.CSS.TRANSFORM]);
+	            	// debugger;
+
+	            	if (forceRender) {
+				        	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex);
+				        	console.log('currentPageStart: '+currentPageStart);
+					  			console.log('currentPageEnd: '+currentPageEnd );
+				        }
+
+	            	console.log('To entering');
+								console.log(item);
+								enteringHeight += item.el.offsetHeight;
+								console.log('enteringHeight: '+enteringHeight);
+		        	}
+          	}, 100);
 		        // Scrolling to original position
 						scrollCtrl.resize();
-						// if (forwardDirection) {
-						// 	console.log(scrollView.__scrollTop);
-						// 	scrollCtrl.scrollTo(0, scrollView.__scrollTop-leavingHeight);
-						// } else {
-						// 	scrollCtrl.scrollTo(0, scrollView.__scrollTop+enteringHeight);
-						// }
 		        digestEnteringItems.running = false;
 		      });
 		    }
@@ -891,18 +965,16 @@
 					var thresholds = calculateThreshold(scrollView.getScrollMax().top);
 					if (scrollView.__scrollTop >= thresholds.min && scrollView.__scrollTop <= thresholds.max) return;
 
-					var forward = false;
 					if (scrollView.__scrollTop < thresholds.min) {
 						currentPage = Math.max(0, currentPage - 1);
 					} else if (scrollView.__scrollTop > thresholds.max) {
 						currentPage = Math.min(totalPages - 1, currentPage + 1);
 						console.log('renderStartIndex: '+renderStartIndex);
 						console.log('renderEndIndex: '+renderEndIndex);
-						forward = true;
 					}
 					renderStartIndex = currentPage * renderPageSize;
 					renderEndIndex = renderStartIndex + renderPageSize;
-					render(forward);
+					render();
 				}, 300);
 
 				console.log('scrollView');

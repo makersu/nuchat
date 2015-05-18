@@ -24,7 +24,7 @@
 		<!-- <accordion close-others="false"> -->
 			<!-- <accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}"> -->
 				<!-- <accordion-heading>{{ ::group.name }}<i class="icon" ng-class="{'ion-chevron-down': !group.open, 'ion-chevron-up': group.open}"></i></accordion-heading> -->
-				<div page-collection="message in room.viewMessages inside #msgContainer" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" id="{{ message.id }}">
+				<div page-collection="message in room.viewMessages inside #msgContainer" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" id="item-{{ message.id }}" attr-idx="{{$index}}">
 
 					<div ng-if="currentUser.id !== message.ownerId">
 						<img ng-click="viewProfile(message)" class="profile-pic left" 

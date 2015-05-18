@@ -167,7 +167,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     }, 500);
   };
   $scope.gotoDirectory = function() {
-    $scope.closeRightMenu();
+    // $scope.closeRightMenu();
     $state.go('tab.directory.article', { roomId: $scope.room.id });
   };
 

@@ -95,7 +95,7 @@ function RoomService($cordovaLocalNotification, User, LBSocket, FriendService, $
 	    $timeout(function() {
 	    	// Insert the Unread-Note before the 1st message.
 		    if (messages.messages.length) {
-		    	var firstMsgEl = document.getElementById(messages.messages[0].id);
+		    	var firstMsgEl = document.getElementById('item-'+messages.messages[0].id);
 		    	var parentEl = angular.element(firstMsgEl).parent()[0];
 		    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
 		    	parentEl.insertBefore(note, firstMsgEl);
