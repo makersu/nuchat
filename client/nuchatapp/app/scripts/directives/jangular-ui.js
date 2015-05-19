@@ -167,6 +167,10 @@
 		// return false;
 	}
 
+	function isLink(contentType) {
+		return checkType(contentType, METATYPE.LINK);
+	}
+
 	function requestFullScreen(elem) {
 		if (elem.requestFullscreen) {
 		  elem.requestFullscreen();
@@ -320,46 +324,21 @@
 					// var q = $q.defer();
 					var cacheView = { id: scope.msg.id };
 					scope.msg.type = METATYPE.LINK;
-					angular.forEach(links, function(link) {
-						var promise = parseSummaryLink(link, cacheView, $http);
-						if (promise) {
-							promise.then(function(result) {
-								scope.message = scope.message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
-								$compile(_msgContent.html('').append(scope.message))(scope);
-								scope.msg.linkView = result;
-								elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
-							}, errorHandler);
-						}
-						// if (link && link.match(/^http(s)?:\/\/.*/)) {
-						// 	scope.message = scope.message.replace(link, '<a href="'+link+'">'+link+'</a>');
-						// 	$http.get(link)
-						// 		.then(function(response) {
-						// 			var html = angular.element(response.data);
-						// 			angular.forEach(html, function(e) {
-						// 				if (e.tagName) {
-						// 					if (e.tagName == 'META' || e.tagName == 'LINK') {
-						// 						getMetaAttr(e, cacheView);
-						// 					} else if (e.tagName == 'TITLE') {
-						// 						if (!cacheView.title) {
-						// 							cacheView.title = e.innerText;
-						// 						}
-						// 					}
-						// 				}
-						// 			});
-						// 			if (!cacheView.url) {
-						// 				cacheView.url = link;
-						// 			}
-						// 			if (!cacheView.image) {
-						// 				cacheView.image = cacheView.url+'/favicon.ico';
-						// 			} else if (cacheView.image.indexOf('/') == 0 || cacheView.image.indexOf('http') != 0) {
-						// 				cacheView.image = cacheView.url+'/'+cacheView.image;
-						// 			}
-						// 			q.resolve(cacheView);
-						// 		}, function(err) {
-						// 			q.reject(err);
-						// 		});
-						// }
-					});
+					if (scope.msg.linkView) {
+						elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+					} else {
+						angular.forEach(links, function(link) {
+							var promise = parseSummaryLink(link, cacheView, $http);
+							if (promise) {
+								promise.then(function(result) {
+									scope.message = scope.message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
+									$compile(_msgContent.html('').append(scope.message))(scope);
+									scope.msg.linkView = result;
+									elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+								}, errorHandler);
+							}
+						});
+					}
 					// return q.promise;
 				}
 
@@ -372,8 +351,9 @@
 					scope.msg.uploading = !scope.msg.thumbnailFileId;
 					console.log('parseImg uploading? '+scope.msg.uploading);
 					console.log(scope.msg);
-					var $imgElem = angular.element('<img id="img'+scope.msg.id+'" src="'+imgSrc+'">');
-					_msgContent.append($imgElem).append( $compile('<ion-spinner ng-if="msg.uploading"></ion-spinner>')(scope) );
+					// var $imgElem = angular.element('<img id="img'+scope.msg.id+'" src="'+imgSrc+'">');
+					var $imgElem = angular.element('<div id="img'+scope.msg.id+'" afkl-lazy-image="'+imgSrc+'" class="afkl-lazy-wrapper afkl-img-ratio-1-1">');
+					_msgContent.append( $compile($imgElem)(scope) ).append( $compile('<ion-spinner ng-if="msg.uploading"></ion-spinner>')(scope) );
 					$imgElem.on('click', scope.metaOption.imgSetting.clickHandler ? function() {
 						scope.metaOption.imgSetting.clickHandler(scope.msg.id || scope.msg.timestamp);
 					} : {});
@@ -958,7 +938,7 @@
 												'<ion-slide ng-repeat="img in viewList">'+
 												  '<ion-scroll zooming="true" min-zoom="1" direction="xy" style="height:100%" delegate-handle="imgViewerScrollHandle{{$index}}" on-scroll="onImageScroll($event)">'+
 												    '<div class="img-container">'+
-												      '<img ng-src="{{ img.src }}" lazy-load="lazyLoadFn(img)">'+
+												      '<div afkl-lazy-image="{{ img.src }}" class="afkl-lazy-wrapper afkl-img-ratio-1-1"></div>'+
 												    '</div>'+
 												  '</ion-scroll>'+
 												'</ion-slide>'+
@@ -1557,6 +1537,7 @@
   	_self.isImg = isImg;
   	_self.isAudio = isAudio;
   	_self.isVideo = isVideo;
+  	_self.isLink = isLink;
   	
   	return _self;
   });

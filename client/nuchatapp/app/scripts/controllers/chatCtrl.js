@@ -297,6 +297,19 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   };
   $scope.like = $NUChatTags.setLike;
   $scope.isLike = $NUChatTags.isLike;
+  $scope.share = function(msg) {
+    var shareStr = null;
+    if ( $checkFormat.isImg(msg.type) ) {
+      shareStr = ENV.GRIDFS_BASE_URL + msg.originalFileId;
+      window.plugins.socialsharing.share(null, null, shareStr);
+    // } else if ( $checkFormat.isAudio(msg.type) || $checkFormat.isVideo(msg.type) ) {
+    //   shareStr = ENV.GRIDFS_BASE_URL + msg.originalFileId;
+    //   window.plugins.socialsharing.share(shareStr);
+    } else {
+      shareStr = msg.text;
+      window.plugins.socialsharing.share(shareStr);
+    }
+  };
 
   /* Filtering */
   $scope.filterByUser = function(user) {

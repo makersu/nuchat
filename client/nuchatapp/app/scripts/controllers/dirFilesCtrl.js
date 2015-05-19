@@ -1,4 +1,4 @@
-function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $filter, $ionicActionSheet) {
+function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $filter, $ionicActionSheet, $checkFormat, ENV) {
 	/* Variables */
 	// Private
 
@@ -21,6 +21,7 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 		$ionicActionSheet.show({
 	   	buttons: [
 	     	{ text: '<i class="icon ion-edit"></i> '+$filter('translate')('MANAGE_TAGS') },
+	     	{ text: '<i class="icon ion-share"></i> '+$filter('translate')('SHARE') },
 	   	],
 	   	destructiveText: $filter('translate')('DELETE'),
 	   	titleText: $filter('translate')('MANAGE_FILE'),
@@ -33,6 +34,13 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 	   		switch (index) {
 	   			case 0:
 	   				$rootScope.editTags(file, true);
+	   				break;
+	   			case 1:
+	   				if ( $checkFormat.isImg(file.type) ) {
+	   					window.plugins.socialsharing.share(null, null, ENV.GRIDFS_BASE_URL+file.originalFileId);
+	   				} else {
+	   					window.plugins.socialsharing.share(ENV.GRIDFS_BASE_URL+file.originalFileId);
+	   				}
 	   				break;
 	   		}
 	     	return true;

@@ -25,6 +25,10 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 				RoomService.createMessage({ type: METATYPE.LINK, roomId: $scope.room.id, ownerId: User.getCachedCurrent().id, text: result });
 			});
 	};
+	$scope.shareLink = function(link) {
+		console.log(link);
+		window.plugins.socialsharing.share(link.linkView.url);
+	};
 
 	/* Onload */
 	// Events

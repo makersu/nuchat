@@ -377,7 +377,7 @@ grid-menu {
       border: 1px solid $videoIcon_color;
       @include border-radius(50%);
       font-size: $videoIcon_font_size;
-      padding: 0 12px;
+      padding: 6px 12px;
       color: $videoIcon_color;
     }
 		.close {
