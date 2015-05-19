@@ -18,6 +18,7 @@
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
+	var DEBUG = false;
 
 	var METATYPE = {
 		LINK:  	  'link',
@@ -697,13 +698,13 @@
 	 *
 	 */
 	// var DEFAULT_RENDER_BUFFER = 5;
-	var DEFAULT_PAGE_SIZE = 10;
+	var DEFAULT_PAGE_SIZE = 5;
 	var DEFAULT_DISTANCE = '2.5%';
 	var SCROLL_THRESHOLD = 20;
 	var PRIMARY = 'PRIMARY';
   var SECONDARY = 'SECONDARY';
   var TRANSLATE_TEMPLATE_STR = 'translate3d(SECONDARYpx,PRIMARYpx,0)';
-	jangularUI.directive('pageCollection', ['$parse', '$$rAF', '$rootScope', '$filter', '$timeout', function($parse, $$rAF, $rootScope, $filter, $timeout) {
+	jangularUI.directive('pageCollection', ['$parse', '$$rAF', '$rootScope', '$filter', '$timeout', '$window', function($parse, $$rAF, $rootScope, $filter, $timeout, $window) {
 		return {
 			restrict: 'A',
 			transclude: 'element',
@@ -745,10 +746,12 @@
 		    var totalPages = 0;
 		    var renderStartIndex = 0;
 				var renderEndIndex = renderStartIndex+renderPageSize;
+				var startOffset = null;
 				var currentPageStart = currentPageEnd = 0;
 				var currentPageStartIndex = currentPageEndIndex = 0;
 				var leavingHeight = enteringHeight = 0;
 				var oldTransformTop = 0;
+				var scrollViewSetDimensions = function() { console.log(scrollView); scrollView.setDimensions(null, null, null, getContentSize(), true); console.log(scrollView); };
 
 				// function isInViewWindow() {
 				// 	var elRect = verge.rectangle(elem[0]);
@@ -793,12 +796,17 @@
 					leavingHeight = enteringHeight = 0;
 			  	renderStartIndex = Math.max(0, renderStartIndex - renderPageSize);
 			  	renderEndIndex = Math.min(data.length - 1, renderEndIndex + renderPageSize);
-			  	currentPageStartIndex = Math.max(0, renderStartIndex - renderPageSize);
+			  	currentPageStartIndex = Math.max( 0, renderStartIndex + (renderEndIndex == 2*renderPageSize ? 0 : renderPageSize) );
 			  	currentPageEndIndex = Math.min(data.length - 1, currentPageStartIndex + renderPageSize);
 			  	console.log('start: '+renderStartIndex);
 			  	console.log('end: '+renderEndIndex);
 
 			  	console.log(renderedElements);
+
+			  	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex-1);
+			  	console.log('currentPageStart: '+currentPageStart);
+			  	console.log('currentPageEnd: '+currentPageEnd );
+
 			  	for (i in renderedElements) {
 			  		// console.log(i);
 		        if (i < renderStartIndex || i > renderEndIndex) {
@@ -810,9 +818,6 @@
 		      }
 			  	console.log(itemsLeaving);
 
-			  	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex);
-			  	console.log('currentPageStart: '+currentPageStart);
-			  	console.log('currentPageEnd: '+currentPageEnd );
 			  	if (!currentPageStart && !currentPageEnd) forceRender = true;
 			  	console.log(forceRender);
 			  	console.log('currentPageStartIndex: '+currentPageStartIndex+', currentPageEndIndex: '+currentPageEndIndex);
@@ -835,24 +840,12 @@
 		        scope.$odd = !(scope.$even = (i&1) === 0);
 
 		        if (scope.$$disconnected) ionic.Utils.reconnectScope(item.scope);
-		        console.log(item.scope);
-		        console.log(item.el);
-		        console.log(item.el.offsetHeight);
-		        console.log(getRect(item.el));
-		        console.log(scrollCtrl.getScrollPosition());
-		        console.log(scrollView.__scrollTop);
-
-						// transclude(itemScope, function(clone) {
-						// 	// console.log(clone);
-						// 	// console.log(itemKeyExpr);
-						// 	// console.log(itemsGetter(scope));
-						// 	// console.log(collection);
-						// 	// console.log(eval('scope.'+collection));
-						// 	// console.log($compile(clone)(itemScope));
-						// 	elem.parent().append(clone);
-						// 	elements.push({el: clone, scope: itemScope});
-						// 	// ionic.Utils.disconnectScope(itemScope);
-						// });
+		        // console.log(item.scope);
+		        // console.log(item.el);
+		        // console.log(item.el.offsetHeight);
+		        // console.log(getRect(item.el));
+		        // console.log(scrollCtrl.getScrollPosition());
+		        // console.log(scrollView.__scrollTop);
 					}
 
 					while (itemsLeaving.length) {
@@ -872,13 +865,33 @@
 			  }
 
 			  function updateCurrentDimension(startIdx, endIdx) {
+			  	console.log(scrollView.__scrollTop);
+			  	console.log(scrollCtrl.getScrollPosition().top);
 			  	renderedElements[startIdx] && (function() {
-			  		var startTop = verge.rectangle(renderedElements[startIdx].el).top;
-			  		startTop > 0 && (currentPageStart = startTop || 0);
+			  		var startTop = verge.rectangle(renderedElements[startIdx].el).top+scrollCtrl.getScrollPosition().top;
+			  		console.log(angular.element(renderedElements[startIdx].el));
+			  		console.log('startIdx: '+startIdx);
+			  		console.log('startTop: '+startTop);
+			  		// if (startTop > 0) {
+			  			currentPageStart = startTop;
+			  			if (startOffset === null) {
+			  				startOffset = currentPageStart;
+			  				console.log('startOffset: '+startOffset);
+			  			}
+			  			currentPageStart -= startOffset;
+			  		// };
 			  	})();
 			  	renderedElements[endIdx] && (function() {
-			  		var endTop = verge.rectangle(renderedElements[endIdx].el).top;
-			  		endTop > 0 && (currentPageEnd = verge.rectangle(renderedElements[endIdx].el).top || 0);
+			  		var endItem = renderedElements[endIdx].el;
+			  		var endBottom = verge.rectangle(endItem).bottom+scrollCtrl.getScrollPosition().top;
+			  		console.log('endIdx: '+endIdx);
+			  		console.log('endBottom: '+endBottom);
+			  		// if (endBottom < 0) {
+			  		// 	endItem = renderedElements[endIdx-1].el;
+			  		// 	endBottom = verge.rectangle(endItem).top+endItem.offsetHeight;
+			  		// }
+			  		// console.log('endBottom: '+endBottom);
+			  		endBottom > 0 && (currentPageEnd = (endBottom-startOffset) || 0);
 			  	})();
 			  	console.log(currentPageStart);
 			  	console.log(currentPageEnd);
@@ -893,15 +906,21 @@
 				  	}
 			  		return currentPageStart-primaryHeight;
 			  	} else {
-			  		var start = index > pivotIndexEnd ? pivotIndexEnd : pivotIndexStart;
-			  		console.log(renderedElements);
-			  		console.log(pivotIndexEnd);
-			  		console.log(index);
-			  		for (var i = start; i < index; i++) {
-			  			console.log(renderedElements[i]);
-			  			console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
-			  			primaryHeight += renderedElements[i].el.offsetHeight;
-			  			console.log('primaryHeight: '+primaryHeight);
+			  		var start = index >= pivotIndexEnd ? pivotIndexEnd : pivotIndexStart;
+			  		if (DEBUG) {
+				  		console.log(renderedElements);
+				  		console.log(pivotIndexEnd);
+				  		console.log(index);
+				  	}
+			  		if (index != pivotIndexEnd) {
+			  			for (var i = start; i < index; i++) {
+				  			primaryHeight += renderedElements[i].el.offsetHeight;
+				  			if (DEBUG) {
+					  			console.log(renderedElements[i]);
+					  			console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
+					  			console.log('primaryHeight: '+primaryHeight);
+					  		}
+				  		}
 			  		}
 			  		// do {
 			  		// 	console.log(renderedElements[i]);
@@ -922,8 +941,10 @@
 
 		      $$rAF(function process() {
 		        var rootScopePhase = $rootScope.$$phase;
-		        console.log('itemsEntering:');
-		        console.log(itemsEntering);
+		        if (DEBUG) {
+			        console.log('itemsEntering:');
+			        console.log(itemsEntering);
+			      }
 		        while (itemsEntering.length) {
 		          item = itemsEntering.pop();
 		          postRendering.push(item);
@@ -940,26 +961,51 @@
 					  		item.el.style[ionic.CSS.TRANSFORM] = TRANSLATE_TEMPLATE_STR
 		            	.replace(PRIMARY, getDimension(item.scope.$index, currentPageStartIndex, currentPageEndIndex))
 		            	.replace(SECONDARY, 0);
-				        console.log(item.el.style[ionic.CSS.TRANSFORM]);
 	            	// debugger;
 
 	            	if (forceRender) {
-				        	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex);
-				        	console.log('currentPageStart: '+currentPageStart);
-					  			console.log('currentPageEnd: '+currentPageEnd );
+				        	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex-1);
+				        	if (DEBUG) {
+					        	console.log('currentPageStart: '+currentPageStart);
+						  			console.log('currentPageEnd: '+currentPageEnd );
+						  		}
 				        }
-
-	            	console.log('To entering');
-								console.log(item);
-								enteringHeight += item.el.offsetHeight;
-								console.log('enteringHeight: '+enteringHeight);
 		        	}
           	}, 100);
 		        // Scrolling to original position
+						scrollViewSetDimensions();
 						scrollCtrl.resize();
 		        digestEnteringItems.running = false;
 		      });
 		    }
+
+		    function getContentSize() {
+		    	var top = 9999, bottom = -9999;
+		    	angular.forEach(renderedElements, function(item) {
+		    		var rect = verge.rectangle(item.el);
+		    		(rect.top > -9999) && ( top = Math.min(rect.top, top) );
+		    		bottom = Math.max(rect.bottom, bottom);
+		    	});
+		    	console.log('top: '+top);
+		    	console.log('bottom: '+bottom);
+		    	console.log('contentSize: '+(bottom-top));
+		    	return bottom - top;
+		    }
+
+		    // function shiftScroll() {
+		    // 	angular.forEach(renderedElements, function(e, i) {
+		    // 		var style = $window.getComputedStyle(e.el);
+		    // 		var transform = new WebKitCSSMatrix(style[ionic.CSS.TRANSFORM]);
+		    // 		console.log('renderedElements['+i+']');
+		    // 		console.log(transform.m42);
+		    // 		console.log(scrollCtrl.getScrollPosition().top);
+		    // 		console.log(transform.m42-scrollCtrl.getScrollPosition().top);
+		    // 		e.el.style[ionic.CSS.TRANSFORM] = TRANSLATE_TEMPLATE_STR
+      //       	.replace(PRIMARY, transform.m42-scrollCtrl.getScrollPosition().top)
+      //       	.replace(SECONDARY, 0);
+		    // 	});
+		    // 	scrollCtrl.scrollTo(0, 0, false);
+		    // }
 
 	      var checkBound = _.debounce(function() {
 					var thresholds = calculateThreshold(scrollView.getScrollMax().top);
@@ -969,8 +1015,10 @@
 						currentPage = Math.max(0, currentPage - 1);
 					} else if (scrollView.__scrollTop > thresholds.max) {
 						currentPage = Math.min(totalPages - 1, currentPage + 1);
-						console.log('renderStartIndex: '+renderStartIndex);
-						console.log('renderEndIndex: '+renderEndIndex);
+						if (DEBUG) {
+							console.log('renderStartIndex: '+renderStartIndex);
+							console.log('renderEndIndex: '+renderEndIndex);
+						}
 					}
 					renderStartIndex = currentPage * renderPageSize;
 					renderEndIndex = renderStartIndex + renderPageSize;
@@ -982,8 +1030,8 @@
 				console.log(scrollCtrl);
     		scrollView.__$callback = scrollView.__callback;
 				scrollView.__callback = function(transformLeft, transformTop, zoom, wasResize) {
-					console.log('scrolling callback');
-					console.log(transformTop);
+					// console.log('scrolling callback');
+					// console.log(transformTop);
 					// console.log('scrolling');
 					// console.log(scrollView.__scrollTop);
 					if (Math.abs(transformTop-oldTransformTop) > SCROLL_THRESHOLD) {
