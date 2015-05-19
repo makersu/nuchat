@@ -57,7 +57,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     },
     remote: ENV.GRIDFS_BASE_URL,
   };
-  console.log($scope.currentUser);
+  // console.log($scope.currentUser);
 
   /* Methods */
   // Private
@@ -122,6 +122,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
    */
   function getRoomUsers() {
     $scope.otherUsers = [];
+    // console.log($scope.room);//
     if ( RoomService.isPrivate($scope.room) ) {
       $scope.otherUsers.push($scope.friends[$scope.room.ownerId === $scope.currentUser.id ? $scope.room.friend : $scope.room.ownerId]);
     } else {
@@ -142,6 +143,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
 
     //console.log($stateParams.roomId)
     //scope.input.room=$stateParams.roomId
+    console.log($scope.room);
     $scope.input.roomId = $scope.room.id;
     $scope.input.ownerId = $scope.currentUser.id;
     console.log($scope.input);
@@ -354,6 +356,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   // console.log($stateParams.roomId);
   RoomService.setCurrentRoom($stateParams.roomId);
   $scope.room = RoomService.getCurrentRoom();
+  console.log($scope.room);
 
   // OnResume
   $scope.$on('$ionicView.enter', function() {
