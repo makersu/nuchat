@@ -39,21 +39,18 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
     // console.log($scope.credentials);//
     $scope.loginResult = User.login({include: 'user', rememberMe: true}, $scope.credentials,
       function () {
-        console.log('signaling.emit login');//
-        // signaling.emit('login', User.getCachedCurrent().username);//
-        // console.log(User.getCachedCurrent())
-        // var user = { id: User.getCachedCurrent().id, name: User.getCachedCurrent().username}
-        console.log(User.getCachedCurrent().id);
-        signaling.emit('signalingLogin', User.getCachedCurrent().id);//
-
 
         $scope.credentials={};
+        
         AccountService.setAvatarUrl();
-        console.log('self:join');//
-        LBSocket.emit('self:join', User.getCachedCurrent().id);//
 
-        // Getting the friend list
-        FriendService.getFriends();
+        FriendService.getAllFriends();
+
+        console.log('self:join');//
+        LBSocket.emit('self:join', User.getCachedCurrent().id);
+
+        console.log('signaling.emit login');//
+        signaling.emit('signalingLogin', User.getCachedCurrent().id);
 
         $ionicHistory.nextViewOptions({disableBack: true});//
         // console.log($location.nextAfterLogin)//

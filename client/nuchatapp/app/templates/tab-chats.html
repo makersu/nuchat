@@ -1,6 +1,6 @@
 <ion-view cache-view="false" title="聊天">
 	<ion-nav-buttons side="right">
-    <button class="button button-icon ion-more" ng-click="goToCreateRoom()"></button>
+    <button class="button button-icon ion-android-add" ng-click="goToCreateRoom()"></button>
   </ion-nav-buttons>
   <ion-content class="has-header">
     <ion-refresher
@@ -11,8 +11,8 @@
       <ion-item class="item-avatar" ng-repeat="room in availableRooms track by $index" type="item-text-wrap" ng-click="goToRoom(room.id)">
         <img ng-src="{{ room.profile || 'images/profile.png' }}">
         {{room.name}}
-        <p>{{ room.latestMessage | brief }}</p>
-        <span class="timestamp">{{ room.latestMessage.created | amChatCalendar }}</span>
+        <p>{{ room.lastMessage | brief }}</p>
+        <span class="timestamp">{{ room.lastMessage.created | amChatCalendar }}</span>
         <span class="badge badge-assertive" ng-if="room.unread">{{ room.unread }}</span>
       </ion-item>
     </ion-list>
