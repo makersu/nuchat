@@ -18,7 +18,6 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		PouchService.saveRoom(room).then(function(doc){
 			console.log(doc);
 			// addRoom(doc);
-			// joinRoom(doc);
 		},function(err){
 			console.log(err);
 		});//end PouchService.saveRoom
@@ -151,6 +150,8 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
   }
 
   function isPrivate(room) {
+  	console.log('isPrivate');
+  	console.log(room)
   	return (room.type && room.type === 'private');
   }
 
@@ -193,7 +194,6 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 				PouchService.saveRoom(roomObj).then(function(doc){
 					// console.log(doc);
 					// addRoom(doc);
-					// joinRoom(doc);
 				},function(err){
 					console.log(err);
 				});//end PouchService.saveRoom
@@ -208,26 +208,27 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		console.log(room);
 
 		if( isPrivate(room) ) {
-    	$timeout(function() {
+    	// $timeout(function() {
 				var friend;
 	    	// console.log(room.joiners)
 	    	room.joiners.forEach(function(joiner){
 	    		// console.log(joiner)
 	    		if(joiner != User.getCachedCurrent().id){
 	    			friend=FriendService.getFriend(joiner)
-	    			console.log(friend);
+	    			// console.log(friend);
 	    		}
 	    	})
+	    	console.log(friend);
 	    	//if private and it's friend
 	    	if (friend && !rooms[room.id]) {
 	    		room.name = friend.username;
 	  			room.profile = friend.avatarThumbnail;
 	  			room.messages = {};
-			    console.log(room);
+			    // console.log(room);
 					rooms[room.id] = room;
 					joinRoom(room);
 	    	}
-    	});
+    	// });
     }
     else{
 			if(!rooms[room.id]){
@@ -276,10 +277,14 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	}
 
 	function setCurrentRoom(roomId) {
+		console.log(roomId);//
 		_currentRoomId = roomId;
 	}
 
 	function getCurrentRoom() {
+		console.log(_currentRoomId);//
+		// console.log(rooms)
+		// console.log(rooms[_currentRoomId])
 		return rooms[_currentRoomId];
 	}
 
@@ -303,6 +308,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		console.log('getLastMessage')
 		console.log(roomId)
 		var room = getRoom(roomId);
+		console.log(room);//
 		var lastMessage={}
 		if(room.messages){
 			var lastKeyIndex=Object.keys(room.messages).length - 1
