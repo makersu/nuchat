@@ -61,7 +61,8 @@
     "https://github.com/katzer/cordova-plugin-local-notifications",
     "https://github.com/alongubkin/phonertc.git",
     "org.apache.cordova.network-information",
-    "https://github.com/makersu/makersu-phonertc.git"
+    "https://github.com/makersu/makersu-phonertc.git",
+    "https://github.com/brodysoft/Cordova-SQLitePlugin"
   ],
   "cordovaPlatforms": []
 }

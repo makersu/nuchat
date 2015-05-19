@@ -1,15 +1,28 @@
 <ion-view title="New Room">
   <ion-content has-tabs="true">
-    <div class="list list-inset">
+    <div class="list">
       <label class="item item-input">
         <span class="input-label">Room Name</span>
-        <input type="text" ng-model="newRoom.name">
+        <input type="text" ng-model="newRoom.name" required>
       </label>
       <label class="item item-input">
         <span class="input-label">Description</span>
         <input type="text" ng-model="newRoom.description">
       </label>
-      <button class="button button-royal button-block" ng-click="createRoom()">Create Room</button>
+      <button class="button button-royal button-block" ng-disabled="!newRoom.name" ng-click="createRoom()">Create Room</button>
     </div>
+    <div class="item item-divider">
+      Friends
+    </div>
+    <div>
+      <ion-list>
+        <div collection-repeat="friend in friends">
+          <ion-checkbox ng-model="friend.selected">{{ friend.username }}</ion-checkbox>
+        </div>
+      </ion-list>
+    </div>
+    <!-- <div class="padding">
+      <button class="button button-royal button-block" ng-click="createRoom()" >Create Room</button>
+    </div> -->
   </ion-content>
 </ion-view>

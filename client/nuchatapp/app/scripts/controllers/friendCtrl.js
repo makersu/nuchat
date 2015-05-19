@@ -19,7 +19,7 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
   }
 
   $scope.friendAction = function(friendId) {
-    $scope.selected = FriendService.get(friendId);
+    $scope.selected = FriendService.getFriend(friendId);
     if (!$scope.friendModal) {
       $ionicModal.fromTemplateUrl('friendModal.html', {
         scope: $scope,
@@ -43,7 +43,7 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
       friend: friendId
     };
 
-    LBSocket.emit('friend:join', privateroom, function(room) {
+    LBSocket.emit('friend:join', privateroom, function(err, room) {
       console.log('friend:join callback');
       console.log(room);
       if(room.id){
@@ -68,7 +68,8 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
 
   $scope.doRefresh = function() {
     console.log('doRefresh')
-    FriendService.getFriends();
+    $scope.friends=FriendService.getAllFriends();
+    console.log($scope.friends);
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply()
   };
@@ -100,6 +101,7 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
     data.userId=User.getCachedCurrent().id
     console.log(data)
     console.log('friends:find')
+    //TODO: refactoring rename results?
     LBSocket.emit('friends:find',data,function(err,results){
       if(err){
         console.log(err)
@@ -112,7 +114,7 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
   }
 
   $scope.addNewFriends = function(results){
-    console.log('addFriend')
+    console.log('addNewFriends')
     console.log(results)
     if(!results){
       $scope.hideSearchFriendModal()
@@ -128,11 +130,11 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
       }
     }
 
-    data.userId=User.getCachedCurrent().id
+    data.user=User.getCachedCurrent().id
     //console.log(data)
     FriendService.addNewFriends(data)
-      .then(function(friends) {
-        $scope.friends = friends;
+      .then(function(allFriends) {
+        $scope.friends = allFriends;
       });
     $scope.hideSearchFriendModal()
   }
@@ -141,10 +143,7 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
   // OnResume
   $scope.$on('$ionicView.enter', function() {
     slideinTabs();
-    FriendService.getFriends()
-      .then(function(friends) {
-        $scope.friends = friends;
-      });
+    $scope.doRefresh();
   });
 
 }

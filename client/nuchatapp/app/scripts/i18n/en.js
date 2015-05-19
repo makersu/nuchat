@@ -53,5 +53,6 @@ var enTranslate = function ($translateProvider) {
 		// Friends
 		SEARCH_OR_ADD_FRIENDS: 'Search/Add Friends',
 		NEW_FRIENDS: 'New Friends',
+		ADD_TO_FRIEND_LIST: 'Add To Friend List'
 	});
 };
