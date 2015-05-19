@@ -7,6 +7,7 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     console.log(room.type);
     return room.type === 'private';
   }
+
   function slideinTabs() {
     var tabs = null;
     var tabHandles = $filter('filter')($ionicTabsDelegate._instances, { $$delegateHandle: 'chatDelegate' });
@@ -26,21 +27,37 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
   };
  
   $scope.newRoom={};
+
   $scope.createRoom = function() {
     console.log('createRoom');//
+
     $scope.newRoom.type='group';
+    $scope.newRoom.joiners=[];
+    $scope.newRoom.joiners.push(User.getCachedCurrent().id)
+
+    $scope.friends.forEach(function(friend){
+      if(friend.selected){
+        console.log(friend);
+        $scope.newRoom.joiners.push(friend.id);
+      }
+    })
+
+    console.log($scope.newRoom);
     RoomService.createRoom($scope.newRoom);
     $location.path('/tab/chats');
   };
 
   $scope.doRefresh = function() {
     console.log('doRefresh');//
-    $scope.availableRooms = RoomService.getAvailableRooms();
+    
+    $scope.availableRooms = RoomService.getAllRooms();
     var unWatchAvailableRooms = $scope.$watch('availableRooms', function(newVal) {
       if (newVal) {
         $scope.availableRoomList = _.values(newVal);
       }
     }, true);
+    $scope.friends = FriendService.getAllFriends();
+
     //
     // angular.forEach($scope.availableRooms, function(room) {
     //   if (isPrivate(room)) {

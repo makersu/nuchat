@@ -1,91 +1,109 @@
-function FriendService(User, LBSocket, ENV, $q) {
+function FriendService(User, LBSocket, ENV, $q, PouchService) {
 	console.log('FriendService');
 
 	var friends = {};
-	console.log(friends)
 
-	LBSocket.on('friends:new', function(friend) {
-		console.log('friends:new');//
-		console.log(friend);//
-		console.log(User.getCachedCurrent());//
-		if( friend.id != User.getCachedCurrent().id){
-			console.log('addFriend');
-			updateAvatar(friend)
-			friends[friend.id]=friend;
-		}
-	});
+	//TODO: refactoring $q.defer()?
+	//load frineds from pouchdb and get friends from server 
+	function getAllFriends() {
+		console.log('getAllFriends');
 
-	//
-	function getFriends() {
-		var q = $q.defer();
-		console.log('getFriends');
-		console.log('friends:get');
-
-  	LBSocket.emit('friends:get', { userId: User.getCachedCurrent().id }, function(err,oldFriends) {
-  		if (err) {
-  			console.error(err);
-  		}
-  		else {
-  			console.log(oldFriends);
-  			addFriends(oldFriends)
-  			q.resolve( _.values(friends) );
-  		}
-  	});
-
-  	return q.promise;
+		//loadFriends();
+		emitGetFriends();
+		
+		console.log(friends);//
+		return _.values(friends);
 	}
 
-	//
-	function addNewFriends(data) {
-		var q = $q.defer();
+	//load friends from pouchdb
+	function loadFriends(){
+		console.log('loadFriends');
+		PouchService.getFriends().then(function(rows){
+			console.log(rows);
+			rows.forEach(function(row){
+				// console.log(row);
+				addFriend(row.key);
+			})
+		});
+	}
+
+	//TODO: refactoring rename and PouchService?
+	function emitGetFriends(){
+		console.log('emitGetFriends');
+		LBSocket.emit('friends:get', { user: User.getCachedCurrent().id }, function(err,friendObjs) {
+			if (err) {
+				console.log(err);
+			}
+			else {
+				console.log(friendObjs);
+				friendObjs.forEach(function(friendObj){
+					addFriend(friendObj);
+					//TODO: addFriend failed if saveFriend failed
+					PouchService.saveFriend(friendObj).then(function(doc){
+						// console.log(doc);
+						// addFriend(doc);
+					},function(err){
+						console.log(err);
+					});//end PouchService.saveFriend
+				});
+			}
+		});
+	}
+
+	//add friend to friend list
+	function addFriend(user){
 		console.log('addFriend');
-		console.log('friends:new');
-  	LBSocket.emit('friends:new', data, function(err, newFriends) {
-  		if (err) {
-  			console.error(err);
-  		}
-  		else {
-  			addFriends(newFriends);
-  			q.resolve( _.values(friends) );
-  		}
-  	});
-  	return q.promise;
+		console.log(user);
+		updateAvatar(user);
+		friends[user.id] = user;
 	}
 
-	function addFriends(users){
-		// console.log(users);
-		for (var i = 0; i < users.length; i++) {
-			console.log(users[i]);
-			updateAvatar(users[i]);
-			friends[users[i].id] = users[i];
-		}
-		console.log(friends);
+	//TODO: refactoring pouchdb and emit name?
+	//add new friends to friend list
+	function addNewFriends(data) {
+		console.log('addNewFriends');
+		var q = $q.defer();
+		console.log('emit friends:new');//?
+		LBSocket.emit('friends:new', data, function(err, newFriendObjs) {
+			if(err) {
+				console.error(err);
+			}
+			else {
+				newFriendObjs.forEach(function(newFriendObj){
+					console.log(newFriendObj);
+					addFriend(newFriendObj);
+				});
+				q.resolve( _.values(friends) );
+			}
+		});
+		return q.promise;
 	}
 
+	//update avatar url
 	function updateAvatar(friend){
     if(friend.avatarThumbnail){
-      friend.avatarThumbnail=ENV.GRIDFS_BASE_URL+friend.avatarThumbnail
+      friend.avatarThumbnail=ENV.GRIDFS_BASE_URL+friend.avatarThumbnail;
     }
     else{
-    	friend.avatarThumbnail='images/profile.png'
+			friend.avatarThumbnail='images/profile.png';
     }
-    console.log(friend.avatarThumbnail)
+    console.log(friend.avatarThumbnail);
   }
 
-	function get(friendId) {
+	function getFriend(friendId) {
     return friends[friendId];
   }
 
   function removeAll(){
-  	friends = {};
+		friends = {};
   }
 
   // getFriends();
 
   var service = {
-		friends: friends,
-		get: get,
-		getFriends: getFriends,
+  	friends: friends,
+		getAllFriends: getAllFriends,
+		getFriend: getFriend,
 		addNewFriends: addNewFriends,
 		removeAll: removeAll
   };

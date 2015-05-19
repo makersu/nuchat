@@ -321,46 +321,21 @@
 					// var q = $q.defer();
 					var cacheView = { id: scope.msg.id };
 					scope.msg.type = METATYPE.LINK;
-					angular.forEach(links, function(link) {
-						var promise = parseSummaryLink(link, cacheView, $http);
-						if (promise) {
-							promise.then(function(result) {
-								scope.message = scope.message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
-								$compile(_msgContent.html('').append(scope.message))(scope);
-								scope.msg.linkView = result;
-								elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
-							}, errorHandler);
-						}
-						// if (link && link.match(/^http(s)?:\/\/.*/)) {
-						// 	scope.message = scope.message.replace(link, '<a href="'+link+'">'+link+'</a>');
-						// 	$http.get(link)
-						// 		.then(function(response) {
-						// 			var html = angular.element(response.data);
-						// 			angular.forEach(html, function(e) {
-						// 				if (e.tagName) {
-						// 					if (e.tagName == 'META' || e.tagName == 'LINK') {
-						// 						getMetaAttr(e, cacheView);
-						// 					} else if (e.tagName == 'TITLE') {
-						// 						if (!cacheView.title) {
-						// 							cacheView.title = e.innerText;
-						// 						}
-						// 					}
-						// 				}
-						// 			});
-						// 			if (!cacheView.url) {
-						// 				cacheView.url = link;
-						// 			}
-						// 			if (!cacheView.image) {
-						// 				cacheView.image = cacheView.url+'/favicon.ico';
-						// 			} else if (cacheView.image.indexOf('/') == 0 || cacheView.image.indexOf('http') != 0) {
-						// 				cacheView.image = cacheView.url+'/'+cacheView.image;
-						// 			}
-						// 			q.resolve(cacheView);
-						// 		}, function(err) {
-						// 			q.reject(err);
-						// 		});
-						// }
-					});
+					if (scope.msg.linkView) {
+						elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+					} else {
+						angular.forEach(links, function(link) {
+							var promise = parseSummaryLink(link, cacheView, $http);
+							if (promise) {
+								promise.then(function(result) {
+									scope.message = scope.message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
+									$compile(_msgContent.html('').append(scope.message))(scope);
+									scope.msg.linkView = result;
+									elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+								}, errorHandler);
+							}
+						});
+					}
 					// return q.promise;
 				}
 
@@ -796,7 +771,7 @@
 					leavingHeight = enteringHeight = 0;
 			  	renderStartIndex = Math.max(0, renderStartIndex - renderPageSize);
 			  	renderEndIndex = Math.min(data.length - 1, renderEndIndex + renderPageSize);
-			  	currentPageStartIndex = Math.max( 0, renderStartIndex + (renderEndIndex == 2*renderPageSize ? 0 : renderPageSize) );
+			  	currentPageStartIndex = Math.max( 0, renderStartIndex + ( (renderEndIndex == 2*renderPageSize || renderEndIndex < data.length ) ? 0 : renderPageSize) );
 			  	currentPageEndIndex = Math.min(data.length - 1, currentPageStartIndex + renderPageSize);
 			  	console.log('start: '+renderStartIndex);
 			  	console.log('end: '+renderEndIndex);
@@ -822,7 +797,7 @@
 			  	console.log(forceRender);
 			  	console.log('currentPageStartIndex: '+currentPageStartIndex+', currentPageEndIndex: '+currentPageEndIndex);
 
-			  	for (i = renderStartIndex; i < renderEndIndex; i++) {
+			  	for (i = renderStartIndex; i <= renderEndIndex; i++) {
 						if (i >= data.length || renderedElements[i]) continue;
 
 						console.log('append item');
@@ -898,9 +873,15 @@
 			  }
 
 			  function getDimension(index, pivotIndexStart, pivotIndexEnd) {
-			  	var isPrev = index-pivotIndexStart < 0;
+			  	console.log('getDimension');
+			  	console.log(index);
+			  	console.log(pivotIndexStart);
+			  	var isPrev = index-pivotIndexStart <= 0;
 			  	var primaryHeight = 0;
 			  	if (isPrev) {
+			  		console.log('prev');
+			  		console.log(currentPageStart);
+			  		console.log(pivotIndexStart);
 			  		for (var i = index; i < pivotIndexStart; i++) {
 				  		primaryHeight += renderedElements[i].el.offsetHeight;
 				  	}
@@ -971,7 +952,7 @@
 						  		}
 				        }
 		        	}
-          	}, 100);
+          	}, 1500);
 		        // Scrolling to original position
 						scrollViewSetDimensions();
 						scrollCtrl.resize();
@@ -981,15 +962,17 @@
 
 		    function getContentSize() {
 		    	var top = 9999, bottom = -9999;
-		    	angular.forEach(renderedElements, function(item) {
+		    	angular.forEach(renderedElements, function(item, i) {
 		    		var rect = verge.rectangle(item.el);
-		    		(rect.top > -9999) && ( top = Math.min(rect.top, top) );
+		    		(rect.top > -9000) && ( top = Math.min(rect.top, top) );
 		    		bottom = Math.max(rect.bottom, bottom);
+		    		console.log('renderedElements['+i+']');
+		    		console.log('rect top: '+rect.top+', bottom: '+rect.bottom);
 		    	});
 		    	console.log('top: '+top);
 		    	console.log('bottom: '+bottom);
 		    	console.log('contentSize: '+(bottom-top));
-		    	return bottom - top;
+		    	return bottom-top > 0 ? bottom - top : 100;
 		    }
 
 		    // function shiftScroll() {
@@ -1025,9 +1008,9 @@
 					render();
 				}, 300);
 
-				console.log('scrollView');
-				console.log(scrollView);
-				console.log(scrollCtrl);
+				// console.log('scrollView');
+				// console.log(scrollView);
+				// console.log(scrollCtrl);
     		scrollView.__$callback = scrollView.__callback;
 				scrollView.__callback = function(transformLeft, transformTop, zoom, wasResize) {
 					// console.log('scrolling callback');
