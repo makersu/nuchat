@@ -26,7 +26,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
   $scope.currentUser.avatarThumbnail = ENV.GRIDFS_BASE_URL+$scope.currentUser.avatarThumbnail;
-  $scope.otherUsers = [];
+  $scope.joinerList = [];
   // console.log($scope.currentUser)//
   $scope.input = {};
   $scope.messageOptions = {
@@ -121,12 +121,15 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   /* Getting the all the users joined this room except the currentUser
    */
   function getRoomUsers() {
-    $scope.otherUsers = [];
-    if ( RoomService.isPrivate($scope.room) ) {
-      $scope.otherUsers.push($scope.friends[$scope.room.ownerId === $scope.currentUser.id ? $scope.room.friend : $scope.room.ownerId]);
-    } else {
-      // TODO: Getting user in the group.
-    }
+    $scope.joinerList = [];
+    angular.forEach($scope.room.joiners, function(joiner) {
+      $scope.joinerList.push($scope.friends[joiner]);
+    });
+    // if ( RoomService.isPrivate($scope.room) ) {
+    //   $scope.otherUsers.push($scope.friends[$scope.room.ownerId === $scope.currentUser.id ? $scope.room.friend : $scope.room.ownerId]);
+    // } else {
+    //   // TODO: Getting user in the group.
+    // }
   }
 
   // Scope Public
@@ -306,6 +309,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     // });
   };
   $scope.getAllMessages = function() {
+    console.log('getAllMessages');
     $scope.room.viewMessages = _.values($scope.room.messages);
   };
 
