@@ -132,7 +132,7 @@
 				<img ng-src="{{ currentUser.avatarThumbnail }}">
 				{{ ::currentUser.username }}
 			</ion-item>
-			<ion-item class="item-avatar" collection-repeat="usr in otherUsers"
+			<ion-item class="item-avatar" collection-repeat="usr in joinerList"
 				item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
 				<img ng-src="{{ usr.avatarThumbnail }}">
 				{{ usr.username }}
