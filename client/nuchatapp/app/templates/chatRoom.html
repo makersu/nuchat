@@ -30,7 +30,7 @@
 						<img ng-click="viewProfile(message)" class="profile-pic left" 
 						ng-src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="onProfilePicError(this)" />
 						<div class="chat-bubble left">
-							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll">
+							<meta-msg class="message" ng-model="message" meta-option="messageOptions" scroll-handle="userMessageScroll">
 							</meta-msg>
 							<div class="message-detail">
 								<!-- <span ng-click="viewProfile(message)" 

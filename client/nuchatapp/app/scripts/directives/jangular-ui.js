@@ -224,11 +224,12 @@
 	jangularUI.directive('metaMsg', function($http, $rootScope, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
 		return {
 			restrict: 'EA',
+			require: '^ngModel',
 			template: '<div class="content" id="{{ msg.id }}"></div>\
 								 <a class="extend" ng-if="hasMore && !extended" ng-click="extend()">...{{ ::\'MORE\' | translate }}</a>\
 								 <a class="extend" ng-if="extended" ng-click="hide()">...{{ ::\'LESS\' | translate }}</a>\
 								 <div class="tags" ng-if="notLink()"><span class="badge" ng-repeat="tag in msg.tags | limitTo:5">{{ tag }}</span><span ng-if="msg.tags.length > 5">...</span></div>',
-			link: function(scope, elem, attrs) {
+			link: function(scope, elem, attrs, ngModelCtrl) {
 				var msg = attrs.msg;
 				var metaOption = attrs.metaOption;
 				var type = attrs.type;
@@ -247,7 +248,14 @@
 				console.log('metaMsg');
 				console.log(scope);
 				console.log(scope[msg]);
-				parse(scope[type]);
+				scope.$watch('msg', function(newVal, oldVal) {
+					if (newVal) {
+						console.log(scope.msg);
+						console.log(newVal);
+						parse(scope[type]);
+					}
+				});
+				// parse(scope[type]);
 
 				// Registering events.
 				scope.$on('uploaded', function(event, args) {
