@@ -57,7 +57,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     },
     remote: ENV.GRIDFS_BASE_URL,
   };
-  console.log($scope.currentUser);
+  // console.log($scope.currentUser);
 
   /* Methods */
   // Private
@@ -122,8 +122,9 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
    */
   function getRoomUsers() {
     $scope.joinerList = [];
+    // console.log($scope.room);//
     angular.forEach($scope.room.joiners, function(joiner) {
-      $scope.joinerList.push($scope.friends[joiner]);
+      $scope.friends[joiner] && $scope.joinerList.push($scope.friends[joiner]);
     });
     // if ( RoomService.isPrivate($scope.room) ) {
     //   $scope.otherUsers.push($scope.friends[$scope.room.ownerId === $scope.currentUser.id ? $scope.room.friend : $scope.room.ownerId]);
@@ -145,6 +146,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
 
     //console.log($stateParams.roomId)
     //scope.input.room=$stateParams.roomId
+    console.log($scope.room);
     $scope.input.roomId = $scope.room.id;
     $scope.input.ownerId = $scope.currentUser.id;
     console.log($scope.input);
@@ -300,6 +302,19 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   };
   $scope.like = $NUChatTags.setLike;
   $scope.isLike = $NUChatTags.isLike;
+  $scope.share = function(msg) {
+    var shareStr = null;
+    if ( $checkFormat.isImg(msg.type) ) {
+      shareStr = ENV.GRIDFS_BASE_URL + msg.originalFileId;
+      window.plugins.socialsharing.share(null, null, shareStr);
+    // } else if ( $checkFormat.isAudio(msg.type) || $checkFormat.isVideo(msg.type) ) {
+    //   shareStr = ENV.GRIDFS_BASE_URL + msg.originalFileId;
+    //   window.plugins.socialsharing.share(shareStr);
+    } else {
+      shareStr = msg.text;
+      window.plugins.socialsharing.share(shareStr);
+    }
+  };
 
   /* Filtering */
   $scope.filterByUser = function(user) {
@@ -345,6 +360,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   // console.log($stateParams.roomId);
   RoomService.setCurrentRoom($stateParams.roomId);
   $scope.room = RoomService.getCurrentRoom();
+  console.log($scope.room);
 
   // OnResume
   $scope.$on('$ionicView.enter', function() {

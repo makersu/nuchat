@@ -168,6 +168,10 @@
 		// return false;
 	}
 
+	function isLink(contentType) {
+		return checkType(contentType, METATYPE.LINK);
+	}
+
 	function requestFullScreen(elem) {
 		if (elem.requestFullscreen) {
 		  elem.requestFullscreen();
@@ -220,34 +224,38 @@
 	jangularUI.directive('metaMsg', function($http, $rootScope, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
 		return {
 			restrict: 'EA',
-			scope: {
-				msg: '=',
-				type: '=',
-				metaOption: '=',
-				scrollHandle: '@',
-			},
-			template: '<div class="content" id="{{ ::msg.id }}"></div>\
+			template: '<div class="content" id="{{ msg.id }}"></div>\
 								 <a class="extend" ng-if="hasMore && !extended" ng-click="extend()">...{{ ::\'MORE\' | translate }}</a>\
 								 <a class="extend" ng-if="extended" ng-click="hide()">...{{ ::\'LESS\' | translate }}</a>\
 								 <div class="tags" ng-if="notLink()"><span class="badge" ng-repeat="tag in msg.tags | limitTo:5">{{ tag }}</span><span ng-if="msg.tags.length > 5">...</span></div>',
 			link: function(scope, elem, attrs) {
-				var _audioSetting = scope.metaOption.audioSetting || {};
-				var _foldingThres = scope.metaOption.foldingThres || FOLDING_LINE_THRES;
-				var _linkSetting = scope.metaOption.linkSetting || {};
-				var _remoteSrv = scope.metaOption.remote || ''; // Empty if use the local file for development...
-				var _originMsg = scope.message = scope.msg.text;
-				var _msgContent = elem.find('div');
-				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope.scrollHandle);
+				var msg = attrs.msg;
+				var metaOption = attrs.metaOption;
+				var type = attrs.type;
+				var scrollHandle = attrs.scrollHandle;
 
-				parse(scope.type);
+				var _audioSetting = scope[metaOption].audioSetting || {};
+				var _foldingThres = scope[metaOption].foldingThres || FOLDING_LINE_THRES;
+				var _linkSetting = scope[metaOption].linkSetting || {};
+				var _remoteSrv = scope[metaOption].remote || ''; // Empty if use the local file for development...
+				var _message;
+				var _originMsg = _message = scope[msg].text;
+				var _msgContent = elem.find('div');
+				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope[scrollHandle]);
+				scope.msg = scope[msg];
+
+				console.log('metaMsg');
+				console.log(scope);
+				console.log(scope[msg]);
+				parse(scope[type]);
 
 				// Registering events.
 				scope.$on('uploaded', function(event, args) {
-					if (scope.msg.roomId === args.msg.roomId && scope.msg.ownerId === args.msg.ownerId) {
-						if (args.msg.timestamp === scope.msg.timestamp) {
+					if (scope[msg].roomId === args.msg.roomId && scope[msg].ownerId === args.msg.ownerId) {
+						if (args.msg.timestamp === scope[msg].timestamp) {
 							// console.log(args.msg);
-							// console.log(scope.msg);
-							scope.msg.uploading = false;
+							// console.log(scope[msg]);
+							scope[msg].uploading = false;
 							$rootScope.$broadcast('updateObjMsg', { msg: args.msg });
 						}
 					}
@@ -255,22 +263,22 @@
 
 				scope.extend = function() {
 					scope.extended = true;
-					scope.message = $filter('nl2br')(_originMsg);
-					_msgContent.html('').append(scope.message);
+					_message = $filter('nl2br')(_originMsg);
+					_msgContent.html('').append(_message);
 				};
 				scope.hide = function() {
 					scope.extended = false;
-					scope.message = _originMsg;
+					_message = _originMsg;
 					parseText();
-		      $location.hash(scope.msg.id);
+		      $location.hash(scope[msg].id);
 		      _scrollHandle.anchorScroll();
 				};
 				scope.linkClickHandler = function(link) {
-					console.log(scope.msg.text);
-					_linkSetting.clickHandler && _linkSetting.clickHandler(link || scope.msg.text);
+					console.log(scope[msg].text);
+					_linkSetting.clickHandler && _linkSetting.clickHandler(link || scope[msg].text);
 				};
 				scope.notLink = function() {
-					return scope.msg.type && scope.msg.type !== METATYPE.LINK || !scope.msg.type;
+					return scope[msg].type && scope[msg].type !== METATYPE.LINK || !scope[msg].type;
 				};
 
 				// Metatype parsing
@@ -300,14 +308,14 @@
 
 				function parseUnknown() {
 					var q = $q.defer();
-					var links = getLinks(scope.message);
+					var links = getLinks(_message);
 					if (links) {
 						parseLink(links);
-					} else if ( isImg(scope.msg.type) ) { //
+					} else if ( isImg(scope[msg].type) ) { //
 						parseImg();
-					} else if ( isAudio(scope.msg.type) ) {
+					} else if ( isAudio(scope[msg].type) ) {
 						parseAudio();
-					} else if ( isVideo(scope.msg.type) ) {
+					} else if ( isVideo(scope[msg].type) ) {
 						parseVideo();
 					} else {
 						parseText();
@@ -319,18 +327,18 @@
 				function parseLink(links) {
 					// console.log(links);
 					// var q = $q.defer();
-					var cacheView = { id: scope.msg.id };
-					scope.msg.type = METATYPE.LINK;
-					if (scope.msg.linkView) {
+					var cacheView = { id: scope[msg].id };
+					scope[msg].type = METATYPE.LINK;
+					if (scope[msg].linkView) {
 						elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
 					} else {
 						angular.forEach(links, function(link) {
 							var promise = parseSummaryLink(link, cacheView, $http);
 							if (promise) {
 								promise.then(function(result) {
-									scope.message = scope.message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
-									$compile(_msgContent.html('').append(scope.message))(scope);
-									scope.msg.linkView = result;
+									_message = _message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
+									$compile(_msgContent.html('').append(_message))(scope);
+									scope[msg].linkView = result;
 									elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
 								}, errorHandler);
 							}
@@ -342,38 +350,39 @@
 				// Assuming the img uri provided.
 				function parseImg() {
 					console.log('parseImg');
-					// scope.msg.type = METATYPE.IMG;
-					scope.msg.isImg = true;
-					var imgSrc = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
-					scope.msg.uploading = !scope.msg.thumbnailFileId;
-					console.log('parseImg uploading? '+scope.msg.uploading);
-					console.log(scope.msg);
-					var $imgElem = angular.element('<img id="img'+scope.msg.id+'" src="'+imgSrc+'">');
-					_msgContent.append($imgElem).append( $compile('<ion-spinner ng-if="msg.uploading"></ion-spinner>')(scope) );
-					$imgElem.on('click', scope.metaOption.imgSetting.clickHandler ? function() {
-						scope.metaOption.imgSetting.clickHandler(scope.msg.id || scope.msg.timestamp);
+					// scope[msg].type = METATYPE.IMG;
+					scope[msg].isImg = true;
+					var imgSrc = scope[msg].thumbnailFileId ? _remoteSrv+scope[msg].thumbnailFileId : _message;
+					scope[msg].uploading = !scope[msg].thumbnailFileId;
+					console.log('parseImg uploading? '+scope[msg].uploading);
+					console.log(scope[msg]);
+					// var $imgElem = angular.element('<img id="img'+scope[msg].id+'" src="'+imgSrc+'">');
+					var $imgElem = angular.element('<div id="img'+scope[msg].id+'" afkl-lazy-image="'+imgSrc+'" class="afkl-lazy-wrapper afkl-img-ratio-1-1">');
+					_msgContent.append( $compile($imgElem)(scope) ).append( $compile('<ion-spinner ng-if="msg.uploading"></ion-spinner>')(scope) );
+					$imgElem.on('click', scope[metaOption].imgSetting.clickHandler ? function() {
+						scope[metaOption].imgSetting.clickHandler(scope[msg].id || scope[msg].timestamp);
 					} : {});
 				}
 
 				// Assuming the audio uri provided.
 				function parseAudio() {
 					// TODO: if audioSetting is not set, throw the error message.
-					// scope.msg.type = METATYPE.AUDIO;
-					var audioUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
-					scope.msg.uploading = !scope.msg.originalFileId;
+					// scope[msg].type = METATYPE.AUDIO;
+					var audioUrl = scope[msg].originalFileId ? _remoteSrv+scope[msg].originalFileId : _message;//
+					scope[msg].uploading = !scope[msg].originalFileId;
 
-					// scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
+					// _message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
 					// _msgContent.append( $compile('<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i><ion-spinner icon="lines" ng-if="msg.uploading"></ion-spinner>' )(scope) );
 					_msgContent.append( $compile('<audio src="'+audioUrl+'" controls></audio><ion-spinner icon="lines" ng-if="msg.uploading"></ion-spinner>' )(scope) );
 					// elem.bind('click', function() {
-					// 	scope.msg.isPlaying = !scope.msg.isPlaying;
+					// 	scope[msg].isPlaying = !scope[msg].isPlaying;
 					// 	setView();
 						
-					// 	if (scope.msg.isPlaying) {
+					// 	if (scope[msg].isPlaying) {
 					// 		_audioSetting.play.fn(audioUrl)
 					// 			.then(function() {
 					// 				// console.log('played');
-					// 				scope.msg.isPlaying = false;
+					// 				scope[msg].isPlaying = false;
 					// 				setView();
 					// 			});
 					// 	} else {
@@ -382,18 +391,18 @@
 
 					// 	function setView() {
 					// 		var img = elem.find('img');
-					// 		img[0].src = scope.msg.isPlaying ? _audioSetting.play.img : _audioSetting.stop.img;
+					// 		img[0].src = scope[msg].isPlaying ? _audioSetting.play.img : _audioSetting.stop.img;
 					// 		var icon = elem.find('i');
-					// 		icon[0].className = scope.msg.isPlaying ? _audioSetting.play.icon : _audioSetting.stop.icon;
+					// 		icon[0].className = scope[msg].isPlaying ? _audioSetting.play.icon : _audioSetting.stop.icon;
 					// 	}
 					// });
 				}
 
 				function parseVideo() {
-					// scope.msg.type = METATYPE.VIDEO;
-					var videoUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
-					var thumbnailUrl = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
-					scope.msg.uploading = !scope.msg.originalFileId;
+					// scope[msg].type = METATYPE.VIDEO;
+					var videoUrl = scope[msg].originalFileId ? _remoteSrv+scope[msg].originalFileId : _message;//
+					var thumbnailUrl = scope[msg].thumbnailFileId ? _remoteSrv+scope[msg].thumbnailFileId : _message;
+					scope[msg].uploading = !scope[msg].originalFileId;
 					var $videoElem = angular.element('<video class="video-thumb" poster="'+thumbnailUrl+'"><source src="'+videoUrl+'"></video>');
 					// $videoElem.on('loadeddata', function() {
 					// 	$videoElem[0].currentTime = 1;
@@ -430,9 +439,9 @@
 				}
 
 				function parseText() {
-					var text = scope.message;
-					var lines = scope.message.split('\n');
-					if (lines.length > _foldingThres || scope.message.length > FOLDING_CHAR_THRES) {
+					var text = _message;
+					var lines = _message.split('\n');
+					if (lines.length > _foldingThres || _message.length > FOLDING_CHAR_THRES) {
 						text = '';
 						for (var i = 0; i < lines.length && i < _foldingThres && text.length < FOLDING_CHAR_THRES; i++) {
 							text += lines[i]+'<br>';
@@ -440,7 +449,7 @@
 						text = text.substring(0, text.length-4);
 						if (text.length > FOLDING_CHAR_THRES) text = text.substr(0, FOLDING_CHAR_THRES);
 						scope.hasMore = true;
-						// scope.message = text;
+						// _message = text;
 					}
 					_msgContent.html('').append(text);
 				}
@@ -679,7 +688,7 @@
 	var PRIMARY = 'PRIMARY';
   var SECONDARY = 'SECONDARY';
   var TRANSLATE_TEMPLATE_STR = 'translate3d(SECONDARYpx,PRIMARYpx,0)';
-	jangularUI.directive('pageCollection', ['$parse', '$$rAF', '$rootScope', '$filter', '$timeout', '$window', function($parse, $$rAF, $rootScope, $filter, $timeout, $window) {
+	jangularUI.directive('pageCollection', ['$parse', '$$rAF', '$rootScope', '$filter', '$timeout', '$window', '$location', function($parse, $$rAF, $rootScope, $filter, $timeout, $window, $location) {
 		return {
 			restrict: 'A',
 			transclude: 'element',
@@ -722,9 +731,7 @@
 		    var renderStartIndex = 0;
 				var renderEndIndex = renderStartIndex+renderPageSize;
 				var startOffset = null;
-				var currentPageStart = currentPageEnd = 0;
 				var currentPageStartIndex = currentPageEndIndex = 0;
-				var leavingHeight = enteringHeight = 0;
 				var oldTransformTop = 0;
 				var scrollViewSetDimensions = function() { console.log(scrollView); scrollView.setDimensions(null, null, null, getContentSize(), true); console.log(scrollView); };
 
@@ -758,7 +765,7 @@
 		        self.el = clone[0];
 		        // TODO destroy
 		        // Batch style setting to lower repaints
-        		self.el.style[ionic.CSS.TRANSFORM] = 'translate3d(-9999px,-9999px,0)';
+        		// self.el.style[ionic.CSS.TRANSFORM] = 'translate3d(-9999px,-9999px,0)';
 		        ionic.Utils.disconnectScope(self.scope);
 		        $container.append(self.el);
 						renderedElements.push(self);
@@ -767,20 +774,17 @@
 
 			  function render() {
 			  	if (!data.length) return;
-			  	var item, scope, i;
-					leavingHeight = enteringHeight = 0;
+			  	var item, scope, i, scrollToId;
 			  	renderStartIndex = Math.max(0, renderStartIndex - renderPageSize);
 			  	renderEndIndex = Math.min(data.length - 1, renderEndIndex + renderPageSize);
 			  	currentPageStartIndex = Math.max( 0, renderStartIndex + ( (renderEndIndex == 2*renderPageSize || renderEndIndex < data.length ) ? 0 : renderPageSize) );
 			  	currentPageEndIndex = Math.min(data.length - 1, currentPageStartIndex + renderPageSize);
-			  	console.log('start: '+renderStartIndex);
-			  	console.log('end: '+renderEndIndex);
+			  	// console.log('start: '+renderStartIndex);
+			  	// console.log('end: '+renderEndIndex);
 
-			  	console.log(renderedElements);
+			  	// console.log(renderedElements);
 
-			  	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex-1);
-			  	console.log('currentPageStart: '+currentPageStart);
-			  	console.log('currentPageEnd: '+currentPageEnd );
+			  	// updateCurrentDimension(currentPageStartIndex, currentPageEndIndex-1);
 
 			  	for (i in renderedElements) {
 			  		// console.log(i);
@@ -791,16 +795,18 @@
 		          item.isShown = false;
 		        }
 		      }
-			  	console.log(itemsLeaving);
+			  	// console.log(itemsLeaving);
 
-			  	if (!currentPageStart && !currentPageEnd) forceRender = true;
-			  	console.log(forceRender);
-			  	console.log('currentPageStartIndex: '+currentPageStartIndex+', currentPageEndIndex: '+currentPageEndIndex);
+			  	// console.log(forceRender);
+			  	// console.log('currentPageStartIndex: '+currentPageStartIndex+', currentPageEndIndex: '+currentPageEndIndex);
 
 			  	for (i = renderStartIndex; i <= renderEndIndex; i++) {
 						if (i >= data.length || renderedElements[i]) continue;
+						var keys = Object.keys(renderedElements);
+						var last = parseInt(keys[keys.length-1]);
+						var first = parseInt(keys[0]);
 
-						console.log('append item');
+						// console.log('append item');
 						item = renderedElements[i] || ( renderedElements[i] = itemsLeaving.length ? itemsLeaving.pop() :
 					                                      itemsPool.length ? itemsPool.shift() :
 					                                      new RepeatItem() );
@@ -814,6 +820,30 @@
 		        scope.$middle = !(scope.$first || scope.$last);
 		        scope.$odd = !(scope.$even = (i&1) === 0);
 
+		        console.log('msg[i]: '+i);
+		        console.log('msg id: '+scope[itemKeyExpr].id);
+		        console.log(scope);
+
+		        // console.log('first: '+first);
+		        // console.log('i: '+i);
+		        // console.log('last: '+last);
+		        if (i > last) {
+		        	$container.append(item.el);
+		        	!scrollToId && (function() {
+		        		scrollToId = 'item-'+renderedElements[last].scope[itemKeyExpr].id;
+			        	$location.hash(scrollToId);
+			      		scrollCtrl.anchorScroll();
+		        	})();
+		        } else if (i < first) {
+		        	$container.prepend(item.el);
+		        	scrollToId = 'item-'+renderedElements[first].scope[itemKeyExpr].id;
+		        	$location.hash(scrollToId);
+			      	scrollCtrl.anchorScroll();
+		        } else if (renderedElements[i-1]) {
+		        	// console.log('i: '+i);
+		        	angular.element(renderedElements[i-1].el).after(item.el);
+		        }
+
 		        if (scope.$$disconnected) ionic.Utils.reconnectScope(item.scope);
 		        // console.log(item.scope);
 		        // console.log(item.el);
@@ -825,95 +855,92 @@
 
 					while (itemsLeaving.length) {
 		        item = itemsLeaving.pop();
-		        console.log('From leaving');
-						console.log(item);
-						leavingHeight += item.el.offsetHeight;
-						console.log('leavingHeight: '+leavingHeight);
+		    //     console.log('From leaving');
+						// console.log(item);
 		        ionic.Utils.disconnectScope(item.scope);
 		        itemsPool.push(item);
 		      }
-					console.log('leavingHeight: '+leavingHeight);
 
 		      digestEnteringItems();
 
 		      // renderedElements = $filter('orderBy')(renderedElements, 'id');
 			  }
 
-			  function updateCurrentDimension(startIdx, endIdx) {
-			  	console.log(scrollView.__scrollTop);
-			  	console.log(scrollCtrl.getScrollPosition().top);
-			  	renderedElements[startIdx] && (function() {
-			  		var startTop = verge.rectangle(renderedElements[startIdx].el).top+scrollCtrl.getScrollPosition().top;
-			  		console.log(angular.element(renderedElements[startIdx].el));
-			  		console.log('startIdx: '+startIdx);
-			  		console.log('startTop: '+startTop);
-			  		// if (startTop > 0) {
-			  			currentPageStart = startTop;
-			  			if (startOffset === null) {
-			  				startOffset = currentPageStart;
-			  				console.log('startOffset: '+startOffset);
-			  			}
-			  			currentPageStart -= startOffset;
-			  		// };
-			  	})();
-			  	renderedElements[endIdx] && (function() {
-			  		var endItem = renderedElements[endIdx].el;
-			  		var endBottom = verge.rectangle(endItem).bottom+scrollCtrl.getScrollPosition().top;
-			  		console.log('endIdx: '+endIdx);
-			  		console.log('endBottom: '+endBottom);
-			  		// if (endBottom < 0) {
-			  		// 	endItem = renderedElements[endIdx-1].el;
-			  		// 	endBottom = verge.rectangle(endItem).top+endItem.offsetHeight;
-			  		// }
-			  		// console.log('endBottom: '+endBottom);
-			  		endBottom > 0 && (currentPageEnd = (endBottom-startOffset) || 0);
-			  	})();
-			  	console.log(currentPageStart);
-			  	console.log(currentPageEnd);
-			  }
+			  // function updateCurrentDimension(startIdx, endIdx) {
+			  // 	console.log(scrollView.__scrollTop);
+			  // 	console.log(scrollCtrl.getScrollPosition().top);
+			  // 	renderedElements[startIdx] && (function() {
+			  // 		var startTop = verge.rectangle(renderedElements[startIdx].el).top+scrollCtrl.getScrollPosition().top;
+			  // 		console.log(angular.element(renderedElements[startIdx].el));
+			  // 		console.log('startIdx: '+startIdx);
+			  // 		console.log('startTop: '+startTop);
+			  // 		// if (startTop > 0) {
+			  // 			currentPageStart = startTop;
+			  // 			if (startOffset === null) {
+			  // 				startOffset = currentPageStart;
+			  // 				console.log('startOffset: '+startOffset);
+			  // 			}
+			  // 			currentPageStart -= startOffset;
+			  // 		// };
+			  // 	})();
+			  // 	renderedElements[endIdx] && (function() {
+			  // 		var endItem = renderedElements[endIdx].el;
+			  // 		var endBottom = verge.rectangle(endItem).bottom+scrollCtrl.getScrollPosition().top;
+			  // 		console.log('endIdx: '+endIdx);
+			  // 		console.log('endBottom: '+endBottom);
+			  // 		// if (endBottom < 0) {
+			  // 		// 	endItem = renderedElements[endIdx-1].el;
+			  // 		// 	endBottom = verge.rectangle(endItem).top+endItem.offsetHeight;
+			  // 		// }
+			  // 		// console.log('endBottom: '+endBottom);
+			  // 		endBottom > 0 && (currentPageEnd = (endBottom-startOffset) || 0);
+			  // 	})();
+			  // 	console.log(currentPageStart);
+			  // 	console.log(currentPageEnd);
+			  // }
 
-			  function getDimension(index, pivotIndexStart, pivotIndexEnd) {
-			  	console.log('getDimension');
-			  	console.log(index);
-			  	console.log(pivotIndexStart);
-			  	var isPrev = index-pivotIndexStart <= 0;
-			  	var primaryHeight = 0;
-			  	if (isPrev) {
-			  		console.log('prev');
-			  		console.log(currentPageStart);
-			  		console.log(pivotIndexStart);
-			  		for (var i = index; i < pivotIndexStart; i++) {
-				  		primaryHeight += renderedElements[i].el.offsetHeight;
-				  	}
-			  		return currentPageStart-primaryHeight;
-			  	} else {
-			  		var start = index >= pivotIndexEnd ? pivotIndexEnd : pivotIndexStart;
-			  		if (DEBUG) {
-				  		console.log(renderedElements);
-				  		console.log(pivotIndexEnd);
-				  		console.log(index);
-				  	}
-			  		if (index != pivotIndexEnd) {
-			  			for (var i = start; i < index; i++) {
-				  			primaryHeight += renderedElements[i].el.offsetHeight;
-				  			if (DEBUG) {
-					  			console.log(renderedElements[i]);
-					  			console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
-					  			console.log('primaryHeight: '+primaryHeight);
-					  		}
-				  		}
-			  		}
-			  		// do {
-			  		// 	console.log(renderedElements[i]);
-			  		// 	console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
-			  		// 	primaryHeight += renderedElements[i].el.offsetHeight;
-			  		// 	console.log('primaryHeight: '+primaryHeight);
-			  		// 	i++;
-			  		// } while(i < index);
-			  		console.log('primaryHeight( plus currentPageEnd): '+(currentPageEnd+primaryHeight) );
-			  		return currentPageEnd+primaryHeight;
-			  	}
-			  }
+			  // function getDimension(index, pivotIndexStart, pivotIndexEnd) {
+			  // 	console.log('getDimension');
+			  // 	console.log(index);
+			  // 	console.log(pivotIndexStart);
+			  // 	var isPrev = index-pivotIndexStart <= 0;
+			  // 	var primaryHeight = 0;
+			  // 	if (isPrev) {
+			  // 		console.log('prev');
+			  // 		console.log(currentPageStart);
+			  // 		console.log(pivotIndexStart);
+			  // 		for (var i = index; i < pivotIndexStart; i++) {
+				 //  		primaryHeight += renderedElements[i].el.offsetHeight;
+				 //  	}
+			  // 		return currentPageStart-primaryHeight;
+			  // 	} else {
+			  // 		var start = index >= pivotIndexEnd ? pivotIndexEnd : pivotIndexStart;
+			  // 		if (DEBUG) {
+				 //  		console.log(renderedElements);
+				 //  		console.log(pivotIndexEnd);
+				 //  		console.log(index);
+				 //  	}
+			  // 		if (index != pivotIndexEnd) {
+			  // 			for (var i = start; i < index; i++) {
+				 //  			primaryHeight += renderedElements[i].el.offsetHeight;
+				 //  			if (DEBUG) {
+					//   			console.log(renderedElements[i]);
+					//   			console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
+					//   			console.log('primaryHeight: '+primaryHeight);
+					//   		}
+				 //  		}
+			  // 		}
+			  // 		// do {
+			  // 		// 	console.log(renderedElements[i]);
+			  // 		// 	console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
+			  // 		// 	primaryHeight += renderedElements[i].el.offsetHeight;
+			  // 		// 	console.log('primaryHeight: '+primaryHeight);
+			  // 		// 	i++;
+			  // 		// } while(i < index);
+			  // 		console.log('primaryHeight( plus currentPageEnd): '+(currentPageEnd+primaryHeight) );
+			  // 		return currentPageEnd+primaryHeight;
+			  // 	}
+			  // }
 
 			  function digestEnteringItems() {
 		      var item;
@@ -932,29 +959,30 @@
 		          if (item.isShown) {
 		            if (!rootScopePhase) {
 		            	item.scope.$digest();
+		            	console.log(item.el);
 		            }
 		          }
 		        }
-		        $timeout(function() {
-		        	while (postRendering.length) {
-		        		item = postRendering.pop();
-		        		console.log('item['+item.scope.$index+'] offsetHeight: '+item.el.offsetHeight);
-					  		item.el.style[ionic.CSS.TRANSFORM] = TRANSLATE_TEMPLATE_STR
-		            	.replace(PRIMARY, getDimension(item.scope.$index, currentPageStartIndex, currentPageEndIndex))
-		            	.replace(SECONDARY, 0);
-	            	// debugger;
+		    //     $timeout(function() {
+		    //     	while (postRendering.length) {
+		    //     		item = postRendering.pop();
+		    //     		console.log('item['+item.scope.$index+'] offsetHeight: '+item.el.offsetHeight);
+					 //  		item.el.style[ionic.CSS.TRANSFORM] = TRANSLATE_TEMPLATE_STR
+		    //         	.replace(PRIMARY, getDimension(item.scope.$index, currentPageStartIndex, currentPageEndIndex))
+		    //         	.replace(SECONDARY, 0);
+	     //        	// debugger;
 
-	            	if (forceRender) {
-				        	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex-1);
-				        	if (DEBUG) {
-					        	console.log('currentPageStart: '+currentPageStart);
-						  			console.log('currentPageEnd: '+currentPageEnd );
-						  		}
-				        }
-		        	}
-          	}, 1500);
-		        // Scrolling to original position
-						scrollViewSetDimensions();
+	     //        	if (forceRender) {
+				  //       	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex-1);
+				  //       	if (DEBUG) {
+					 //        	console.log('currentPageStart: '+currentPageStart);
+						//   			console.log('currentPageEnd: '+currentPageEnd );
+						//   		}
+				  //       }
+		    //     	}
+      //     	}, 1500);
+		    //     // Scrolling to original position
+						// scrollViewSetDimensions();
 						scrollCtrl.resize();
 		        digestEnteringItems.running = false;
 		      });
@@ -1289,7 +1317,7 @@
 												'<ion-slide ng-repeat="img in viewList">'+
 												  '<ion-scroll zooming="true" min-zoom="1" direction="xy" style="height:100%" delegate-handle="imgViewerScrollHandle{{$index}}" on-scroll="onImageScroll($event)">'+
 												    '<div class="img-container">'+
-												      '<img ng-src="{{ img.src }}" lazy-load="lazyLoadFn(img)">'+
+												      '<div afkl-lazy-image="{{ img.src }}" class="afkl-lazy-wrapper afkl-img-ratio-1-1"></div>'+
 												    '</div>'+
 												  '</ion-scroll>'+
 												'</ion-slide>'+
@@ -1891,6 +1919,7 @@
   	_self.isImg = isImg;
   	_self.isAudio = isAudio;
   	_self.isVideo = isVideo;
+  	_self.isLink = isLink;
   	
   	return _self;
   });
