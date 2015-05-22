@@ -26,36 +26,15 @@
 				<!-- <accordion-heading>{{ ::group.name }}<i class="icon" ng-class="{'ion-chevron-down': !group.open, 'ion-chevron-up': group.open}"></i></accordion-heading> -->
 				<div page-collection="message in room.viewMessages inside #msgContainer" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" id="item-{{ message.id }}" attr-idx="{{$index}}">
 
-					<div ng-if="currentUser.id !== message.ownerId">
-						<img ng-click="viewProfile(message)" class="profile-pic left" 
+					<div>
+						<img ng-click="viewProfile(message)" class="profile-pic left" ng-if="currentUser.id !== message.ownerId"
 						ng-src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="onProfilePicError(this)" />
-						<div class="chat-bubble left">
-							<meta-msg class="message" ng-model="message" meta-option="messageOptions" scroll-handle="userMessageScroll">
-							</meta-msg>
-							<div class="message-detail">
-								<!-- <span ng-click="viewProfile(message)" 
-								class="bold">{{toUser.username}}</span>, -->
-								<span am-time-ago="::message.created"></span>
-								<!-- <a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a> -->
-							</div>
-							<div class="actions royal">
-								<span class="act-icon" href="javascript:" ng-click="editTags(message)"><i class="button-icon icon ion-pricetag"></i></span>
-								<span class="act-icon" href="javascript:" ng-click="star(message)"><i class="button-icon icon" ng-class="isFavorite(message)"></i></span>
-								<span class="act-icon" href="javascript:" ng-click="share(message)"><i class="button-icon icon ion-share"></i></span>
-								<!-- <span class="act-icon" href="javascript:" ng-click="like(message)"><i class="button-icon icon ion-thumbsup" ng-class="{'outline': !isLike(message)}"></i></span> -->
-							</div>
-						</div>
-					</div>
-
-					<div ng-if="currentUser.id === message.ownerId">
-						<!-- <img ng-click="viewProfile(message)" class="profile-pic right" 
-						ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" /> -->
-						<div class="chat-bubble right">
+						<div class="chat-bubble" ng-class="{'left': currentUser.id !== message.ownerId, 'right': currentUser.id === message.ownerId}">
 							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll">
 							</meta-msg>
 							<div class="message-detail">
 								<!-- <span ng-click="viewProfile(message)" 
-								class="bold">{{currentUser.username}}</span>,  -->
+								class="bold">{{toUser.username}}</span>, -->
 								<span am-time-ago="::message.created"></span>
 								<!-- <a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a> -->
 							</div>

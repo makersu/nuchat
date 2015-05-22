@@ -168,8 +168,8 @@
 		// return false;
 	}
 
-	function isLink(contentType) {
-		return checkType(contentType, METATYPE.LINK);
+	function isLink(content) {
+		return ( content.type && checkType(content.type, METATYPE.LINK) ) || getLinks(content.text);
 	}
 
 	function requestFullScreen(elem) {
@@ -221,15 +221,14 @@
 	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
 	 * 4) Video: ogg|mp4|webm (HTML 5 Video supports)
 	 */
-	jangularUI.directive('metaMsg', function($http, $rootScope, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
+	jangularUI.directive('metaMsg', function($http, $rootScope, $q, $compile, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
 		return {
 			restrict: 'EA',
-			require: '^ngModel',
-			template: '<div class="content" id="{{ msg.id }}"></div>\
+			template: '<div class="content" id="{{ msgId }}"></div>\
 								 <a class="extend" ng-if="hasMore && !extended" ng-click="extend()">...{{ ::\'MORE\' | translate }}</a>\
 								 <a class="extend" ng-if="extended" ng-click="hide()">...{{ ::\'LESS\' | translate }}</a>\
 								 <div class="tags" ng-if="notLink()"><span class="badge" ng-repeat="tag in msg.tags | limitTo:5">{{ tag }}</span><span ng-if="msg.tags.length > 5">...</span></div>',
-			link: function(scope, elem, attrs, ngModelCtrl) {
+			link: function(scope, elem, attrs) {
 				var msg = attrs.msg;
 				var metaOption = attrs.metaOption;
 				var type = attrs.type;
@@ -239,19 +238,20 @@
 				var _foldingThres = scope[metaOption].foldingThres || FOLDING_LINE_THRES;
 				var _linkSetting = scope[metaOption].linkSetting || {};
 				var _remoteSrv = scope[metaOption].remote || ''; // Empty if use the local file for development...
-				var _message;
-				var _originMsg = _message = scope[msg].text;
+				var _message, _originMsg;
 				var _msgContent = elem.find('div');
 				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope[scrollHandle]);
-				scope.msg = scope[msg];
 
-				console.log('metaMsg');
-				console.log(scope);
-				console.log(scope[msg]);
-				scope.$watch('msg', function(newVal, oldVal) {
+				// console.log('metaMsg');
+				// console.log(scope);
+				scope.$watch(msg, function(newVal, oldVal) {
 					if (newVal) {
-						console.log(scope.msg);
-						console.log(newVal);
+						// console.log(newVal);
+						_originMsg = _message = newVal.text;
+						scope.msgId = newVal.id;
+						scope.hasMore = false;
+						scope.extended = false;
+						_msgContent.empty();
 						parse(scope[type]);
 					}
 				});
@@ -338,7 +338,7 @@
 					var cacheView = { id: scope[msg].id };
 					scope[msg].type = METATYPE.LINK;
 					if (scope[msg].linkView) {
-						elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+						_msgContent.append( $compile('<url-view class="img-left brief" content-obj="'+msg+'" click-handler="linkClickHandler"></url-view>')(scope) );
 					} else {
 						angular.forEach(links, function(link) {
 							var promise = parseSummaryLink(link, cacheView, $http);
@@ -347,7 +347,7 @@
 									_message = _message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
 									$compile(_msgContent.html('').append(_message))(scope);
 									scope[msg].linkView = result;
-									elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+									_msgContent.append( $compile('<url-view class="img-left brief" content-obj="'+msg+'" click-handler="linkClickHandler"></url-view>')(scope) );
 								}, errorHandler);
 							}
 						});
@@ -832,9 +832,9 @@
 		        console.log('msg id: '+scope[itemKeyExpr].id);
 		        console.log(scope);
 
-		        // console.log('first: '+first);
-		        // console.log('i: '+i);
-		        // console.log('last: '+last);
+		        console.log('first: '+first);
+		        console.log('i: '+i);
+		        console.log('last: '+last);
 		        if (i > last) {
 		        	$container.append(item.el);
 		        	!scrollToId && (function() {
@@ -1033,7 +1033,7 @@
 					if (scrollView.__scrollTop < thresholds.min) {
 						currentPage = Math.max(0, currentPage - 1);
 					} else if (scrollView.__scrollTop > thresholds.max) {
-						currentPage = Math.min(totalPages - 1, currentPage + 1);
+						currentPage = Math.min(totalPages - 2, currentPage + 1);
 						if (DEBUG) {
 							console.log('renderStartIndex: '+renderStartIndex);
 							console.log('renderEndIndex: '+renderEndIndex);
@@ -1707,21 +1707,16 @@
 	 * Url View
    *
    */
-  jangularUI.directive('urlView', ['$urlView', '$timeout', '$rootScope', function($urlView, $timeout, $rootScope) {
+  jangularUI.directive('urlView', ['$timeout', '$rootScope', function($timeout, $rootScope) {
   	return {
   		restrict: 'EA',
-  		scope: {
-  			contentObj: '=',
-  			maxLength: '=',
-  			clickHandler: '=',
-  		},
   		template: '<a class="url-view" ng-click="clickHandler()">'+
   								'<div class="content">'+
-	  								'<div class="graph"><img ng-src="{{ ::view.image }}" ng-if="::view.image"></div>'+
+	  								'<div class="graph"><img ng-src="{{ view.image }}" ng-if="view.image"></div>'+
 	  								'<div class="info">'+
-		  								'<h5 class="title" ng-bind-html="::view.title"></h5>'+
-		  								'<p class="descript" ng-bind-html="::view.description"></p>'+
-		  								'<div class="comment">{{ ::view.comment }}</div>'+
+		  								'<h5 class="title" ng-bind-html="view.title"></h5>'+
+		  								'<p class="descript" ng-bind-html="view.description"></p>'+
+		  								'<div class="comment">{{ view.comment }}</div>'+
 		  								'<div class="tags"><span class="badge" ng-repeat="tag in content.tags | limitTo:5">{{ tag }}</span><span ng-if="content.tags.length > 5">...</span></div>'+
 		  							'</div>'+
   								'</div>'+
@@ -1729,13 +1724,14 @@
   		link: function(scope, elem, attrs) {
   			function applyView() {
   				$timeout(function() {
-	  				scope.content = scope.contentObj || $urlView.getContentObj();
+	  				scope.content = scope[attrs.contentObj];
+	  				scope.clickHandler = scope[attrs.clickHandler];
 	  				// console.log(scope.content);
 	  				if (scope.content) {
 	  					scope.view = scope.content.linkView;
 		  				// console.log(scope.view);
-		  				if (scope.maxLength && scope.view.description && scope.view.description.length > scope.maxLength) {
-		  					scope.view.description = scope.view.description.substr(0, scope.maxLength)+'...';
+		  				if (scope[attrs.maxLength] && scope.view.description && scope.view.description.length > scope[attrs.maxLength]) {
+		  					scope.view.description = scope.view.description.substr(0, scope[attrs.maxLength])+'...';
 		  				}
 			  			var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
 			  			if (noScheme.lastIndexOf('/') >= 0) {

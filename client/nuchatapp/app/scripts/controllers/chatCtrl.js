@@ -147,6 +147,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     //console.log($stateParams.roomId)
     //scope.input.room=$stateParams.roomId
     console.log($scope.room);
+    $checkFormat.isLink($scope.input) && ($scope.input.type = METATYPE.LINK);
     $scope.input.roomId = $scope.room.id;
     $scope.input.ownerId = $scope.currentUser.id;
     console.log($scope.input);
