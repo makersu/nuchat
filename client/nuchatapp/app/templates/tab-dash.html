@@ -1,5 +1,16 @@
-<ion-view title="Dashboard">
-  <ion-content class="has-header padding">
-    <h1>Dash</h1>
+<ion-view view-title="Calendar">
+  <ion-content>
+ 	<div range-cal relink-event="rangeCalendar" lang='en' start-range-width='1' min-range-width='1' max-range-width='1'   theme='blue-theme' ng-click="refresh()"> 
+ 	</div>
+  	<input type="submit" value="Today" ng-click="reload()">
+  	<!-- <h1>{{dia}}</h1> -->
+  	<div class="card" ng-repeat="event in events">
+		  <div class="item item-divider item-positive">
+		    <strong>{{event.startDate | date:"a h:mm"}} {{event.title}}</strong>
+		  </div>
+		  <div class="item item-text-wrap">
+		    {{event.notes}}
+		  </div>
+		</div>
   </ion-content>
 </ion-view>

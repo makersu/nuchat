@@ -9,7 +9,7 @@
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
     'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap','btford.socket-io'])
-.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags, $location, $ionicScrollDelegate, LBSocket) {
+.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags, $location, $ionicScrollDelegate, LBSocket, $cordovaCalendar) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -117,6 +117,19 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       //   }
       // }
     });
+
+    // $cordovaCalendar.createEvent({
+    //   title: 'chatbox event created by Mark',
+    //   location: 'The Moon',
+    //   notes: 'Bring sandwiches',
+    //   startDate: new Date(2015, 5, 22, 9, 0, 0, 0, 0),
+    //   endDate: new Date(2015, 6, 15, 9, 0, 0, 0, 0)
+    // }).then(function (result) {
+    //   console.log("Event created successfully");
+    // }, function (err) {
+    //   console.error("There was an error: " + err);
+    // });
+
   });
 })
 // .run(function ($state, signaling) {
@@ -161,6 +174,15 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         'tab-friends': {
           templateUrl: 'templates/tab-friends.html',
           controller: 'FriendCtrl'
+        }
+      }
+    })
+    .state('tab.calendars', {
+      url: '/calendars',
+      views: {
+        'tab-calendars': {
+          templateUrl: 'templates/tab-dash.html',
+          controller: 'CalCtrl'
         }
       }
     })
