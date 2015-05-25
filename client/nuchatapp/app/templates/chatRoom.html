@@ -120,6 +120,9 @@
 						{{ usr.username }}
 					</ion-item>
 				</accordion-group>
+				<accordion-group is-open="dt.open" id="datepicker">
+					<datepicker ng-model="dateFilter" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)"></datepicker>
+				</accordion-group>
 			</accordion>
 		</ion-content>
 	</side-panel>

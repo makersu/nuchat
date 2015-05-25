@@ -33,6 +33,7 @@ meta-msg {
 	}
 	p {
 		color: $urlViewDescript_font_color;
+		font-size: $urlViewDescript_font_size;
 	}
 	.comment {
 		color: $urlViewComment_font_color;
@@ -458,6 +459,15 @@ grid-menu {
 		}
 	}
 
+	// Calendar
+	.well {
+		&.well-sm {
+			.btn-sm {
+				padding: 5px 5px;
+			}
+		}
+	}
+
 	// Animations
 	&.ng-enter, &.ng-leave {
 	  -webkit-transition: all cubic-bezier(0.250, 0.460, 0.450, 0.940) 0.3s;
@@ -506,5 +516,51 @@ grid-menu {
 
 	.right {
 		right: 5px;
+	}
+}
+
+/* Range Calendar */
+.range-calendar {
+	padding: 0 0 10px !important;
+
+	/* RED COLOR  #FF5D3A */
+
+	&.yellow-theme-bg {background-color: $rangeCalendarYellowTheme_main_color;color: #fff ;border-color: rgba(255,255,255,0.3);}
+	&.yellow-theme-color {color: $rangeCalendarYellowTheme_main_color ;}
+	&.yellow-theme {
+		.months {
+			background-color: transparent;
+			.cell {
+				color: rgba(0, 0, 0, 0.6);
+				.month-name { color: $rangeCalendarYellowTheme_main_color; }
+				&:hover {
+					.month-name {color: #888 ;}
+				}
+				&.selected {
+					background-color: $rangeCalendarYellowTheme_main_color;
+					.month-name {color: #fff ;}
+					.bullet { background-color: #fff;}
+				}
+				.bullet { background-color: $rangeCalendarYellowTheme_main_color; }
+				&.current .bullet { background-color: $rangeCalendarYellowTheme_main_color;}
+			}
+		}
+		.calendar {
+			background-color: transparent;
+			.cell { 
+				color: #888;
+				&:hover {
+					background: transparent;
+					.day-number {color: #888 ;}
+				}
+				.day-number {color: $rangeCalendarYellowTheme_main_color ;}
+				&.selected  {
+					color: #fff;
+					&:hover {background: none ;}
+					.day-number {color: rgba(255, 255, 255, 1) ;}
+				}
+			}
+		}
+		.range-bar { background-color: $rangeCalendarYellowTheme_main_color ; }
 	}
 }
