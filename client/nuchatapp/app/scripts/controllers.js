@@ -14,7 +14,7 @@ angular.module('Nuchatapp.controllers', [])
 .controller('VideoCallCtrl', VideoCallCtrl)
 .controller('CalCtrl', function($scope, $localstorage, $state, $window, $rootScope) {
 
-	$scope.events = [
+  var _events = [
 		{
 	    title: '專案例會',
 	    location: 'The Moon',
@@ -32,8 +32,16 @@ angular.module('Nuchatapp.controllers', [])
       type: 'balanced'
 	  }
 
+	];
 
-	]
+  $scope.displayEvents = _events;
+
+  $scope.changeDate = function( el, cont, dateProp ) {
+    // console.log(cont);
+    localStorage.setItem('date-id', JSON.stringify(cont));
+    // $scope.displayEvents = $filter('filter')(_events, {startDate: cont});
+    return false;
+  }
 
   $scope.now = moment();
   var _refreshViewData = function () {

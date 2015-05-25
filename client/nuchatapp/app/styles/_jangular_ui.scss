@@ -510,8 +510,16 @@ grid-menu {
 /* Range Calendar */
 .range-calendar {
 	padding: 0 0 10px !important;
+	.months {
+		margin-bottom: 2px !important;
+	}
+	.calendar {
+		.cell {
+			padding: 10px 15px !important;
+		}
+	}
 
-	/* RED COLOR  #FF5D3A */
+	/* YELLOW COLOR  #ffc900 */
 
 	&.yellow-theme-bg {background-color: $rangeCalendarYellowTheme_main_color;color: #fff ;border-color: rgba(255,255,255,0.3);}
 	&.yellow-theme-color {color: $rangeCalendarYellowTheme_main_color ;}

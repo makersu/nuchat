@@ -1,10 +1,10 @@
 <ion-view view-title="Calendar">
   <ion-content>
- 	<div range-cal relink-event="rangeCalendar" lang='en' start-range-width='1' min-range-width='1' max-range-width='1'   theme='yellow-theme' ng-click="refresh()"> 
+ 	<div range-cal relink-event="rangeCalendar" lang='en' start-range-width='1' min-range-width='1' max-range-width='1'   theme='yellow-theme' range-change="changeDate"> 
  	</div>
   	<input type="submit" value="Today" ng-click="reload()">
   	<!-- <h1>{{dia}}</h1> -->
-  	<div class="card" ng-repeat="event in events">
+  	<div class="card" ng-repeat="event in displayEvents">
 		  <div class="item item-divider item-{{event.type}}">
 		    <strong>{{event.startDate | date:"a h:mm"}} {{event.title}}</strong>
 		  </div>

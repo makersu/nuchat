@@ -3,7 +3,8 @@ angular.module('Nuchatapp.directives', [])
       return {
           restrict: 'AE',
           scope:{
-              now: '@'
+              now: '@',
+              rangeChange: '=',
           },
           link: function(scope, element, attrs) {
               var triggerRelink = function(){
@@ -14,10 +15,7 @@ angular.module('Nuchatapp.directives', [])
                       startRangeWidth: parseInt(attrs.startRangeWidth),
                       minRangeWidth: parseInt(attrs.minRangeWidth),
                       maxRangeWidth: parseInt(attrs.maxRangeWidth),
-                      changeRangeCallback: function( el, cont, dateProp ) {
-                          localStorage.setItem('date-id', JSON.stringify(cont));
-                          return false;
-                      }
+                      changeRangeCallback: scope.rangeChange,
                   }).setStartDate(scope.now);
               }
 

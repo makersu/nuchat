@@ -137,7 +137,7 @@
 				<img ng-src="{{ usr.avatarThumbnail }}">
 				{{ usr.username }}
 			</ion-item>
-			<datepicker ng-model="dateFilter" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)"></datepicker>
+			<datepicker ng-model="dateFilter.date" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)" ng-change="filterByDate()"></datepicker>
 		</ion-content>
 	</side-panel>
 </script>

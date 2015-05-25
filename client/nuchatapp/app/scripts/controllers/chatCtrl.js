@@ -58,7 +58,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     remote: ENV.GRIDFS_BASE_URL,
   };
   // Calendar
-  $scope.dateFilter;
+  $scope.dateFilter = {};
   // console.log($scope.currentUser);
 
   /* Methods */
@@ -320,19 +320,32 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
 
   /* Filtering */
   $scope.filterByUser = function(user) {
-    angular.forEach($scope.room.groupedMessages, function(group) {
-      if (!group.originalItems) {
-        group.originalItems = angular.copy(group.items);
-      }
-      group.items = $filter('filter')(group.originalItems, { ownerId: user.id });
-      console.log(group.items);
-    });
+    // angular.forEach($scope.room.groupedMessages, function(group) {
+    //   if (!group.originalItems) {
+    //     group.originalItems = angular.copy(group.items);
+    //   }
+    //   group.items = $filter('filter')(group.originalItems, { ownerId: user.id });
+    //   console.log(group.items);
+    // });
+    RoomService.filterByUser($scope.room, user.id);
   };
   $scope.getAllMessages = function() {
-    angular.forEach($scope.room.groupedMessages, function(group) {
-      group.items = group.originalItems;
-      // console.log(group.items);
-    });
+    // angular.forEach($scope.room.groupedMessages, function(group) {
+    //   group.items = group.originalItems;
+    //   // console.log(group.items);
+    // });
+    // $scope.room.groupedMessages = $scope.room.allGroupedMessages;
+    RoomService.getAllGroups($scope.room);
+  };
+  $scope.filterByDate = function() {
+    // console.log($scope.dateFilter);
+    var date = $filter('date')($scope.dateFilter.date, 'MM-dd EEE');
+    // console.log(date);
+    // console.log($scope.room.allGroupedMessages);
+    // console.log($scope.room.groupedMessages);
+    // $scope.room.groupedMessages = $filter('filter')($scope.room.allGroupedMessages, {name: date});
+    // console.log($scope.room.allGroupedMessages);
+    RoomService.filterByDate($scope.room, date);
   };
 
   /* Trigger functions */
@@ -378,7 +391,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     getRoomUsers();
     // console.log($scope.otherUsers);
     RoomService.getRoomMessages($scope.room.id);
-    $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
+    $scope.room.groupedMessages = $scope.room.allGroupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
       return $filter('amChatGrouping')(msg.created);
     });
     console.log($scope.room.groupedMessages);
