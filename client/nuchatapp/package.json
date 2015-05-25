@@ -63,7 +63,12 @@
     "org.apache.cordova.network-information",
     "https://github.com/makersu/makersu-phonertc.git",
     "https://github.com/brodysoft/Cordova-SQLitePlugin",
-    "nl.x-services.plugins.socialsharing"
+    "nl.x-services.plugins.socialsharing",
+    "https://github.com/EddyVerbruggen/Calendar-PhoneGap-Plugin.git",
+    {
+      "locator": "https://github.com/EddyVerbruggen/Calendar-PhoneGap-Plugin.git",
+      "id": "nl.x-services.plugins.calendar"
+    }
   ],
   "cordovaPlatforms": []
 }

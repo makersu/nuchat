@@ -94,6 +94,9 @@
 #msgContainer {
   .panel-group {
     margin: 0;
+    .panel-heading {
+      padding: 0;
+    }
   }
   ion-spinner {
     position: absolute;
@@ -128,9 +131,6 @@
 }
 
 /* Grouping */
-.panel-heading {
-  padding: 0;
-}
 .panel-body {
   padding: 0;
 }
