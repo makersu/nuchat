@@ -8,6 +8,7 @@ var chtTranslate = function ($translateProvider) {
 		CHAT: '聊天',
 		AUDIO_CHAT: '通話',
 		VIDEO_CHAT: '視訊',
+		DATE: '日期',
 		TODAY: '今天',
 		YESTERDAY: '昨天',
 		MORE: '更多',

@@ -104,12 +104,12 @@
 <script id="rightMenu.html" type="text/ng-template">
 	<side-panel>
 		<ion-content>
+			<ion-item ng-click="getAllMessages()">
+				{{ ::'ALL_MESSAGES' | translate }}
+			</ion-item>
 			<accordion>
 				<accordion-group is-open="members.open" id="members">
 					<accordion-heading>{{ ::'MEMBERS' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !members.open, 'ion-chevron-up': members.open}"></i></accordion-heading>
-					<ion-item ng-click="getAllMessages()">
-						{{ ::'ALL_MESSAGES' | translate }}
-					</ion-item>
 					<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
 						<img ng-src="{{ currentUser.avatarThumbnail }}">
 						{{ ::currentUser.username }}
@@ -121,7 +121,8 @@
 					</ion-item>
 				</accordion-group>
 				<accordion-group is-open="dt.open" id="datepicker">
-					<datepicker ng-model="dateFilter" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)"></datepicker>
+					<accordion-heading>{{ ::'DATE' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !dt.open, 'ion-chevron-up': dt.open}"></i></accordion-heading>
+					<datepicker ng-model="dateFilter" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)" ng-change="filterByDate()"></datepicker>
 				</accordion-group>
 			</accordion>
 		</ion-content>

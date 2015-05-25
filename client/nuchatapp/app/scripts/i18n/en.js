@@ -8,6 +8,7 @@ var enTranslate = function ($translateProvider) {
 		CHAT: 'Chat',
 		AUDIO_CHAT: 'Audio Chat',
 		VIDEO_CHAT: 'Video Chat',
+		DATE: 'Date',
 		TODAY: 'Today',
 		YESTERDAY: 'Yesterday',
 		MORE: 'More',

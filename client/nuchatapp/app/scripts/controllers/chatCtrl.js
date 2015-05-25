@@ -58,7 +58,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     remote: ENV.GRIDFS_BASE_URL,
   };
   // Calendar
-  $scope.dateFilter;
+  $scope.dateFilter = {};
   // console.log($scope.currentUser);
 
   /* Methods */
@@ -329,6 +329,9 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   $scope.getAllMessages = function() {
     console.log('getAllMessages');
     $scope.room.viewMessages = _.values($scope.room.messages);
+  };
+  $scope.filterByDate = function() {
+    console.log($scope.dateFilter);
   };
 
   /* Trigger functions */
