@@ -116,6 +116,8 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     },
     remote: ENV.GRIDFS_BASE_URL,
   };
+  // Filters
+  $scope.members = {open: true};
   // Calendar
   $scope.dateFilter = {};
   // console.log($scope.currentUser);
