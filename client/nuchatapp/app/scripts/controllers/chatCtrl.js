@@ -23,6 +23,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   // Private
   var audioPlayer = null;
   var audioInterval = null;
+  var unreadInit = false;
   // var datasource = {};
   // datasource.cache = {
   //   initialize: function() {
@@ -79,7 +80,8 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   //     }
   //   }, 800);
   // };
-      
+  
+  $scope.msgAdapter = {};
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
   $scope.currentUser.avatarThumbnail = ENV.GRIDFS_BASE_URL+$scope.currentUser.avatarThumbnail;
@@ -192,14 +194,26 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     // }
   }
 
+  /* Appending the message to ui-scroll list
+   */
+  function appendMessage(message) {
+    if (!unreadInit) {
+      unreadInit = true;
+      $scope.datasource._revision++;
+      // Scrolling to the start of unread messages.
+      $location.hash('unreadStart');
+      scrollHandle.anchorScroll();
+      console.log('scrolling to unreadStart');
+    }
+    $scope.msgAdapter.applyUpdates(function(item, scope) {
+      // console.log(scope.$index);
+      if ( scope.$index === (Object.keys($scope.room.messages).length-1) ) {
+        return [item, message];
+      }
+    });
+  }
+
   // Scope Public
-  // $scope.joinRoom = function(id, switchRoom) {
-  //   console.log(id)
-  //   LBSocket.emit('room:join', id, function(room) {
-  //     console.log(room)
-  //     //LBSocket.emit('room:messages:get', id);
-  //   });
-  // };
   $scope.sendMessage=function(isLocal){
     console.log('sendMessage');
 
@@ -268,6 +282,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     });
   }
   $scope.openFilterPanel = function() {
+    console.log('openFilterPanel');
     $scope.rightMenu.show();
   };
   $scope.closeFilterPanel = function() {
@@ -380,15 +395,20 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   $scope.filterByUser = function(user) {
     // angular.forEach($scope.room.groupedMessages, function(group) {
     $scope.room.viewMessages = $filter('filter')(_.values($scope.room.messages), { ownerId: user.id });
+    $scope.datasource._revision++;
+    $scope.closeFilterPanel();
     //   console.log(group.items);
     // });
   };
   $scope.getAllMessages = function() {
     console.log('getAllMessages');
     $scope.room.viewMessages = _.values($scope.room.messages);
+    $scope.datasource._revision--;
+    $scope.closeFilterPanel();
   };
   $scope.filterByDate = function() {
     console.log($scope.dateFilter);
+    $scope.closeFilterPanel();
   };
 
   /* Trigger functions */
@@ -422,39 +442,80 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   // console.log('ChatCtrl');
   // console.log($stateParams.roomId);
   RoomService.setCurrentRoom($stateParams.roomId);
-  var _init = true;
   $scope.room = RoomService.getCurrentRoom();
-  $scope.room.viewMessages = {
+  var datasource = {
+    _revision: 0,
     cache: {
       initialize: function() {
-        this.isEnabled = true;
-        this.items = {};
-        this.getPure = $scope.room.viewMessages.get;
+        datasource.cache.isEnabled = true;
+        datasource.cache.items = {};
+        datasource.cache.getPure = function(index, count, success) {
+          console.log('get');
+          var delay = 100;
+          $timeout(function() {
+            // console.log(index);
+            index--;
+            if ($scope.room.viewMessages) {
+              if (index < 0) {
+                count = count + index;
+                index = 0;
+                if (count <= 0) {
+                  success([]);
+                  return;
+                }
+              }
+              success(_.values($scope.room.viewMessages).slice(index, index+count));
+            }
+          }, delay);
+        };
+        datasource.get = datasource.cache.getCached;
+      },
+      getCached: function(index, count, successCallback) {
+        var self = datasource.cache;
+
+        if (self.isEnabled) {
+          if (self.getItems(index, count, successCallback)) return;
+          self.getPure(index, count, function(result) {
+            self.saveItems(index, count, result);
+            successCallback(result);
+          });
+          return;
+        }
+        self.getPure(index, count, successCallback);
+        return;
+      },
+      saveItems: function(index, count, resultItems) {
+        for (var i in resultItems) {
+          if (!datasource.cache.items.hasOwnProperty(index + i)) {
+            datasource.cache.items[index + i] = resultItems[i];
+          }
+        }
+      },
+      getItems: function(index, count, successCallback) {
+        var result = [];
+        var isCached = true;
+
+        for (var i = index; i < (index+count-1); i++) {
+          if (!datasource.cache.items.hasOwnProperty(i)) {
+            isCached = false;
+            return;
+          }
+          result.push(datasource.cache.items[i]);
+        }
+
+        successCallback(result);
+        return true;
       }
     },
-    get: function(index, count, success) {
-      var delay = _init ? 800 : 100;
-      $timeout(function() {
-        console.log(index);
-        index--;
-        if ($scope.room.messages) {
-          if (index < 0) {
-            count = count + index;
-            index = 0;
-            if (count <= 0) {
-              success([]);
-              return;
-            }
-          }
-          success(_.values($scope.room.messages).slice(index, index+count));
-        }
-        _init = false;
-      }, delay);
+    // get: ,
+    revision: function() {
+      return datasource._revision;
     }
   };
+  $scope.datasource = datasource;
   // datasource;
   // datasource.cache.initialize();
-  $scope.room.viewMessages.cache.initialize();
+  $scope.datasource.cache.initialize();
   console.log($scope.room);
 
   // OnResume
@@ -464,12 +525,12 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     $scope.friends = FriendService.friends;
     // Getting the other users joined the room.
     getRoomUsers();
-    // console.log($scope.otherUsers);
     RoomService.getRoomMessages($scope.room.id);
-    $scope.room.viewMessages.cache.initialize();
-    $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
-      return $filter('amChatGrouping')(msg.created);
-    });
+    $scope.room.viewMessages = _.values($scope.room.messages);
+    // $scope.datasource.cache.initialize();
+    // $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
+    //   return $filter('amChatGrouping')(msg.created);
+    // });
     console.log($scope.room);
     // Initializing NUChatObject service
     $NUChatObject.init($scope.room, $scope.currentUser);
@@ -478,12 +539,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     $NUChatLinks.reset();
 
     slideoutTabs();
-    openTheLastGroup();
-
-    // Scrolling to the start of unread messages.
-    $location.hash('unreadStart');
-    scrollHandle.anchorScroll();
-    console.log('scrolling to unreadStart');
+    // openTheLastGroup();
 
   });
 
@@ -541,16 +597,6 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   //   }
   // });
 
-  $scope.appendMessage = function(message) {
-    $scope.adapter.applyUpdates(function(item, scope) {
-      console.log(EOF);
-      if (scope.$index === EOF) {
-        EOF++;
-        return [item, message];
-      }
-    });
-  }
-
   // Register event listeners
   $scope.$on('onNewMessage', function(event, args) {
 
@@ -575,7 +621,8 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       // });
     }
 
-    $scope.appendMessage(args.msg);
+    $scope.room.viewMessages.push(args.msg);
+    appendMessage(args.msg);
 
     if (args.msg.type !== METATYPE.LINK) {
       $NUChatDirectory.saveToDirectory(args.msg);

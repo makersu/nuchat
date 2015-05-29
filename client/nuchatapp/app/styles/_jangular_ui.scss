@@ -421,7 +421,7 @@ grid-menu {
 
 /* Side Panel */
 .panel-backdrop {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
@@ -430,6 +430,9 @@ grid-menu {
 	background-color: rgba(0, 0, 0, .3);
 	&.active {
 		display: block;
+	}
+	&.has-header {
+		top: 44px;
 	}
 }
 .side-panel {
