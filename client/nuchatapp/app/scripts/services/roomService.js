@@ -83,7 +83,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		    	var firstMsgEl = document.getElementById('item-'+messages.messages[0].id);
 		    	var parentEl = angular.element(firstMsgEl).parent()[0];
 		    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
-		    	parentEl.insertBefore(note, firstMsgEl);
+		    	parentEl && parentEl.insertBefore(note, firstMsgEl);
 		    } else {
 		    	var msgContainer = document.getElementById('msgContainer');
 		    	var unread = document.getElementById('unreadStart');

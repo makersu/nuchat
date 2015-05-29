@@ -243,8 +243,7 @@
 				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope[scrollHandle]);
 
 				// console.log('metaMsg');
-				// console.log(scope);
-				scope.$watch(msg, function(newVal, oldVal) {
+				var msgWatcher = scope.$watch(msg, function(newVal, oldVal) {
 					if (newVal) {
 						// console.log(newVal);
 						_originMsg = _message = newVal.text;
@@ -253,9 +252,9 @@
 						scope.extended = false;
 						_msgContent.empty();
 						parse(scope[type]);
+						msgWatcher();
 					}
 				});
-				// parse(scope[type]);
 
 				// Registering events.
 				scope.$on('uploaded', function(event, args) {
@@ -286,7 +285,7 @@
 					_linkSetting.clickHandler && _linkSetting.clickHandler(link || scope[msg].text);
 				};
 				scope.notLink = function() {
-					return scope[msg].type && scope[msg].type !== METATYPE.LINK || !scope[msg].type;
+					return scope[msg] ? scope[msg].type && scope[msg].type !== METATYPE.LINK || !scope[msg].type : true;
 				};
 
 				// Metatype parsing
@@ -809,7 +808,16 @@
 			  	// console.log('currentPageStartIndex: '+currentPageStartIndex+', currentPageEndIndex: '+currentPageEndIndex);
 
 			  	for (i = renderStartIndex; i <= renderEndIndex; i++) {
-						if (i >= data.length || renderedElements[i]) continue;
+						if (i >= data.length) continue;
+						if (renderedElements[i]) {
+							console.log(angular.element(renderedElements[i].el));
+							console.log(renderedElements[i].el.offsetTop);
+							var top = renderedElements[i].el.offsetTop+'px';
+							console.log(top);
+							angular.element(renderedElements[i].el).css({'position': 'absolute', 'top': top});
+							continue;
+						}
+
 						var keys = Object.keys(renderedElements);
 						var last = parseInt(keys[keys.length-1]);
 						var first = parseInt(keys[0]);

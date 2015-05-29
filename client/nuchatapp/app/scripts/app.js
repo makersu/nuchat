@@ -8,7 +8,7 @@
 // 'starter.controllers' is found in controllers.js
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
-    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap','btford.socket-io', 'afkl.lazyImage'])
+    'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap', 'ui.scroll', 'ui.scroll.jqlite', 'btford.socket-io', 'afkl.lazyImage'])
 .run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags, $location, $ionicScrollDelegate, LBSocket, $cordovaCalendar) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard

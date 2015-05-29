@@ -23,6 +23,63 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   // Private
   var audioPlayer = null;
   var audioInterval = null;
+  // var datasource = {};
+  // datasource.cache = {
+  //   initialize: function() {
+  //     this.isEnabled = true;
+  //     this.items = {};
+  //     this.getPure = datasource.get;
+  //     datasource.get = this.getCached;
+  //   },
+
+  //   getCached: function(index, count, successCallback) {
+  //     var self = datasource.cache;
+
+  //     if (self.isEnabled) {
+  //       if (self.getItems(index, count, successCallback)) return;
+  //       return self.getPure(index, count, function(result) {
+  //         self.saveItems(index, count, result);
+  //         successCallback(result);
+  //       });
+  //     }
+
+  //     return self.getPure(index, count, successCallback);
+  //   },
+
+  //   saveItems: function(index, count, resultItems) {
+  //     for (var i in resultItems) {
+  //       if (!this.items.hasOwnProperty(index + i)) {
+  //         this.items[index + i] = resultItems[i];
+  //       }
+  //     }
+  //   },
+
+  //   getItems: function(index, count, successCallback) {
+  //     var result = [];
+  //     var isCached = true;
+
+  //     for (var i = index; i < index + count - 1; i++) {
+  //       console.log(i);
+  //       if (!this.items.hasOwnProperty(i)) {
+  //         isCached = false;
+  //         return;
+  //       }
+  //       result.push(this.items[i]);
+  //     }
+
+  //     successCallback(result);
+  //     return true;
+  //   }
+  // };
+  // // this method is not changed; it is the same as in non-cache case
+  // datasource.get = function(index, count, success) {
+  //   $timeout(function() {
+  //     if ($scope.room.messages) {
+  //       success(_.values($scope.room.messages).slice(index-1, index-1+count));
+  //     }
+  //   }, 800);
+  // };
+      
   // Scope Public
 	$scope.currentUser = User.getCachedCurrent();
   $scope.currentUser.avatarThumbnail = ENV.GRIDFS_BASE_URL+$scope.currentUser.avatarThumbnail;
@@ -365,7 +422,39 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   // console.log('ChatCtrl');
   // console.log($stateParams.roomId);
   RoomService.setCurrentRoom($stateParams.roomId);
+  var _init = true;
   $scope.room = RoomService.getCurrentRoom();
+  $scope.room.viewMessages = {
+    cache: {
+      initialize: function() {
+        this.isEnabled = true;
+        this.items = {};
+        this.getPure = $scope.room.viewMessages.get;
+      }
+    },
+    get: function(index, count, success) {
+      var delay = _init ? 800 : 100;
+      $timeout(function() {
+        console.log(index);
+        index--;
+        if ($scope.room.messages) {
+          if (index < 0) {
+            count = count + index;
+            index = 0;
+            if (count <= 0) {
+              success([]);
+              return;
+            }
+          }
+          success(_.values($scope.room.messages).slice(index, index+count));
+        }
+        _init = false;
+      }, delay);
+    }
+  };
+  // datasource;
+  // datasource.cache.initialize();
+  $scope.room.viewMessages.cache.initialize();
   console.log($scope.room);
 
   // OnResume
@@ -377,6 +466,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     getRoomUsers();
     // console.log($scope.otherUsers);
     RoomService.getRoomMessages($scope.room.id);
+    $scope.room.viewMessages.cache.initialize();
     $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
       return $filter('amChatGrouping')(msg.created);
     });
@@ -451,9 +541,18 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   //   }
   // });
 
+  $scope.appendMessage = function(message) {
+    $scope.adapter.applyUpdates(function(item, scope) {
+      console.log(EOF);
+      if (scope.$index === EOF) {
+        EOF++;
+        return [item, message];
+      }
+    });
+  }
+
   // Register event listeners
   $scope.$on('onNewMessage', function(event, args) {
-    $scope.room.viewMessages = _.values($scope.room.messages);
 
     // Sending the local notification if got the message by someone.
     if (args.msg.ownerId !== $scope.currentUser.id) {
@@ -475,6 +574,8 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       //   scrollHandle.scrollBottom();
       // });
     }
+
+    $scope.appendMessage(args.msg);
 
     if (args.msg.type !== METATYPE.LINK) {
       $NUChatDirectory.saveToDirectory(args.msg);

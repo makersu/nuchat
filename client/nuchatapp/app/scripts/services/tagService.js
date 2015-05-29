@@ -53,7 +53,7 @@ function TagService($filter) {
 	}
 	// Special Tags
 	function isFavorite(item) {
-		return item.tags ? (item.tags.indexOf('Favorite') > -1) : false;
+		return item && item.tags ? (item.tags.indexOf('Favorite') > -1) : false;
 	}
 	function setFavorite(item) {
 		if (item.tags) {
