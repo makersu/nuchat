@@ -18,6 +18,7 @@
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
+	var DEBUG = false;
 
 	var METATYPE = {
 		LINK:  	  'link',
@@ -25,6 +26,7 @@
 		AUDIO:    'audio',
 		VIDEO:    'video',
 		ARTICLE:  'article',
+		GROUP: 'group',
 		CALENDAR: 'calendar',
 		MAP:      'map',
 		FILE:     'file', // Including documents?
@@ -167,8 +169,8 @@
 		// return false;
 	}
 
-	function isLink(contentType) {
-		return checkType(contentType, METATYPE.LINK);
+	function isLink(content) {
+		return ( content.type && checkType(content.type, METATYPE.LINK) ) || getLinks(content.text);
 	}
 
 	function requestFullScreen(elem) {
@@ -220,37 +222,48 @@
 	 * 3) Audio: 3gp|3gpp|mp3|ogg|wav|m4a|m4b|m4p|m4v|m4r|aac|mp4
 	 * 4) Video: ogg|mp4|webm (HTML 5 Video supports)
 	 */
-	jangularUI.directive('metaMsg', function($http, $rootScope, $q, $compile, $urlView, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
+	jangularUI.directive('metaMsg', function($http, $rootScope, $q, $compile, $filter, $location, $ionicScrollDelegate, $sce, $timeout) {
 		return {
 			restrict: 'EA',
-			scope: {
-				msg: '=',
-				type: '=',
-				metaOption: '=',
-				scrollHandle: '@',
-			},
-			template: '<div class="content" id="{{ ::msg.id }}"></div>\
+			template: '<div class="content" id="{{ msgId }}"></div>\
 								 <a class="extend" ng-if="hasMore && !extended" ng-click="extend()">...{{ ::\'MORE\' | translate }}</a>\
 								 <a class="extend" ng-if="extended" ng-click="hide()">...{{ ::\'LESS\' | translate }}</a>\
-								 <div class="tags" ng-if="notLink()"><span class="badge" ng-repeat="tag in msg.tags | limitTo:5">{{ tag }}</span><span ng-if="msg.tags.length > 5">...</span></div>',
+								 <div class="tags" ng-if="notLink()"><span class="badge" ng-repeat="tag in message.tags | limitTo:5">{{ tag }}</span><span ng-if="message.tags.length > 5">...</span></div>',
 			link: function(scope, elem, attrs) {
-				var _audioSetting = scope.metaOption.audioSetting || {};
-				var _foldingThres = scope.metaOption.foldingThres || FOLDING_LINE_THRES;
-				var _linkSetting = scope.metaOption.linkSetting || {};
-				var _remoteSrv = scope.metaOption.remote || ''; // Empty if use the local file for development...
-				var _originMsg = scope.message = scope.msg.text;
-				var _msgContent = elem.find('div');
-				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope.scrollHandle);
+				var msg = attrs.msg;
+				var metaOption = attrs.metaOption;
+				var type = attrs.type;
+				var scrollHandle = attrs.scrollHandle;
 
-				parse(scope.type);
+				var _audioSetting = scope[metaOption].audioSetting || {};
+				var _foldingThres = scope[metaOption].foldingThres || FOLDING_LINE_THRES;
+				var _linkSetting = scope[metaOption].linkSetting || {};
+				var _remoteSrv = scope[metaOption].remote || ''; // Empty if use the local file for development...
+				var _message, _originMsg;
+				var _msgContent = elem.find('div');
+				var _scrollHandle = $ionicScrollDelegate.$getByHandle(scope[scrollHandle]);
+
+				// console.log('metaMsg');
+				var msgWatcher = scope.$watch(msg, function(newVal, oldVal) {
+					if (newVal) {
+						// console.log(newVal);
+						_originMsg = _message = newVal.text;
+						scope.msgId = newVal.id;
+						scope.hasMore = false;
+						scope.extended = false;
+						_msgContent.empty();
+						parse(scope[type]);
+						msgWatcher();
+					}
+				});
 
 				// Registering events.
 				scope.$on('uploaded', function(event, args) {
-					if (scope.msg.roomId === args.msg.roomId && scope.msg.ownerId === args.msg.ownerId) {
-						if (args.msg.timestamp === scope.msg.timestamp) {
+					if (scope[msg].roomId === args.msg.roomId && scope[msg].ownerId === args.msg.ownerId) {
+						if (args.msg.timestamp === scope[msg].timestamp) {
 							// console.log(args.msg);
-							// console.log(scope.msg);
-							scope.msg.uploading = false;
+							// console.log(scope[msg]);
+							scope[msg].uploading = false;
 							$rootScope.$broadcast('updateObjMsg', { msg: args.msg });
 						}
 					}
@@ -258,22 +271,22 @@
 
 				scope.extend = function() {
 					scope.extended = true;
-					scope.message = $filter('nl2br')(_originMsg);
-					_msgContent.html('').append(scope.message);
+					_message = $filter('nl2br')(_originMsg);
+					_msgContent.html('').append(_message);
 				};
 				scope.hide = function() {
 					scope.extended = false;
-					scope.message = _originMsg;
+					_message = _originMsg;
 					parseText();
-		      $location.hash(scope.msg.id);
+		      $location.hash(scope[msg].id);
 		      _scrollHandle.anchorScroll();
 				};
 				scope.linkClickHandler = function(link) {
-					console.log(scope.msg.text);
-					_linkSetting.clickHandler && _linkSetting.clickHandler(link || scope.msg.text);
+					console.log(scope[msg].text);
+					_linkSetting.clickHandler && _linkSetting.clickHandler(link || scope[msg].text);
 				};
 				scope.notLink = function() {
-					return scope.msg.type && scope.msg.type !== METATYPE.LINK || !scope.msg.type;
+					return scope[msg] ? scope[msg].type && scope[msg].type !== METATYPE.LINK || !scope[msg].type : true;
 				};
 
 				// Metatype parsing
@@ -303,14 +316,14 @@
 
 				function parseUnknown() {
 					var q = $q.defer();
-					var links = getLinks(scope.message);
+					var links = getLinks(_message);
 					if (links) {
 						parseLink(links);
-					} else if ( isImg(scope.msg.type) ) { //
+					} else if ( isImg(scope[msg].type) ) { //
 						parseImg();
-					} else if ( isAudio(scope.msg.type) ) {
+					} else if ( isAudio(scope[msg].type) ) {
 						parseAudio();
-					} else if ( isVideo(scope.msg.type) ) {
+					} else if ( isVideo(scope[msg].type) ) {
 						parseVideo();
 					} else {
 						parseText();
@@ -322,19 +335,19 @@
 				function parseLink(links) {
 					// console.log(links);
 					// var q = $q.defer();
-					var cacheView = { id: scope.msg.id };
-					scope.msg.type = METATYPE.LINK;
-					if (scope.msg.linkView) {
-						elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+					var cacheView = { id: scope[msg].id };
+					scope[msg].type = METATYPE.LINK;
+					if (scope[msg].linkView) {
+						_msgContent.append( $compile('<url-view class="img-left brief" content-obj="'+msg+'" click-handler="linkClickHandler"></url-view>')(scope) );
 					} else {
 						angular.forEach(links, function(link) {
 							var promise = parseSummaryLink(link, cacheView, $http);
 							if (promise) {
 								promise.then(function(result) {
-									scope.message = scope.message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
-									$compile(_msgContent.html('').append(scope.message))(scope);
-									scope.msg.linkView = result;
-									elem.append( $compile('<url-view class="img-left brief" content-obj="msg" click-handler="linkClickHandler"></url-view>')(scope) );
+									_message = _message.toLowerCase().replace(link, '<a ng-click="linkClickHandler(\''+link+'\')">'+link+'</a>');
+									$compile(_msgContent.html('').append(_message))(scope);
+									scope[msg].linkView = result;
+									_msgContent.append( $compile('<url-view class="img-left brief" content-obj="'+msg+'" click-handler="linkClickHandler"></url-view>')(scope) );
 								}, errorHandler);
 							}
 						});
@@ -345,39 +358,39 @@
 				// Assuming the img uri provided.
 				function parseImg() {
 					console.log('parseImg');
-					// scope.msg.type = METATYPE.IMG;
-					scope.msg.isImg = true;
-					var imgSrc = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
-					scope.msg.uploading = !scope.msg.thumbnailFileId;
-					console.log('parseImg uploading? '+scope.msg.uploading);
-					console.log(scope.msg);
-					// var $imgElem = angular.element('<img id="img'+scope.msg.id+'" src="'+imgSrc+'">');
-					var $imgElem = angular.element('<div id="img'+scope.msg.id+'" afkl-lazy-image="'+imgSrc+'" class="afkl-lazy-wrapper afkl-img-ratio-1-1">');
+					// scope[msg].type = METATYPE.IMG;
+					scope[msg].isImg = true;
+					var imgSrc = scope[msg].thumbnailFileId ? _remoteSrv+scope[msg].thumbnailFileId : _message;
+					scope[msg].uploading = !scope[msg].thumbnailFileId;
+					console.log('parseImg uploading? '+scope[msg].uploading);
+					console.log(scope[msg]);
+					// var $imgElem = angular.element('<img id="img'+scope[msg].id+'" src="'+imgSrc+'">');
+					var $imgElem = angular.element('<div id="img'+scope[msg].id+'" afkl-lazy-image="'+imgSrc+'" class="afkl-lazy-wrapper afkl-img-ratio-1-1">');
 					_msgContent.append( $compile($imgElem)(scope) ).append( $compile('<ion-spinner ng-if="msg.uploading"></ion-spinner>')(scope) );
-					$imgElem.on('click', scope.metaOption.imgSetting.clickHandler ? function() {
-						scope.metaOption.imgSetting.clickHandler(scope.msg.id || scope.msg.timestamp);
+					$imgElem.on('click', scope[metaOption].imgSetting.clickHandler ? function() {
+						scope[metaOption].imgSetting.clickHandler(scope[msg].id || scope[msg].timestamp);
 					} : {});
 				}
 
 				// Assuming the audio uri provided.
 				function parseAudio() {
 					// TODO: if audioSetting is not set, throw the error message.
-					// scope.msg.type = METATYPE.AUDIO;
-					var audioUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
-					scope.msg.uploading = !scope.msg.originalFileId;
+					// scope[msg].type = METATYPE.AUDIO;
+					var audioUrl = scope[msg].originalFileId ? _remoteSrv+scope[msg].originalFileId : _message;//
+					scope[msg].uploading = !scope[msg].originalFileId;
 
-					// scope.message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
+					// _message = '<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i>';
 					// _msgContent.append( $compile('<img class="audio" src="'+_audioSetting.stop.img+'"><i class="icon ion-play"></i><ion-spinner icon="lines" ng-if="msg.uploading"></ion-spinner>' )(scope) );
 					_msgContent.append( $compile('<audio src="'+audioUrl+'" controls></audio><ion-spinner icon="lines" ng-if="msg.uploading"></ion-spinner>' )(scope) );
 					// elem.bind('click', function() {
-					// 	scope.msg.isPlaying = !scope.msg.isPlaying;
+					// 	scope[msg].isPlaying = !scope[msg].isPlaying;
 					// 	setView();
 						
-					// 	if (scope.msg.isPlaying) {
+					// 	if (scope[msg].isPlaying) {
 					// 		_audioSetting.play.fn(audioUrl)
 					// 			.then(function() {
 					// 				// console.log('played');
-					// 				scope.msg.isPlaying = false;
+					// 				scope[msg].isPlaying = false;
 					// 				setView();
 					// 			});
 					// 	} else {
@@ -386,18 +399,18 @@
 
 					// 	function setView() {
 					// 		var img = elem.find('img');
-					// 		img[0].src = scope.msg.isPlaying ? _audioSetting.play.img : _audioSetting.stop.img;
+					// 		img[0].src = scope[msg].isPlaying ? _audioSetting.play.img : _audioSetting.stop.img;
 					// 		var icon = elem.find('i');
-					// 		icon[0].className = scope.msg.isPlaying ? _audioSetting.play.icon : _audioSetting.stop.icon;
+					// 		icon[0].className = scope[msg].isPlaying ? _audioSetting.play.icon : _audioSetting.stop.icon;
 					// 	}
 					// });
 				}
 
 				function parseVideo() {
-					// scope.msg.type = METATYPE.VIDEO;
-					var videoUrl = scope.msg.originalFileId ? _remoteSrv+scope.msg.originalFileId : scope.message;//
-					var thumbnailUrl = scope.msg.thumbnailFileId ? _remoteSrv+scope.msg.thumbnailFileId : scope.message;
-					scope.msg.uploading = !scope.msg.originalFileId;
+					// scope[msg].type = METATYPE.VIDEO;
+					var videoUrl = scope[msg].originalFileId ? _remoteSrv+scope[msg].originalFileId : _message;//
+					var thumbnailUrl = scope[msg].thumbnailFileId ? _remoteSrv+scope[msg].thumbnailFileId : _message;
+					scope[msg].uploading = !scope[msg].originalFileId;
 					var $videoElem = angular.element('<video class="video-thumb" poster="'+thumbnailUrl+'"><source src="'+videoUrl+'"></video>');
 					// $videoElem.on('loadeddata', function() {
 					// 	$videoElem[0].currentTime = 1;
@@ -434,9 +447,9 @@
 				}
 
 				function parseText() {
-					var text = scope.message;
-					var lines = scope.message.split('\n');
-					if (lines.length > _foldingThres || scope.message.length > FOLDING_CHAR_THRES) {
+					var text = _message;
+					var lines = _message.split('\n');
+					if (lines.length > _foldingThres || _message.length > FOLDING_CHAR_THRES) {
 						text = '';
 						for (var i = 0; i < lines.length && i < _foldingThres && text.length < FOLDING_CHAR_THRES; i++) {
 							text += lines[i]+'<br>';
@@ -444,7 +457,7 @@
 						text = text.substring(0, text.length-4);
 						if (text.length > FOLDING_CHAR_THRES) text = text.substr(0, FOLDING_CHAR_THRES);
 						scope.hasMore = true;
-						// scope.message = text;
+						// _message = text;
 					}
 					_msgContent.html('').append(text);
 				}
@@ -671,35 +684,418 @@
 	});
 
 	/**
-	 *  In View Window
+	 *  Page Collection
 	 *
 	 *  @description  Auto hide/show when element outside/inside the view window.
 	 *
 	 */
-	jangularUI.directive('inViewWindow', function() {
+	// var DEFAULT_RENDER_BUFFER = 5;
+	var DEFAULT_PAGE_SIZE = 5;
+	var DEFAULT_DISTANCE = '2.5%';
+	var SCROLL_THRESHOLD = 20;
+	var PRIMARY = 'PRIMARY';
+  var SECONDARY = 'SECONDARY';
+  var TRANSLATE_TEMPLATE_STR = 'translate3d(SECONDARYpx,PRIMARYpx,0)';
+	jangularUI.directive('pageCollection', ['$parse', '$$rAF', '$rootScope', '$filter', '$timeout', '$window', '$location', function($parse, $$rAF, $rootScope, $filter, $timeout, $window, $location) {
 		return {
 			restrict: 'A',
-			link: function(scope, elem, attrs) {
-				var winEl = angular.element(document.querySelector(attrs.inViewWindow));
+			transclude: 'element',
+			require: '^^$ionicScroll',
+			link: function(scope, elem, attrs, scrollCtrl, transclude) {
+				var $container = elem.parent();
+				var scrollView = scrollCtrl.scrollView;
+				if (scrollView.options.scrollingX && scrollView.options.scrollingY) {
+		      throw new Error("collection-repeat expected a parent x or y scrollView, not " +
+		                      "an xy scrollView.");
+		    }
+
+				var expression = attrs.pageCollection;
+				var match = expression.match(/^\s*([\s\S]+?)\s+in\s+([\s\S]+?)(?:\s+inside\s+([\s\S]+?))?\s*$/);
+				if (!match) {
+		      throw new Error("page-collection expected expression in form of '_item_ in " +
+		                      "_collection_[ inside _selector_]' but got '" + attr.pageCollection + "'.");
+		    }
+				// console.log(match);
+				var itemKeyExpr = match[1];
+				var collection = match[2];
+				var data = [];
+				var renderedElements = [];
+				var itemsLeaving = [];
+				var itemsEntering = [];
+				var postRendering = [];
+				var itemsPool = [];
+				var distance = (attrs.distance || DEFAULT_DISTANCE).trim();
+				var isPercent = distance.indexOf('%') !== -1;
+				// var itemsGetter = $parse(collection);
+				var winEl = angular.element(document.querySelector(match[3]));
 				var viewWin = verge.rectangle(winEl[0], 10);
 
-				function isInViewWindow() {
-					var elRect = verge.rectangle(elem[0]);
-					return (elRect.top > viewWin.top && elRect.top < viewWin.bottom || elRect.bottom > viewWin.top && elRect.bottom < viewWin.bottom)
-						&& (elRect.left > viewWin.left && elRect.left < viewWin.right || elRect.right > viewWin.left && elRect.right < viewWin.right);
-				}
+				var forceRender = false;
+				var renderPageExpr = attrs.pageSize;
+				var renderPageSize = angular.isDefined(renderPageExpr) ?
+		      parseInt(renderPageExpr) : DEFAULT_PAGE_SIZE;
+		    var currentPage = 0;
+		    var totalPages = 0;
+		    var renderStartIndex = 0;
+				var renderEndIndex = renderStartIndex+renderPageSize;
+				var startOffset = null;
+				var currentPageStartIndex = currentPageEndIndex = 0;
+				var oldTransformTop = 0;
+				var scrollViewSetDimensions = function() { console.log(scrollView); scrollView.setDimensions(null, null, null, getContentSize(), true); console.log(scrollView); };
 
-				winEl.on('scroll', _.debounce(function() {
-						if (isInViewWindow()) {
-							elem.css('visibility', 'visible');
-						} else {
-							elem.css('visibility', 'hidden');
+				// function isInViewWindow() {
+				// 	var elRect = verge.rectangle(elem[0]);
+				// 	return (elRect.top > viewWin.top && elRect.top < viewWin.bottom || elRect.bottom > viewWin.top && elRect.bottom < viewWin.bottom)
+				// 		&& (elRect.left > viewWin.left && elRect.left < viewWin.right || elRect.right > viewWin.left && elRect.right < viewWin.right);
+				// }
+				function getRect(elem) {
+					return verge.rectangle(elem);
+				}
+				// determine pixel refresh distance based on % or value
+			  function calculateThreshold(maximum) {
+			    return {
+			    	min: isPercent ?
+			    		maximum * parseFloat(distance) / 100 :
+			    		parseFloat(distance),
+			    	max: isPercent ?
+					    maximum * (1 - parseFloat(distance) / 100) :
+					    maximum - parseFloat(distance)
+					};
+			  }
+			  function dataChangeRequiresRefresh(newData) {
+			  	var requiresRefresh = newData.length > 0 || newData.length < data.length;
+			  	return !!requiresRefresh;
+			  }
+			  function RepeatItem() {
+			  	var self = this;
+		      this.scope = scope.$new();
+		      transclude(this.scope, function(clone) {
+		        self.el = clone[0];
+		        // TODO destroy
+		        // Batch style setting to lower repaints
+        		// self.el.style[ionic.CSS.TRANSFORM] = 'translate3d(-9999px,-9999px,0)';
+		        ionic.Utils.disconnectScope(self.scope);
+		        $container.append(self.el);
+						renderedElements.push(self);
+		      });
+			  }
+
+			  function render() {
+			  	if (!data.length) return;
+			  	var item, scope, i, scrollToId;
+			  	renderStartIndex = Math.max(0, renderStartIndex - renderPageSize);
+			  	renderEndIndex = Math.min(data.length - 1, renderEndIndex + renderPageSize);
+			  	currentPageStartIndex = Math.max( 0, renderStartIndex + ( (renderEndIndex == 2*renderPageSize || renderEndIndex < data.length ) ? 0 : renderPageSize) );
+			  	currentPageEndIndex = Math.min(data.length - 1, currentPageStartIndex + renderPageSize);
+			  	// console.log('start: '+renderStartIndex);
+			  	// console.log('end: '+renderEndIndex);
+
+			  	// console.log(renderedElements);
+
+			  	// updateCurrentDimension(currentPageStartIndex, currentPageEndIndex-1);
+
+			  	for (i in renderedElements) {
+			  		// console.log(i);
+		        if (i < renderStartIndex || i > renderEndIndex) {
+		          item = renderedElements[i];
+		          delete renderedElements[i];
+		          itemsLeaving.push(item);
+		          item.isShown = false;
+		        }
+		      }
+			  	// console.log(itemsLeaving);
+
+			  	// console.log(forceRender);
+			  	// console.log('currentPageStartIndex: '+currentPageStartIndex+', currentPageEndIndex: '+currentPageEndIndex);
+
+			  	for (i = renderStartIndex; i <= renderEndIndex; i++) {
+						if (i >= data.length) continue;
+						if (renderedElements[i]) {
+							console.log(angular.element(renderedElements[i].el));
+							console.log(renderedElements[i].el.offsetTop);
+							var top = renderedElements[i].el.offsetTop+'px';
+							console.log(top);
+							angular.element(renderedElements[i].el).css({'position': 'absolute', 'top': top});
+							continue;
 						}
-					}, 100)
-				);
+
+						var keys = Object.keys(renderedElements);
+						var last = parseInt(keys[keys.length-1]);
+						var first = parseInt(keys[0]);
+
+						// console.log('append item');
+						item = renderedElements[i] || ( renderedElements[i] = itemsLeaving.length ? itemsLeaving.pop() :
+					                                      itemsPool.length ? itemsPool.shift() :
+					                                      new RepeatItem() );
+						itemsEntering.push(item);
+        		item.isShown = true;
+						scope = item.scope;
+						scope.$index = i;
+						scope[itemKeyExpr] = data[i];
+						scope.$first = (i === 0);
+		        scope.$last = (i === (data.length - 1));
+		        scope.$middle = !(scope.$first || scope.$last);
+		        scope.$odd = !(scope.$even = (i&1) === 0);
+
+		        console.log('msg[i]: '+i);
+		        console.log('msg id: '+scope[itemKeyExpr].id);
+		        console.log(scope);
+
+		        console.log('first: '+first);
+		        console.log('i: '+i);
+		        console.log('last: '+last);
+		        if (i > last) {
+		        	$container.append(item.el);
+		        	!scrollToId && (function() {
+		        		scrollToId = 'item-'+renderedElements[last].scope[itemKeyExpr].id;
+			        	$location.hash(scrollToId);
+			      		scrollCtrl.anchorScroll();
+		        	})();
+		        } else if (i < first) {
+		        	$container.prepend(item.el);
+		        	scrollToId = 'item-'+renderedElements[first].scope[itemKeyExpr].id;
+		        	$location.hash(scrollToId);
+			      	scrollCtrl.anchorScroll();
+		        } else if (renderedElements[i-1]) {
+		        	// console.log('i: '+i);
+		        	angular.element(renderedElements[i-1].el).after(item.el);
+		        }
+
+		        if (scope.$$disconnected) ionic.Utils.reconnectScope(item.scope);
+		        // console.log(item.scope);
+		        // console.log(item.el);
+		        // console.log(item.el.offsetHeight);
+		        // console.log(getRect(item.el));
+		        // console.log(scrollCtrl.getScrollPosition());
+		        // console.log(scrollView.__scrollTop);
+					}
+
+					while (itemsLeaving.length) {
+		        item = itemsLeaving.pop();
+		    //     console.log('From leaving');
+						// console.log(item);
+		        ionic.Utils.disconnectScope(item.scope);
+		        itemsPool.push(item);
+		      }
+
+		      digestEnteringItems();
+
+		      // renderedElements = $filter('orderBy')(renderedElements, 'id');
+			  }
+
+			  // function updateCurrentDimension(startIdx, endIdx) {
+			  // 	console.log(scrollView.__scrollTop);
+			  // 	console.log(scrollCtrl.getScrollPosition().top);
+			  // 	renderedElements[startIdx] && (function() {
+			  // 		var startTop = verge.rectangle(renderedElements[startIdx].el).top+scrollCtrl.getScrollPosition().top;
+			  // 		console.log(angular.element(renderedElements[startIdx].el));
+			  // 		console.log('startIdx: '+startIdx);
+			  // 		console.log('startTop: '+startTop);
+			  // 		// if (startTop > 0) {
+			  // 			currentPageStart = startTop;
+			  // 			if (startOffset === null) {
+			  // 				startOffset = currentPageStart;
+			  // 				console.log('startOffset: '+startOffset);
+			  // 			}
+			  // 			currentPageStart -= startOffset;
+			  // 		// };
+			  // 	})();
+			  // 	renderedElements[endIdx] && (function() {
+			  // 		var endItem = renderedElements[endIdx].el;
+			  // 		var endBottom = verge.rectangle(endItem).bottom+scrollCtrl.getScrollPosition().top;
+			  // 		console.log('endIdx: '+endIdx);
+			  // 		console.log('endBottom: '+endBottom);
+			  // 		// if (endBottom < 0) {
+			  // 		// 	endItem = renderedElements[endIdx-1].el;
+			  // 		// 	endBottom = verge.rectangle(endItem).top+endItem.offsetHeight;
+			  // 		// }
+			  // 		// console.log('endBottom: '+endBottom);
+			  // 		endBottom > 0 && (currentPageEnd = (endBottom-startOffset) || 0);
+			  // 	})();
+			  // 	console.log(currentPageStart);
+			  // 	console.log(currentPageEnd);
+			  // }
+
+			  // function getDimension(index, pivotIndexStart, pivotIndexEnd) {
+			  // 	console.log('getDimension');
+			  // 	console.log(index);
+			  // 	console.log(pivotIndexStart);
+			  // 	var isPrev = index-pivotIndexStart <= 0;
+			  // 	var primaryHeight = 0;
+			  // 	if (isPrev) {
+			  // 		console.log('prev');
+			  // 		console.log(currentPageStart);
+			  // 		console.log(pivotIndexStart);
+			  // 		for (var i = index; i < pivotIndexStart; i++) {
+				 //  		primaryHeight += renderedElements[i].el.offsetHeight;
+				 //  	}
+			  // 		return currentPageStart-primaryHeight;
+			  // 	} else {
+			  // 		var start = index >= pivotIndexEnd ? pivotIndexEnd : pivotIndexStart;
+			  // 		if (DEBUG) {
+				 //  		console.log(renderedElements);
+				 //  		console.log(pivotIndexEnd);
+				 //  		console.log(index);
+				 //  	}
+			  // 		if (index != pivotIndexEnd) {
+			  // 			for (var i = start; i < index; i++) {
+				 //  			primaryHeight += renderedElements[i].el.offsetHeight;
+				 //  			if (DEBUG) {
+					//   			console.log(renderedElements[i]);
+					//   			console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
+					//   			console.log('primaryHeight: '+primaryHeight);
+					//   		}
+				 //  		}
+			  // 		}
+			  // 		// do {
+			  // 		// 	console.log(renderedElements[i]);
+			  // 		// 	console.log('renderedElements['+i+'].el.offsetHeight: '+renderedElements[i].el.offsetHeight);
+			  // 		// 	primaryHeight += renderedElements[i].el.offsetHeight;
+			  // 		// 	console.log('primaryHeight: '+primaryHeight);
+			  // 		// 	i++;
+			  // 		// } while(i < index);
+			  // 		console.log('primaryHeight( plus currentPageEnd): '+(currentPageEnd+primaryHeight) );
+			  // 		return currentPageEnd+primaryHeight;
+			  // 	}
+			  // }
+
+			  function digestEnteringItems() {
+		      var item;
+		      if (digestEnteringItems.running) return;
+		      digestEnteringItems.running = true;
+
+		      $$rAF(function process() {
+		        var rootScopePhase = $rootScope.$$phase;
+		        if (DEBUG) {
+			        console.log('itemsEntering:');
+			        console.log(itemsEntering);
+			      }
+		        while (itemsEntering.length) {
+		          item = itemsEntering.pop();
+		          postRendering.push(item);
+		          if (item.isShown) {
+		            if (!rootScopePhase) {
+		            	item.scope.$digest();
+		            	console.log(item.el);
+		            }
+		          }
+		        }
+		    //     $timeout(function() {
+		    //     	while (postRendering.length) {
+		    //     		item = postRendering.pop();
+		    //     		console.log('item['+item.scope.$index+'] offsetHeight: '+item.el.offsetHeight);
+					 //  		item.el.style[ionic.CSS.TRANSFORM] = TRANSLATE_TEMPLATE_STR
+		    //         	.replace(PRIMARY, getDimension(item.scope.$index, currentPageStartIndex, currentPageEndIndex))
+		    //         	.replace(SECONDARY, 0);
+	     //        	// debugger;
+
+	     //        	if (forceRender) {
+				  //       	updateCurrentDimension(currentPageStartIndex, currentPageEndIndex-1);
+				  //       	if (DEBUG) {
+					 //        	console.log('currentPageStart: '+currentPageStart);
+						//   			console.log('currentPageEnd: '+currentPageEnd );
+						//   		}
+				  //       }
+		    //     	}
+      //     	}, 1500);
+		    //     // Scrolling to original position
+						// scrollViewSetDimensions();
+						scrollCtrl.resize();
+		        digestEnteringItems.running = false;
+		      });
+		    }
+
+		    function getContentSize() {
+		    	var top = 9999, bottom = -9999;
+		    	angular.forEach(renderedElements, function(item, i) {
+		    		var rect = verge.rectangle(item.el);
+		    		(rect.top > -9000) && ( top = Math.min(rect.top, top) );
+		    		bottom = Math.max(rect.bottom, bottom);
+		    		console.log('renderedElements['+i+']');
+		    		console.log('rect top: '+rect.top+', bottom: '+rect.bottom);
+		    	});
+		    	console.log('top: '+top);
+		    	console.log('bottom: '+bottom);
+		    	console.log('contentSize: '+(bottom-top));
+		    	return bottom-top > 0 ? bottom - top : 100;
+		    }
+
+		    // function shiftScroll() {
+		    // 	angular.forEach(renderedElements, function(e, i) {
+		    // 		var style = $window.getComputedStyle(e.el);
+		    // 		var transform = new WebKitCSSMatrix(style[ionic.CSS.TRANSFORM]);
+		    // 		console.log('renderedElements['+i+']');
+		    // 		console.log(transform.m42);
+		    // 		console.log(scrollCtrl.getScrollPosition().top);
+		    // 		console.log(transform.m42-scrollCtrl.getScrollPosition().top);
+		    // 		e.el.style[ionic.CSS.TRANSFORM] = TRANSLATE_TEMPLATE_STR
+      //       	.replace(PRIMARY, transform.m42-scrollCtrl.getScrollPosition().top)
+      //       	.replace(SECONDARY, 0);
+		    // 	});
+		    // 	scrollCtrl.scrollTo(0, 0, false);
+		    // }
+
+	      var checkBound = _.debounce(function() {
+					var thresholds = calculateThreshold(scrollView.getScrollMax().top);
+					if (scrollView.__scrollTop >= thresholds.min && scrollView.__scrollTop <= thresholds.max) return;
+
+					if (scrollView.__scrollTop < thresholds.min) {
+						currentPage = Math.max(0, currentPage - 1);
+					} else if (scrollView.__scrollTop > thresholds.max) {
+						currentPage = Math.min(totalPages - 2, currentPage + 1);
+						if (DEBUG) {
+							console.log('renderStartIndex: '+renderStartIndex);
+							console.log('renderEndIndex: '+renderEndIndex);
+						}
+					}
+					renderStartIndex = currentPage * renderPageSize;
+					renderEndIndex = renderStartIndex + renderPageSize;
+					render();
+				}, 300);
+
+				// console.log('scrollView');
+				// console.log(scrollView);
+				// console.log(scrollCtrl);
+    		scrollView.__$callback = scrollView.__callback;
+				scrollView.__callback = function(transformLeft, transformTop, zoom, wasResize) {
+					// console.log('scrolling callback');
+					// console.log(transformTop);
+					// console.log('scrolling');
+					// console.log(scrollView.__scrollTop);
+					if (Math.abs(transformTop-oldTransformTop) > SCROLL_THRESHOLD) {
+						checkBound();
+					}
+      		scrollView.__$callback(transformLeft, transformTop, zoom, wasResize);
+      		oldTransformTop = transformTop;
+				};
+
+				scope.$watchCollection(collection, function(newVal) {
+					if ( newVal && dataChangeRequiresRefresh(newVal) ) {
+						data = angular.isArray(newVal) ? newVal : _.values(newVal);
+					}
+					console.log(data);
+					// check if elements have already been rendered
+          // if (renderedElements.length > 0){
+          //   // if so remove them from DOM, and destroy their scope
+          //   for (var i = 0; i < renderedElements.length; i++) {
+          //     renderedElements[i].$el.remove();
+          //     renderedElements[i].scope.$destroy();
+          //   };
+          //   renderedElements = [];
+          // }
+
+          totalPages = Math.ceil(data.length / renderPageSize);
+          render();
+				});
+				// winEl.on('scroll', onScroll);
+				scrollCtrl.scrollTop();
+
+				scope.$on('$destroy', function() {
+					// winEl.off('scroll', onScroll);
+				})
 			}
 		};
-	});
+	}]);
 
 	/**
 	 * Drawing
@@ -1320,21 +1716,16 @@
 	 * Url View
    *
    */
-  jangularUI.directive('urlView', ['$urlView', '$timeout', '$rootScope', function($urlView, $timeout, $rootScope) {
+  jangularUI.directive('urlView', ['$timeout', '$rootScope', function($timeout, $rootScope) {
   	return {
   		restrict: 'EA',
-  		scope: {
-  			contentObj: '=',
-  			maxLength: '=',
-  			clickHandler: '=',
-  		},
   		template: '<a class="url-view" ng-click="clickHandler()">'+
   								'<div class="content">'+
-	  								'<div class="graph"><img ng-src="{{ ::view.image }}" ng-if="::view.image"></div>'+
+	  								'<div class="graph"><img ng-src="{{ view.image }}" ng-if="view.image"></div>'+
 	  								'<div class="info">'+
-		  								'<h5 class="title" ng-bind-html="::view.title"></h5>'+
-		  								'<p class="descript" ng-bind-html="::view.description"></p>'+
-		  								'<div class="comment">{{ ::view.comment }}</div>'+
+		  								'<h5 class="title" ng-bind-html="view.title"></h5>'+
+		  								'<p class="descript" ng-bind-html="view.description"></p>'+
+		  								'<div class="comment">{{ view.comment }}</div>'+
 		  								'<div class="tags"><span class="badge" ng-repeat="tag in content.tags | limitTo:5">{{ tag }}</span><span ng-if="content.tags.length > 5">...</span></div>'+
 		  							'</div>'+
   								'</div>'+
@@ -1342,20 +1733,23 @@
   		link: function(scope, elem, attrs) {
   			function applyView() {
   				$timeout(function() {
-	  				scope.content = scope.contentObj || $urlView.getContentObj();
+	  				scope.content = scope[attrs.contentObj];
+	  				scope.clickHandler = scope[attrs.clickHandler];
 	  				// console.log(scope.content);
 	  				if (scope.content) {
 	  					scope.view = scope.content.linkView;
 		  				// console.log(scope.view);
-		  				if (scope.maxLength && scope.view.description && scope.view.description.length > scope.maxLength) {
-		  					scope.view.description = scope.view.description.substr(0, scope.maxLength)+'...';
+		  				if (scope[attrs.maxLength] && scope.view.description && scope.view.description.length > scope[attrs.maxLength]) {
+		  					scope.view.description = scope.view.description.substr(0, scope[attrs.maxLength])+'...';
 		  				}
-			  			var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
-			  			if (noScheme.lastIndexOf('/') >= 0) {
-			  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
-			  			} else {
-			  				scope.view.comment = noScheme;
-			  			}
+		  				if (scope.view.url) {
+		  					var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
+				  			if (noScheme.lastIndexOf('/') >= 0) {
+				  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
+				  			} else {
+				  				scope.view.comment = noScheme;
+				  			}
+		  				}
 			  			var params = {};
 			  			params[scope.content.id] = true;
 			  			$rootScope.$broadcast('urlViewLoaded', params);
@@ -1444,7 +1838,7 @@
 	  	};
 	  	$ionicGesture.on('swipeleft', sidePanel.$el.hasClass('side-panel-right') ? _showListener : _hideListener, _$container);
 	  	$ionicGesture.on('swiperight', sidePanel.$el.hasClass('side-panel-right') ? _hideListener : _showListener, _$container);
-	  	_$container.on('click', _hideListener);
+	  	// _$container.on('click', _hideListener);
 
 	  	return sidePanel;
   	}
@@ -1475,8 +1869,11 @@
 
 			return $timeout(function() {
         //After animating in, allow hide on backdrop click
-        self.$el.on('click', function(e) {
-          if (e.target === self.wrapper) {
+        self.$backdrop.on('click', function(e) {
+        	// console.log(e.target);
+        	// console.log(self.backdrop);
+        	// console.log(e.target === self.backdrop);
+          if (e.target === self.backdrop) {
             self.hide();
           }
         });
@@ -1528,6 +1925,17 @@
 			});
 		};
   }]);
+
+	jangularUI.directive('groupTag', function() {
+		return {
+			restrict: 'EA',
+			replace: true,
+			template: '<div class="group-tag"><hr><div class="group-name">{{ name }}</div><hr></div>',
+			link: function(scope, elem, attrs) {
+				scope.name = attrs.name || 'Undefined';
+			}
+		};
+	})
 
 	// Services
   // Service of type
@@ -1587,7 +1995,33 @@
 			});
 			return groupList;
 		}
-	});
+	}).filter('groupDiv', ['$filter', function($filter) {
+		return function(collection, prop) {
+			if ( angular.isUndefined(prop) || angular.isNumber(prop) ) {
+				throw 'parameter groupBy should be a string or a function.';
+			}
+			var sortedArr = $filter('orderBy')(collection, prop);
+			var groupName = '_UNDEFINED_';
+			var groupList = [];
+			console.log(prop);
+			angular.forEach(sortedArr, function(item) {
+				var gName = '';
+				if ( angular.isFunction(prop) ) {
+					gName = prop(item);
+				} else {
+					gName = item[prop];
+				}
+				if (gName !== groupName) {
+					groupList.push({ type: METATYPE.GROUP, text: gName });
+					groupName = gName;
+				}
+				item.group = gName;
+				groupList.push(item);
+			});
+			console.log(groupList);
+			return groupList;
+		}
+	}]);
 
   // Constants
   jangularUI.constant('METATYPE', METATYPE);

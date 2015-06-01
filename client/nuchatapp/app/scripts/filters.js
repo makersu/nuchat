@@ -25,6 +25,7 @@ function amChatGrouping(moment, $filter) {
 			}
 		});
 
+		console.log(value);
 		// console.log(moment($filter('amCalendar')(value)).format('MM-DD'));
 		return $filter('amCalendar')(value);
 	}

@@ -421,7 +421,7 @@ grid-menu {
 
 /* Side Panel */
 .panel-backdrop {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
 	width: 100%;
@@ -430,6 +430,9 @@ grid-menu {
 	background-color: rgba(0, 0, 0, .3);
 	&.active {
 		display: block;
+	}
+	&.has-header {
+		top: 44px;
 	}
 }
 .side-panel {
@@ -458,6 +461,26 @@ grid-menu {
 			}
 		}
 	}
+
+	// Accordion
+	.panel-group {
+    margin: 0;
+    .panel-heading {
+      padding: 0;
+    }
+    .panel-body {
+    	position: relative;
+      padding: 0;
+      min-height: 116px;
+      overflow-y: auto;
+      .item-checkbox {
+      	padding-left: 45px;
+      	.checkbox {
+      		padding-left: 5px;
+      	}
+      }
+    }
+  }
 
 	// Calendar
 	.well {
@@ -504,6 +527,40 @@ grid-menu {
 			@include translateX(0);
 		  opacity: 1;
 		}
+	}
+}
+
+/* Group Tag */
+.group-tag {
+	text-align: center;
+	margin: 10px auto;
+	hr, .group-name {
+		display: inline-block;
+		vertical-align: middle;
+	}
+	hr {
+		width: 25%;
+		border-width: 2px;
+		margin: 0 10px;
+	}
+	.group-name {
+		background-color: $groupTagName_bg_color;
+		font-weight: 700;
+		color: $groupTagName_font_color;
+		@include border-radius(20px);
+		padding: 0px 12px;
+	}
+}
+
+/* Page Collection */
+[page-collection] {
+	// position: absolute !important;
+	// top: 0 !important;
+	// left: 0 !important;
+	// width: 100%;
+
+	.right {
+		right: 5px;
 	}
 }
 

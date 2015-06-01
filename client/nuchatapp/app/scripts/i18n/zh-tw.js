@@ -8,6 +8,7 @@ var chtTranslate = function ($translateProvider) {
 		CHAT: '聊天',
 		AUDIO_CHAT: '通話',
 		VIDEO_CHAT: '視訊',
+		DATE: '日期',
 		TODAY: '今天',
 		YESTERDAY: '昨天',
 		MORE: '更多',
@@ -22,6 +23,7 @@ var chtTranslate = function ($translateProvider) {
 		MEMBERS: '成員',
 		ALL_MESSAGES: '所有訊息',
 		FOLLOWING_UNREAD: '以下訊息為未讀',
+		NOMESSAGE: '無訊息',
 
 		// Video Chat
 		IGNORE: '中斷',

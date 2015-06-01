@@ -1,4 +1,4 @@
-function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout, $compile, ENV, METATYPE, PouchService) {
+function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendService, $localstorage, $rootScope, $checkFormat, $utils, $filter, $timeout, $compile, ENV, METATYPE, PouchService, $NUChatTags) {
 	console.log('RoomService');
 	var DEBUG = false;
 	var rooms = {};
@@ -81,10 +81,10 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	    $timeout(function() {
 	    	// Insert the Unread-Note before the 1st message.
 		    if (messages.messages.length) {
-		    	var firstMsgEl = document.getElementById(messages.messages[0].id);
+		    	var firstMsgEl = document.getElementById('item-'+messages.messages[0].id);
 		    	var parentEl = angular.element(firstMsgEl).parent()[0];
 		    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
-		    	parentEl.insertBefore(note, firstMsgEl);
+		    	parentEl && parentEl.insertBefore(note, firstMsgEl);
 		    } else {
 		    	var msgContainer = document.getElementById('msgContainer');
 		    	var unread = document.getElementById('unreadStart');
@@ -105,7 +105,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		var room = getRoom(message.roomId);
 		if (!message.id) {
 			console.log('local adding');
-			console.log(message);
+			// console.log(message);
 			message.id = message.timestamp; // For removing from view after updating from server.
 			room.messages[message.timestamp] = message;
 		} 
@@ -114,59 +114,51 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		}
 		// console.log(room);
 		grouping(room, message);
-		console.log(room);
+		// console.log(room);
 		
 		$rootScope.$broadcast('onNewMessage', { msg: message });
   }
 
   function grouping(room, newMsg) {
-  	if ( _prevLatestMsg && !$utils.sameDate(newMsg.created, _prevLatestMsg.created) ) {
-      var msgs = {};
-      msgs[newMsg.id] = newMsg;
-      var newGroup = $filter('groupBy')(msgs, 'created', function(msg) {
-          return $filter('amChatGrouping')(msg.created);
-      });
-      room.allGroupedMessages = room.allGroupedMessages.concat(newGroup);
+  	if ( newMsg && _prevLatestMsg && !$utils.sameDate(newMsg.created, _prevLatestMsg.created) ) {
+      // var msgs = {};
+      // msgs[newMsg.id] = newMsg;
+      // var newGroup = $filter('groupBy')(msgs, 'created', function(msg) {
+      //     return $filter('amChatGrouping')(msg.created);
+      // });
+      // room.groupedMessages = room.groupedMessages.concat(newGroup);
+      var groupName = $filter('amChatGrouping')(newMsg.created);
+      room.viewMessages.push({type: METATYPE.GROUP, text: groupName});
+      newMsg.group = groupName;
+      room.viewMessages.push(newMsg);
     } else if (!_prevLatestMsg) {
-      room.allGroupedMessages = $filter('groupBy')(room.messages, 'created', function(msg) {
+      room.viewMessages = $filter('groupDiv')(room.messages, function(msg) {
         return $filter('amChatGrouping')(msg.created);
       });
+      console.log(room.viewMessages);
       // Open the latest group.
-      getLastGroup(room).open = true;
+      // getLastGroup(room).open = true;
     } else {
       // Append to the latest group.
-      getLastGroup(room).items.push(newMsg);
+      // getLastGroup(room).items.push(newMsg);
+      newMsg.group = _prevLatestMsg.group;
+      room.viewMessages.push(newMsg);
     }
-    filtering(room);
+    // filtering(room);
+    $NUChatTags.setItemList(room.viewMessages);
+    room.tagList = $NUChatTags.getTagList().tags;
+    console.log(room);
     _prevLatestMsg = angular.copy(newMsg);
+  }
+
+  function groupByDate(room) {
+  	room.viewMessages = $filter('groupDiv')(room.viewMessages, 'group');
   }
 
   function getLastGroup(room, last) {
   	if (room.allGroupedMessages && room.allGroupedMessages.length)
   		return room.allGroupedMessages[room.allGroupedMessages.length-(last || 1)];
   	return null;
-  }
-
-  function filterByUser(room, userId) {
-  	_filterBy.ownerId = userId;
-  	filtering(room);
-  }
-  function filterByDate(room, date) {
-  	_filterBy.date = date;
-  	filtering(room);
-  }
-  function filtering(room) {
-  	room.groupedMessages = angular.copy( $filter('filter')(room.allGroupedMessages, {name: _filterBy.date}) );
-  	angular.forEach(room.groupedMessages, function(group) {
-      group.items = $filter('filter')(group.items, { ownerId: _filterBy.ownerId });
-      console.log(group.items);
-    });
-    // console.log(room.groupedMessages);
-    // console.log(room.allGroupedMessages);
-  }
-  function getAllGroups(room) {
-  	_filterBy = {};
-  	filtering(room);
   }
 
   function isPrivate(room) {
@@ -177,6 +169,35 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
   function isGroup(room) {
   	return room.type === 'group';
+  }
+
+  function filterByUser(room, userId) {
+    _filterBy.ownerId = userId;
+    filtering(room);
+  }
+  function filterByDate(room, date) {
+    _filterBy.date = date;
+    filtering(room);
+  }
+  function filtering(room) {
+  	// console.log(_filterBy);
+    room.viewMessages = angular.copy( $filter('filter')(_.values(room.messages), {group: _filterBy.date, ownerId: _filterBy.ownerId}) );
+    // console.log(room.viewMessages);
+    groupByDate(room);
+    $NUChatTags.setItemList(room.viewMessages);
+    room.tagList = $NUChatTags.getTagList().tags;
+    
+    // angular.forEach(room.viewMessages, function(group) {
+    //   group.items = $filter('filter')(group.items, { ownerId: _filterBy.ownerId });
+    //   console.log(group.items);
+    // });
+    // room.viewMessages = $filter('filter')(room.viewMessages, { ownerId: _filterBy.ownerId });
+    // console.log(room.groupedMessages);
+    // console.log(room.allGroupedMessages);
+  }
+  function getAllGroups(room) {
+    _filterBy = {};
+    filtering(room);
   }
 
 	//getAllRooms
@@ -356,6 +377,9 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		setCurrentRoom: setCurrentRoom,
 		getCurrentRoom: getCurrentRoom,
 		getRoomMessages: getRoomMessages,
+		filterByUser: filterByUser,
+		filterByDate: filterByDate,
+		getAllGroups: getAllGroups,
 		createMessage: createMessage,
 		addMessage: addMessage,
 		getLastGroup: getLastGroup,

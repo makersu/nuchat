@@ -8,7 +8,7 @@
       on-refresh="doRefresh()">
     </ion-refresher>
     <ion-list>
-      <ion-item class="item-avatar" ng-repeat="room in availableRooms track by $index" type="item-text-wrap" ng-click="goToRoom(room.id)">
+      <ion-item class="item-avatar" collection-repeat="room in availableRoomList track by $index" type="item-text-wrap" ng-click="goToRoom(room.id)">
         <img ng-src="{{ room.profile || 'images/profile.png' }}">
         {{room.name}}
         <p>{{ room.lastMessage | brief }}</p>

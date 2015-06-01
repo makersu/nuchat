@@ -23,7 +23,7 @@ function LinkService($filter, METATYPE) {
     console.log(msgList);
     // console.log(METATYPE.LINK);
     _list = $filter('filter')(_.values(msgList), {type: METATYPE.LINK});
-    // console.log(_list);
+    console.log(_list);
     return _list;
   }
 

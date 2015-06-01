@@ -1,4 +1,4 @@
-function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $filter, $NUChatTags, $ionicHistory, $ionicPopup) {
+function DirectoryCtrl($scope, $rootScope, $state, $stateParams, RoomService, $filter, $NUChatTags, $ionicHistory, $ionicPopup, $ionicPlatform) {
 	/* Variables */
 	// Private
 
@@ -50,5 +50,9 @@ function DirectoryCtrl($scope, $rootScope, $stateParams, RoomService, $filter, $
 	$scope.$on('$ionicView.enter', function() {
 		// console.log('enter directory');
 		$scope.filterByType = $ionicHistory.currentStateName() === 'tab.directory.files';
+    var unregisterHardwardBack = $ionicPlatform.registerBackButtonAction(function() {
+      $state.go('tab.chatRoom', {roomId: $scope.room.id});
+      unregisterHardwardBack();
+    }, 100);
 	});
 }

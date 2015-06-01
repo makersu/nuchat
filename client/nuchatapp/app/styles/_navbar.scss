@@ -2,6 +2,7 @@
 	&.bar-header {
 		.button {
       &.button-clear {
+        padding: 0 3px;
         &.icon {
     			&::before {
     				font-size: $navIcon_font_size;

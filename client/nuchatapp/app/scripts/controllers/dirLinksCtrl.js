@@ -7,6 +7,8 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 	/* Methods */
 	// Private
 	var getOrderedLinks = function() {
+		console.log($scope.room.messages);
+		console.log($filter('orderBy')($NUChatLinks.getLinks($scope.room.messages), '-created'));
 		return $filter('orderBy')($NUChatLinks.getLinks($scope.room.messages), '-created');
 	}
 	// Scope public
@@ -38,6 +40,7 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 	$scope.$on('$ionicView.enter', function() {
 		// console.log('enter link view');
 		$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
+		console.log($scope.linkList);
 		$scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
 		$scrolls.resize();
 		// Rebind the global functions

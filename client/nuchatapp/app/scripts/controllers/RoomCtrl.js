@@ -49,16 +49,15 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
 
   $scope.doRefresh = function() {
     console.log('doRefresh');//
-    // $scope.availableRooms = RoomService.getAvailableRooms();
-    // RoomService.getAvailableRooms().then(function(rooms){
-    //   console.log('then');
-    //   $scope.availableRooms=rooms;
-    //   console.log($scope.availableRooms);//
-    // });
-
-    $scope.availableRooms = RoomService.getAllRooms();
-    $scope.friends = FriendService.getAllFriends();
     
+    $scope.availableRooms = RoomService.getAllRooms();
+    var unWatchAvailableRooms = $scope.$watch('availableRooms', function(newVal) {
+      if (newVal) {
+        $scope.availableRoomList = _.values(newVal);
+      }
+    }, true);
+    $scope.friends = FriendService.getAllFriends();
+
     //
     // angular.forEach($scope.availableRooms, function(room) {
     //   if (isPrivate(room)) {

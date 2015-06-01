@@ -15,20 +15,23 @@
     <a class="button icon-left ion-chevron-left button-clear" href="#/tab/chats">{{ ::'CHAT' | translate }}</a>
   </ion-nav-buttons>
   <ion-nav-buttons side="right">
+ 		<a class="button button-clear icon fa fa-filter" ng-click="openFilterPanel()"></a>
     <a class="button button-clear icon fa fa-th-large" ng-click="gotoDirectory()"></a>
   </ion-nav-buttons>
 
-	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()">
+	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()" ui-scroll-viewport overflow-scroll="true">
 
-		<accordion close-others="false">
-			<accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}">
-				<accordion-heading>{{ ::group.name }}<i class="icon" ng-class="{'ion-chevron-down': !group.open, 'ion-chevron-up': group.open}"></i></accordion-heading>
-				<div ng-repeat="message in group.items track by $index" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" in-view-window="message in #msgContainer" id="{{ ::message.id }}">
+		<!-- <accordion close-others="false"> -->
+			<!-- <accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}"> -->
+				<!-- <accordion-heading>{{ ::group.name }}<i class="icon" ng-class="{'ion-chevron-down': !group.open, 'ion-chevron-up': group.open}"></i></accordion-heading> -->
+				<group-tag name="{{ 'NOMESSAGE' | translate }}" ng-if="!room.viewMessages.length"></group-tag>
+				<div ui-scroll="message in datasource" adapter="msgAdapter" class="message-wrapper" on-hold="onMessageHold($event, $index, message)" id="item-{{ message.id }}" attr-idx="{{$index}}">
 
-					<div ng-if="currentUser.id !== message.ownerId">
-						<img ng-click="viewProfile(message)" class="profile-pic left" 
+					<group-tag name="{{ message.text }}" ng-if="message.type === 'group'"></group-tag>
+					<div ng-if="message.type !== 'group'">
+						<img ng-click="viewProfile(message)" class="profile-pic left" ng-if="currentUser.id !== message.ownerId"
 						ng-src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="onProfilePicError(this)" />
-						<div class="chat-bubble left">
+						<div class="chat-bubble" ng-class="{'left': currentUser.id !== message.ownerId, 'right': currentUser.id === message.ownerId}">
 							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll">
 							</meta-msg>
 							<div class="message-detail">
@@ -46,33 +49,12 @@
 						</div>
 					</div>
 
-					<div ng-if="currentUser.id === message.ownerId">
-						<!-- <img ng-click="viewProfile(message)" class="profile-pic right" 
-						ng-src="http://ionicframework.com/img/docs/mcfly.jpg" onerror="onProfilePicError(this)" /> -->
-						<div class="chat-bubble right">
-							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll">
-							</meta-msg>
-							<div class="message-detail">
-								<!-- <span ng-click="viewProfile(message)" 
-								class="bold">{{currentUser.username}}</span>,  -->
-								<span am-time-ago="::message.created"></span>
-								<!-- <a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a> -->
-							</div>
-							<div class="actions royal">
-								<span class="act-icon" href="javascript:" ng-click="editTags(message)"><i class="button-icon icon ion-pricetag"></i></span>
-								<span class="act-icon" href="javascript:" ng-click="star(message)"><i class="button-icon icon" ng-class="isFavorite(message)"></i></span>
-								<span class="act-icon" href="javascript:" ng-click="share(message)"><i class="button-icon icon ion-share"></i></span>
-								<!-- <span class="act-icon" href="javascript:" ng-click="like(message)"><i class="button-icon icon ion-thumbsup" ng-class="{'outline': !isLike(message)}"></i></span> -->
-							</div>
-						</div>
-					</div>
-
 					<div class="cf"></div>
 
 				</div>
 				<a class="accordion-toggle" ng-if="group.open" ng-click="collapseGroup(group)"><i class="icon ion-chevron-up"></i></a>
-			</accordion-group>
-		</accordion>
+			<!-- </accordion-group> -->
+		<!-- </accordion> -->
 	</ion-content>
 
 	<div ng-if="selectTime" class="trigger-func trigger-calendar">
@@ -122,22 +104,40 @@
 	</grid-menu>
 </script>
 <script id="rightMenu.html" type="text/ng-template">
-	<side-panel>
+	<side-panel class="has-header">
 		<ion-content>
-			<ion-item class="bar bar-royal">{{ ::'MEMBERS' | translate }}</ion-item>
 			<ion-item ng-click="getAllMessages()">
 				{{ ::'ALL_MESSAGES' | translate }}
 			</ion-item>
-			<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
-				<img ng-src="{{ currentUser.avatarThumbnail }}">
-				{{ ::currentUser.username }}
-			</ion-item>
-			<ion-item class="item-avatar" collection-repeat="usr in joinerList"
-				item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
-				<img ng-src="{{ usr.avatarThumbnail }}">
-				{{ usr.username }}
-			</ion-item>
-			<datepicker ng-model="dateFilter.date" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)" ng-change="filterByDate()"></datepicker>
+			<accordion>
+				<accordion-group is-open="members.open" id="members">
+					<accordion-heading>{{ ::'MEMBERS' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !members.open, 'ion-chevron-up': members.open}"></i></accordion-heading>
+					<ion-content>
+						<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
+							<img ng-src="{{ currentUser.avatarThumbnail }}">
+							{{ ::currentUser.username }}
+						</ion-item>
+						<ion-item class="item-avatar" collection-repeat="usr in joinerList"
+							item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
+							<img ng-src="{{ usr.avatarThumbnail }}">
+							{{ usr.username }}
+						</ion-item>
+					</ion-content>
+				</accordion-group>
+				<accordion-group is-open="dt.open" id="datepicker">
+					<accordion-heading>{{ ::'DATE' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !dt.open, 'ion-chevron-up': dt.open}"></i></accordion-heading>
+					<datepicker ng-model="dateFilter.date" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)" ng-change="filterByDate()"></datepicker>
+				</accordion-group>
+				<accordion-group is-open="room.tags.open" id="tags">
+					<accordion-heading>{{ ::'TAGS' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !room.tags.open, 'ion-chevron-up': room.tags.open}"></i></accordion-heading>
+					<ion-content>
+						<ion-checkbox collection-repeat="tag in room.tagList" ng-model="tag.selected"
+							item-width="50%" item-height="60px" ng-click="filterByTags()">
+							{{ tag.name }}
+						</ion-checkbox>
+					</ion-content>
+				</accordion-group>
+			</accordion>
 		</ion-content>
 	</side-panel>
 </script>

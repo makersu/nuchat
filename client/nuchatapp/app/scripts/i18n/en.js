@@ -8,6 +8,7 @@ var enTranslate = function ($translateProvider) {
 		CHAT: 'Chat',
 		AUDIO_CHAT: 'Audio Chat',
 		VIDEO_CHAT: 'Video Chat',
+		DATE: 'Date',
 		TODAY: 'Today',
 		YESTERDAY: 'Yesterday',
 		MORE: 'More',
@@ -22,6 +23,7 @@ var enTranslate = function ($translateProvider) {
 		MEMBERS: 'Members',
 		ALL_MESSAGES: 'All Messages',
 		FOLLOWING_UNREAD: 'The following messages as unread',
+		NOMESSAGE: 'No Message',
 
 		// Video Chat
 		IGNORE: 'Ignore',
