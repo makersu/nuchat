@@ -122,7 +122,7 @@
 				</accordion-group>
 				<accordion-group is-open="dt.open" id="datepicker">
 					<accordion-heading>{{ ::'DATE' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !dt.open, 'ion-chevron-up': dt.open}"></i></accordion-heading>
-					<datepicker ng-model="dateFilter" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)" ng-change="filterByDate()"></datepicker>
+					<datepicker ng-model="dateFilter.date" min-date="minDate" show-weeks="true" class="well well-sm" custom-class="getDayClass(date, mode)" ng-change="filterByDate()"></datepicker>
 				</accordion-group>
 			</accordion>
 		</ion-content>

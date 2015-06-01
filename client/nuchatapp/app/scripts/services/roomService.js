@@ -5,6 +5,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	var _unreadMessages = [];
 	var _currentRoomId = -1;
 	var _prevLatestMsg = null;
+	var _filterBy = {};
 
 	//when get new room created by self or others
 	LBSocket.on('rooms:new', function(room) {
@@ -153,6 +154,28 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
   function isGroup(room) {
   	return room.type === 'group';
+  }
+
+  function filterByUser(room, userId) {
+    _filterBy.ownerId = userId;
+    filtering(room);
+  }
+  function filterByDate(room, date) {
+    _filterBy.date = date;
+    filtering(room);
+  }
+  function filtering(room) {
+    room.viewMessages = angular.copy( $filter('filter')(_.values(room.messages), {name: _filterBy.date}) );
+    angular.forEach(room.viewMessages, function(group) {
+      group.items = $filter('filter')(group.items, { ownerId: _filterBy.ownerId });
+      console.log(group.items);
+    });
+    // console.log(room.groupedMessages);
+    // console.log(room.allGroupedMessages);
+  }
+  function getAllGroups(room) {
+    _filterBy = {};
+    filtering(room);
   }
 
 	//getAllRooms

@@ -1741,12 +1741,14 @@
 		  				if (scope[attrs.maxLength] && scope.view.description && scope.view.description.length > scope[attrs.maxLength]) {
 		  					scope.view.description = scope.view.description.substr(0, scope[attrs.maxLength])+'...';
 		  				}
-			  			var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
-			  			if (noScheme.lastIndexOf('/') >= 0) {
-			  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
-			  			} else {
-			  				scope.view.comment = noScheme;
-			  			}
+		  				if (scope.view.url) {
+		  					var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
+				  			if (noScheme.lastIndexOf('/') >= 0) {
+				  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
+				  			} else {
+				  				scope.view.comment = noScheme;
+				  			}
+		  				}
 			  			var params = {};
 			  			params[scope.content.id] = true;
 			  			$rootScope.$broadcast('urlViewLoaded', params);

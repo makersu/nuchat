@@ -24,62 +24,6 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   var audioPlayer = null;
   var audioInterval = null;
   var unreadInit = false;
-  // var datasource = {};
-  // datasource.cache = {
-  //   initialize: function() {
-  //     this.isEnabled = true;
-  //     this.items = {};
-  //     this.getPure = datasource.get;
-  //     datasource.get = this.getCached;
-  //   },
-
-  //   getCached: function(index, count, successCallback) {
-  //     var self = datasource.cache;
-
-  //     if (self.isEnabled) {
-  //       if (self.getItems(index, count, successCallback)) return;
-  //       return self.getPure(index, count, function(result) {
-  //         self.saveItems(index, count, result);
-  //         successCallback(result);
-  //       });
-  //     }
-
-  //     return self.getPure(index, count, successCallback);
-  //   },
-
-  //   saveItems: function(index, count, resultItems) {
-  //     for (var i in resultItems) {
-  //       if (!this.items.hasOwnProperty(index + i)) {
-  //         this.items[index + i] = resultItems[i];
-  //       }
-  //     }
-  //   },
-
-  //   getItems: function(index, count, successCallback) {
-  //     var result = [];
-  //     var isCached = true;
-
-  //     for (var i = index; i < index + count - 1; i++) {
-  //       console.log(i);
-  //       if (!this.items.hasOwnProperty(i)) {
-  //         isCached = false;
-  //         return;
-  //       }
-  //       result.push(this.items[i]);
-  //     }
-
-  //     successCallback(result);
-  //     return true;
-  //   }
-  // };
-  // // this method is not changed; it is the same as in non-cache case
-  // datasource.get = function(index, count, success) {
-  //   $timeout(function() {
-  //     if ($scope.room.messages) {
-  //       success(_.values($scope.room.messages).slice(index-1, index-1+count));
-  //     }
-  //   }, 800);
-  // };
   
   $scope.msgAdapter = {};
   // Scope Public
@@ -278,7 +222,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   if (!$scope.rightMenu) {
     $sidePanel.fromTemplateUrl('rightMenu.html', {
       scope: $scope,
-      container: document.getElementById('msgContainer'),
+      container: document.getElementById('userMessagesView'),
     }).then(function(menu) {
       $scope.rightMenu = menu;
     });
@@ -426,8 +370,10 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   /* Events */
   $scope.checkScroll = function() {
     var bound = scrollHandle.element.scrollHeight;
-    var lastGroup = RoomService.getLastGroup($scope.room);
-    if ( lastGroup && lastGroup.open && scrollHandle.getScrollPosition().top >= (bound*4/5) ) {
+    // console.log(bound);
+    // console.log(scrollHandle.getScrollPosition().top);
+    // var lastGroup = RoomService.getLastGroup($scope.room);
+    if ( scrollHandle.getScrollPosition().top >= (bound*.935) ) {
       $scope.clearNotification();
     }
   };
@@ -449,67 +395,67 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     _revision: 0,
     cache: {
       initialize: function() {
-        datasource.cache.isEnabled = true;
-        datasource.cache.items = {};
-        datasource.cache.getPure = function(index, count, success) {
-          console.log('get');
-          var delay = 100;
-          $timeout(function() {
-            // console.log(index);
-            index--;
-            if ($scope.room.viewMessages) {
-              if (index < 0) {
-                count = count + index;
-                index = 0;
-                if (count <= 0) {
-                  success([]);
-                  return;
-                }
-              }
-              success(_.values($scope.room.viewMessages).slice(index, index+count));
-            }
-          }, delay);
-        };
-        datasource.get = datasource.cache.getCached;
+        this.isEnabled = true;
+        this.items = {};
+        this.getPure = datasource.get;
+        return datasource.get = this.getCached;
       },
       getCached: function(index, count, successCallback) {
         var self = datasource.cache;
 
         if (self.isEnabled) {
           if (self.getItems(index, count, successCallback)) return;
-          self.getPure(index, count, function(result) {
+          return self.getPure(index, count, function(result) {
             self.saveItems(index, count, result);
-            successCallback(result);
+            return successCallback(result);
           });
-          return;
         }
-        self.getPure(index, count, successCallback);
-        return;
+        return self.getPure(index, count, successCallback);
       },
       saveItems: function(index, count, resultItems) {
-        for (var i in resultItems) {
-          if (!datasource.cache.items.hasOwnProperty(index + i)) {
-            datasource.cache.items[index + i] = resultItems[i];
+        var _results = [];
+        for (var i = 0; i < resultItems.length; i++) {
+          item = resultItems[i];
+          if (!this.items.hasOwnProperty(index + i)) {
+            _results.push(this.items[index + i] = item);
           }
         }
+        return _results;
       },
       getItems: function(index, count, successCallback) {
         var result = [];
         var isCached = true;
 
-        for (var i = index; i < (index+count-1); i++) {
-          if (!datasource.cache.items.hasOwnProperty(i)) {
+        for (var i = index; i <= (index+count-1); i++) {
+          if (!this.items.hasOwnProperty(i)) {
             isCached = false;
             return;
           }
-          result.push(datasource.cache.items[i]);
+          result.push(this.items[i]);
         }
 
         successCallback(result);
         return true;
       }
     },
-    // get: ,
+    get: function(index, count, success) {
+      var delay = 100;
+      $timeout(function() {
+        // console.log(index);
+        index--;
+        if ($scope.room.viewMessages) {
+          if (index < 0) {
+            count = count + index;
+            index = 0;
+            if (count <= 0) {
+              success([]);
+              return;
+            }
+          }
+          success(_.values($scope.room.viewMessages).slice(index, index+count));
+        }
+      }, delay);
+    },
     revision: function() {
       return datasource._revision;
     }
