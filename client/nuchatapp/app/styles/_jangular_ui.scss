@@ -523,6 +523,28 @@ grid-menu {
 	}
 }
 
+/* Group Tag */
+.group-tag {
+	text-align: center;
+	margin: 10px auto;
+	hr, .group-name {
+		display: inline-block;
+		vertical-align: middle;
+	}
+	hr {
+		width: 30%;
+		border-width: 2px;
+		margin: 0 10px;
+	}
+	.group-name {
+		background-color: #bdbdbd;
+		font-weight: 700;
+		color: #fff;
+		@include border-radius(20px);
+		padding: 0px 12px;
+	}
+}
+
 /* Page Collection */
 [page-collection] {
 	// position: absolute !important;

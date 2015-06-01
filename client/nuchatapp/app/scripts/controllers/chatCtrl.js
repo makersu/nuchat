@@ -197,11 +197,11 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   };
 
   // Grouping
-  $scope.collapseGroup = function(group) {
-    group.open = false;
-    $location.hash(group.name);
-    scrollHandle.anchorScroll();
-  };
+  // $scope.collapseGroup = function(group) {
+  //   group.open = false;
+  //   $location.hash(group.name);
+  //   scrollHandle.anchorScroll();
+  // };
 
   /* Grid Menu */
   if (!$scope.metaMenu) {
@@ -340,7 +340,10 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   /* Filtering */
   $scope.filterByUser = function(user) {
     // angular.forEach($scope.room.groupedMessages, function(group) {
-    $scope.room.viewMessages = $filter('filter')(_.values($scope.room.messages), { ownerId: user.id });
+    console.log(user.id);
+    RoomService.filterByUser($scope.room, user.id);
+    // $scope.room.viewMessages = $filter('filter')(_.values($scope.room.messages), { ownerId: user.id });
+    $scope.datasource.cache.clear();
     $scope.datasource._revision++;
     $scope.closeFilterPanel();
     //   console.log(group.items);
@@ -348,12 +351,18 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   };
   $scope.getAllMessages = function() {
     console.log('getAllMessages');
-    $scope.room.viewMessages = _.values($scope.room.messages);
+    RoomService.getAllGroups($scope.room);
+    // $scope.room.viewMessages = _.values($scope.room.messages);
+    $scope.datasource.cache.clear();
     $scope.datasource._revision--;
     $scope.closeFilterPanel();
   };
   $scope.filterByDate = function() {
-    console.log($scope.dateFilter);
+    var date = $filter('date')($scope.dateFilter.date, 'MM-dd EEE');
+    RoomService.filterByDate($scope.room, date);
+
+    $scope.datasource.cache.clear();
+    $scope.datasource._revision++;
     $scope.closeFilterPanel();
   };
 
@@ -436,6 +445,9 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
 
         successCallback(result);
         return true;
+      },
+      clear: function() {
+        this.items = {};
       }
     },
     get: function(index, count, success) {
@@ -452,7 +464,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
               return;
             }
           }
-          success(_.values($scope.room.viewMessages).slice(index, index+count));
+          success($scope.room.viewMessages.slice(index, index+count));
         }
       }, delay);
     },
@@ -569,7 +581,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       // });
     }
 
-    $scope.room.viewMessages.push(args.msg);
+    // $scope.room.viewMessages.push(args.msg);
     appendMessage(args.msg);
 
     if (args.msg.type !== METATYPE.LINK) {

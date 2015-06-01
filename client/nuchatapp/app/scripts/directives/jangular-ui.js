@@ -26,6 +26,7 @@
 		AUDIO:    'audio',
 		VIDEO:    'video',
 		ARTICLE:  'article',
+		GROUP: 'group',
 		CALENDAR: 'calendar',
 		MAP:      'map',
 		FILE:     'file', // Including documents?
@@ -1925,6 +1926,17 @@
 		};
   }]);
 
+	jangularUI.directive('groupTag', function() {
+		return {
+			restrict: 'EA',
+			replace: true,
+			template: '<div class="group-tag"><hr><div class="group-name">{{ name }}</div><hr></div>',
+			link: function(scope, elem, attrs) {
+				scope.name = attrs.name || 'Undefined';
+			}
+		};
+	})
+
 	// Services
   // Service of type
   jangularUI.factory('$checkFormat', function() {
@@ -1983,7 +1995,33 @@
 			});
 			return groupList;
 		}
-	});
+	}).filter('groupDiv', ['$filter', function($filter) {
+		return function(collection, prop) {
+			if ( angular.isUndefined(prop) || angular.isNumber(prop) ) {
+				throw 'parameter groupBy should be a string or a function.';
+			}
+			var sortedArr = $filter('orderBy')(collection, prop);
+			var groupName = '_UNDEFINED_';
+			var groupList = [];
+			console.log(prop);
+			angular.forEach(sortedArr, function(item) {
+				var gName = '';
+				if ( angular.isFunction(prop) ) {
+					gName = prop(item);
+				} else {
+					gName = item[prop];
+				}
+				if (gName !== groupName) {
+					groupList.push({ type: METATYPE.GROUP, text: gName });
+					groupName = gName;
+				}
+				item.group = gName;
+				groupList.push(item);
+			});
+			console.log(groupList);
+			return groupList;
+		}
+	}]);
 
   // Constants
   jangularUI.constant('METATYPE', METATYPE);
