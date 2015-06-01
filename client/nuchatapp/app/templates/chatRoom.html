@@ -19,7 +19,7 @@
     <a class="button button-clear icon fa fa-th-large" ng-click="gotoDirectory()"></a>
   </ion-nav-buttons>
 
-	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()" ui-scroll-viewport overflow-scroll="true">
+	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()" ui-scroll-viewport buffer-size="25" overflow-scroll="true">
 
 		<!-- <accordion close-others="false"> -->
 			<!-- <accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}"> -->
@@ -112,17 +112,17 @@
 			<accordion>
 				<accordion-group is-open="members.open" id="members">
 					<accordion-heading>{{ ::'MEMBERS' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !members.open, 'ion-chevron-up': members.open}"></i></accordion-heading>
-					<ion-content>
+					// <ion-content>
 						<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
 							<img ng-src="{{ currentUser.avatarThumbnail }}">
 							{{ ::currentUser.username }}
 						</ion-item>
-						<ion-item class="item-avatar" collection-repeat="usr in joinerList"
+						<ion-item class="item-avatar" ng-repeat="usr in joinerList"
 							item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
 							<img ng-src="{{ usr.avatarThumbnail }}">
 							{{ usr.username }}
 						</ion-item>
-					</ion-content>
+					// </ion-content>
 				</accordion-group>
 				<accordion-group is-open="dt.open" id="datepicker">
 					<accordion-heading>{{ ::'DATE' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !dt.open, 'ion-chevron-up': dt.open}"></i></accordion-heading>
@@ -130,12 +130,10 @@
 				</accordion-group>
 				<accordion-group is-open="room.tags.open" id="tags">
 					<accordion-heading>{{ ::'TAGS' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !room.tags.open, 'ion-chevron-up': room.tags.open}"></i></accordion-heading>
-					<ion-content>
-						<ion-checkbox collection-repeat="tag in room.tagList" ng-model="tag.selected"
-							item-width="50%" item-height="60px" ng-click="filterByTags()">
-							{{ tag.name }}
-						</ion-checkbox>
-					</ion-content>
+					<ion-checkbox ng-repeat="tag in room.tagList" ng-model="tag.selected"
+						item-width="50%" item-height="60px" ng-click="filterByTags()">
+						{{ tag.name }}
+					</ion-checkbox>
 				</accordion-group>
 			</accordion>
 		</ion-content>

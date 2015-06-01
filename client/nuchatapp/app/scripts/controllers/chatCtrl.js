@@ -351,7 +351,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     // });
   };
   $scope.filterByDate = function() {
-    var date = $filter('date')($scope.dateFilter.date, 'MM-dd EEE');
+    var date = $filter('amChatGrouping')($scope.dateFilter.date);
     RoomService.filterByDate($scope.room, date);
 
     $scope.datasource.cache.clear();
@@ -459,7 +459,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       }
     },
     get: function(index, count, success) {
-      var delay = 100;
+      var delay = 10;
       $timeout(function() {
         // console.log(index);
         index--;
