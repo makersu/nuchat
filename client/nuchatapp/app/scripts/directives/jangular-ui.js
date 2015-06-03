@@ -1986,11 +1986,20 @@
 				    <span class="day">Sat</span>\
 					</div>\
 					<div class="week" ng-repeat="week in weeks">\
-					  <span class="day" ng-class="{ today: day.isToday, \'different-month\': !day.isCurrentMonth, selected: day.date.isSame(selected) }" ng-click="select(day)" ng-repeat="day in week.days"><div class="day-tag">{{day.number}}</div></span>\
+					  <span class="day" ng-class="{ today: day.isToday, \'different-month\': !day.isCurrentMonth, selected: day.date.isSame(selected) }" ng-click="select(day)" ng-repeat="day in week.days">\
+					  	<div class="day-tag">{{day.number}}</div>\
+					  	<div class="event-tags">\
+					  		<span class="badge badge-{{evt.type}}" ng-repeat="evt in day.events | limitTo:4"></span>\
+					  	</div>\
+					  </span>\
 					</div>';
 				var weekTemplate = '';
 				var dayTemplate = '';
+				// Parameters from view
+				_nextEvents = scope[attrs.events];
+				console.log(_nextEvents);
 
+				/* Month View */
 				var $container = null;
 				if (attrs.parentContainer) {
 					$timeout(function() {
@@ -2012,7 +2021,7 @@
         _buildMonth(scope, start, scope.month);
 
         // Init
-        replaceTemplate(monthTemplate);
+        _replaceTemplate(monthTemplate);
 
         scope.select = function(day) {
           scope.selected = day.date;  
@@ -2032,7 +2041,7 @@
           _buildMonth(scope, previous, scope.month);
         };
 
-        function replaceTemplate(tempalte) {
+        function _replaceTemplate(tempalte) {
         	elem.empty().append($compile(tempalte)(scope));
         }
 
@@ -2052,14 +2061,25 @@
 		    }
 
 		    function _buildWeek(date, month) {
+		    	// To make sure start the week from Sunday.
+		    	if (date.day() > 0) {
+		    		date.subtract(date.day(), "d");
+		    	}
+
 	        var days = [];
 	        for (var i = 0; i < 7; i++) {
+						var evts = $filter('filter')(_nextEvents, function(ev) {
+							if (moment(ev.startDate).isSame(date, 'day')) {
+								return ev;
+							}
+						});
             days.push({
               name: date.format("dd").substring(0, 1),
               number: date.date(),
               isCurrentMonth: date.month() === month.month(),
               isToday: date.isSame(new Date(), "day"),
-              date: date
+              date: date,
+              events: evts
             });
             date = date.clone();
             date.add(1, "d");

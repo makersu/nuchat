@@ -614,13 +614,42 @@ grid-menu {
   display: inline-block;
   vertical-align: middle;
 }
+@mixin theme($primary_color, $secondary_color, $selected_color, $today_color) {
+	background-color: $secondary_color;
+	& > div.header {
+		color: $primary_color;
+	}
+	& > div.week {
+		> span.day {
+			color: $primary_color;
+			&.today {
+				// color: $today_color;
+			}
+			&.selected {
+				color: $primary_color;
+				.day-tag {
+					background-color: $selected_color;
+					color: $secondary_color;
+				}
+			}
+		}
+	}
+}
 
 .border-box {
 	@include box-sizing(border-box);
 }
 
-$selected_color: #E3F2FF;
-$secondary_color: #6b46e5;//#2875C7;
+$default_selected_color: #6b46e5;//#E3F2FF;
+$default_secondary_color: white;//#6b46e5;//#2875C7;
+$default_font_color: #6b46e5;//white;
+$default_today_color: darken($default_font_color, 20%);
+// Royal
+$royal_selected_color: white;//#E3F2FF;
+$royal_secondary_color: #6b46e5;//#2875C7;
+$royal_font_color: white;
+$royal_today_color: lighten($royal_secondary_color, 20%);
+
 $spacing: 10px;
 $icon_width: 60px;
 $header_height: 60px;
@@ -628,10 +657,16 @@ next-calendar {
   float: left;
   display: block;
   @extend .border-box;
-  background: $secondary_color;
+  // background: $secondary_color;
   width: 100%;
   margin-bottom: 10px;
   position: relative;
+
+  @include theme($default_font_color, $default_secondary_color, $default_selected_color, $default_today_color);
+
+  &.royal {
+  	@include theme($royal_font_color, $royal_secondary_color, $royal_selected_color, $royal_today_color);
+  }
   &:before {
   	display: block;
   	position: absolute;
@@ -648,7 +683,7 @@ next-calendar {
     position: relative;
     width: 100%;
     height: $header_height;
-    color: white;
+    // color: $font_color;
     text-align: center;
     font-size: 20px;
     
@@ -701,7 +736,7 @@ next-calendar {
       text-align: center;
       @include vertical-centre(50px);
       cursor: pointer;
-      color: white;
+      // color: $font_color;
       position: relative;
       
       &:first-child {
@@ -715,13 +750,13 @@ next-calendar {
       	}
       }
       
-      &.selected {
-        color: white;
-        .day-tag {
-        	background-color: $selected_color;
-        	color: $secondary_color;
-        }
-      }
+      // &.selected {
+      //   color: white;
+      //   .day-tag {
+      //   	background-color: $selected_color;
+      //   	color: $secondary_color;
+      //   }
+      // }
 
       .day-tag {
       	position: absolute;
@@ -738,6 +773,20 @@ next-calendar {
     & > span.day.different-month, &.names > span.day {
 		  @include opacity(.6);
     }
+  }
+  .event-tags {
+  	position: absolute;
+  	width: 100%;
+  	height: 20px;
+  	bottom: 0;
+  	padding: 5px;
+  	.badge {
+  		display: inline-block;
+  		width: $monthViewEventTag_width;
+  		height: $monthViewEventTag_width;
+  		vertical-align: top;
+  		padding: 0;
+  	}
   }
 }
 .icon-W {

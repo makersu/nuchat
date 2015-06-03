@@ -19,22 +19,78 @@ angular.module('Nuchatapp.controllers', [])
 	    title: '專案例會',
 	    location: 'The Moon',
 	    notes: '上週工作報告',
-	    startDate: new Date(2015, 0, 6, 9, 30, 0, 0, 0),
-	    endDate: new Date(2015, 1, 6, 12, 0, 0, 0, 0),
+	    startDate: new Date(2015, 5, 2, 9, 30, 0, 0, 0),
+	    endDate: new Date(2015, 5, 2, 12, 0, 0, 0, 0),
       type: 'assertive'
 	  },
+    {
+      title: '吃飯',
+      location: 'Here',
+      notes: '不知道吃什麼',
+      startDate: new Date(2015, 5, 2, 18, 30, 0, 0, 0),
+      endDate: new Date(2015, 5, 2, 21, 0, 0, 0, 0),
+      type: 'positive'
+    },
+    {
+      title: '吃飯',
+      location: 'Here',
+      notes: '不知道吃什麼',
+      startDate: new Date(2015, 5, 2, 18, 30, 0, 0, 0),
+      endDate: new Date(2015, 5, 2, 21, 0, 0, 0, 0),
+      type: 'balanced'
+    },
+    {
+      title: '吃飯',
+      location: 'Here',
+      notes: '不知道吃什麼',
+      startDate: new Date(2015, 5, 2, 18, 30, 0, 0, 0),
+      endDate: new Date(2015, 5, 2, 21, 0, 0, 0, 0),
+      type: 'energized'
+    },
+    {
+      title: '吃飯',
+      location: 'Here',
+      notes: '不知道吃什麼',
+      startDate: new Date(2015, 5, 2, 18, 30, 0, 0, 0),
+      endDate: new Date(2015, 5, 2, 21, 0, 0, 0, 0),
+      type: 'stable'
+    },
+    {
+      title: '吃飯',
+      location: 'Here',
+      notes: '不知道吃什麼',
+      startDate: new Date(2015, 5, 2, 18, 30, 0, 0, 0),
+      endDate: new Date(2015, 5, 2, 21, 0, 0, 0, 0),
+      type: 'calm'
+    },
+    {
+      title: '吃飯',
+      location: 'Here',
+      notes: '不知道吃什麼',
+      startDate: new Date(2015, 5, 2, 18, 30, 0, 0, 0),
+      endDate: new Date(2015, 5, 2, 21, 0, 0, 0, 0),
+      type: 'royal'
+    },
+    {
+      title: '吃飯',
+      location: 'Here',
+      notes: '不知道吃什麼',
+      startDate: new Date(2015, 5, 2, 18, 30, 0, 0, 0),
+      endDate: new Date(2015, 5, 2, 21, 0, 0, 0, 0),
+      type: 'dark'
+    },
 	  {
 	    title: 'Birthday Party',
 	    location: 'The Moon',
 	    notes: 'Bring Wine',
-	    startDate: new Date(2015, 0, 6, 20, 0, 0, 0, 0),
-	    endDate: new Date(2015, 1, 6, 22, 0, 0, 0, 0),
+	    startDate: new Date(2015, 5, 5, 20, 0, 0, 0, 0),
+	    endDate: new Date(2015, 5, 5, 22, 0, 0, 0, 0),
       type: 'balanced'
 	  }
 
 	];
 
-  $scope.selectedDay = moment();
+  // $scope.selectedDay = moment();
 
   $scope.displayEvents = _events;
 

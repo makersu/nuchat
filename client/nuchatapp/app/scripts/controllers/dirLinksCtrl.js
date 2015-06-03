@@ -39,7 +39,7 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 			});
 	};
 	$scope.shareLink = function(link) {
-		console.log(link);
+		// console.log(link);
 		window.plugins.socialsharing.share(link.linkView.url);
 	};
 
@@ -51,7 +51,7 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 	$scope.$on('$ionicView.enter', function() {
 		// console.log('enter link view');
 		$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
-		console.log($scope.linkList);
+		// console.log($scope.linkList);
 		$scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
 		$scrolls.resize();
 		// Rebind the global functions
@@ -69,7 +69,7 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 					args.msg.linkView = result;
 					$scope.room.messages[args.msg.id] = args.msg;
 					$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
-					console.log($scope.linkList);
+					// console.log($scope.linkList);
 					$ionicScrollDelegate.scrollTop();
 				}, function(err) {
 					console.error(err);
