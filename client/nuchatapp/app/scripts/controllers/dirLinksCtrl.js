@@ -1,4 +1,4 @@
-function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $filter, RoomService, User, $juiUtility, METATYPE) {
+function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $filter, RoomService, User, $juiUtility, METATYPE, $ionicScrollDelegate) {
 	/* Variables */
 	// Private
 
@@ -7,9 +7,20 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 	/* Methods */
 	// Private
 	var getOrderedLinks = function() {
-		console.log($scope.room.messages);
-		console.log($filter('orderBy')($NUChatLinks.getLinks($scope.room.messages), '-created'));
-		return $filter('orderBy')($NUChatLinks.getLinks($scope.room.messages), '-created');
+		// console.log($scope.room.messages);
+		// console.log($filter('orderBy')($NUChatLinks.getLinks($scope.room.messages), '-created'));
+		var list = $filter('orderBy')($NUChatLinks.getLinks($scope.room.messages), '-created');
+		angular.forEach(list, function(link) {
+			if (!link.linkView) {
+				link.text && $juiUtility.getSummaryLink(link.text, {id: link.id})
+					.then(function(result) {
+						link.linkView = result;
+					}, function(err) {
+						console.error(err);
+					});
+			}
+		});
+		return list;
 	}
 	// Scope public
 	$scope.editTags = function(link) {
@@ -59,6 +70,7 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 					$scope.room.messages[args.msg.id] = args.msg;
 					$NUChatTags.setItemList($scope.linkList = getOrderedLinks());
 					console.log($scope.linkList);
+					$ionicScrollDelegate.scrollTop();
 				}, function(err) {
 					console.error(err);
 				});

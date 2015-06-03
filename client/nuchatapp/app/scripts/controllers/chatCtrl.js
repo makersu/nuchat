@@ -36,11 +36,8 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     imgSetting: {
       clickHandler: function(id) {
         var imgList = [];
-        angular.forEach($scope.room.groupedMessages, function(group) {
-          var chunk = $filter('filter')(group.items, function(msg) {
-            return $checkFormat.isImg(msg.type);
-          });
-          if (chunk.length) imgList = imgList.concat(chunk);
+        angular.forEach($scope.room.viewMessages, function(msg) {
+          $checkFormat.isImg(msg.type) && imgList.push(msg);
         });
         var selectedList = $filter('filter')(imgList, { id: id });
         if (!selectedList.length) {
@@ -153,7 +150,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     }
     $scope.msgAdapter.applyUpdates(function(item, scope) {
       // console.log(scope.$index);
-      if ( scope.$index === (Object.keys($scope.room.messages).length-1) ) {
+      if ( scope.$index === $scope.room.viewMessages.length-1 ) {
         return [item, message];
       }
     });
@@ -193,6 +190,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   };
   $scope.gotoDirectory = function() {
     // $scope.closeRightMenu();
+    console.log($scope.room.messages);
     if ($scope.rightMenu.isShown()) $scope.closeFilterPanel();
     $state.go('tab.directory.article', { roomId: $scope.room.id });
   };
@@ -344,7 +342,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     // console.log(user.id);
     RoomService.filterByUser($scope.room, user.id);
     // $scope.room.viewMessages = $filter('filter')(_.values($scope.room.messages), { ownerId: user.id });
-    $scope.datasource.cache.clear();
+    // $scope.datasource.cache.clear();
     $scope.datasource._revision++;
     $scope.closeFilterPanel();
     //   console.log(group.items);
@@ -354,22 +352,22 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     var date = $filter('amChatGrouping')($scope.dateFilter.date);
     RoomService.filterByDate($scope.room, date);
 
-    $scope.datasource.cache.clear();
+    // $scope.datasource.cache.clear();
     $scope.datasource._revision++;
     $scope.closeFilterPanel();
   };
   $scope.filterByTags = function() {
-    console.log('filterByTags');
+    // console.log('filterByTags');
     $NUChatTags.filterList();
     $scope.room.viewMessages = $NUChatTags.getFilteredList();
-    $scope.datasource.cache.clear();
+    // $scope.datasource.cache.clear();
     $scope.datasource._revision++;
   }
   $scope.getAllMessages = function() {
-    console.log('getAllMessages');
+    // console.log('getAllMessages');
     RoomService.getAllGroups($scope.room);
     // $scope.room.viewMessages = _.values($scope.room.messages);
-    $scope.datasource.cache.clear();
+    // $scope.datasource.cache.clear();
     $scope.datasource._revision--;
     $scope.closeFilterPanel();
   };
@@ -410,54 +408,54 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   $scope.room = RoomService.getCurrentRoom();
   var datasource = {
     _revision: 0,
-    cache: {
-      initialize: function() {
-        this.isEnabled = true;
-        this.items = {};
-        this.getPure = datasource.get;
-        return datasource.get = this.getCached;
-      },
-      getCached: function(index, count, successCallback) {
-        var self = datasource.cache;
+    // cache: {
+    //   initialize: function() {
+    //     this.isEnabled = true;
+    //     this.items = {};
+    //     this.getPure = datasource.get;
+    //     return datasource.get = this.getCached;
+    //   },
+    //   getCached: function(index, count, successCallback) {
+    //     var self = datasource.cache;
 
-        if (self.isEnabled) {
-          if (self.getItems(index, count, successCallback)) return;
-          return self.getPure(index, count, function(result) {
-            self.saveItems(index, count, result);
-            return successCallback(result);
-          });
-        }
-        return self.getPure(index, count, successCallback);
-      },
-      saveItems: function(index, count, resultItems) {
-        var _results = [];
-        for (var i = 0; i < resultItems.length; i++) {
-          item = resultItems[i];
-          if (!this.items.hasOwnProperty(index + i)) {
-            _results.push(this.items[index + i] = item);
-          }
-        }
-        return _results;
-      },
-      getItems: function(index, count, successCallback) {
-        var result = [];
-        var isCached = true;
+    //     if (self.isEnabled) {
+    //       if (self.getItems(index, count, successCallback)) return;
+    //       return self.getPure(index, count, function(result) {
+    //         self.saveItems(index, count, result);
+    //         return successCallback(result);
+    //       });
+    //     }
+    //     return self.getPure(index, count, successCallback);
+    //   },
+    //   saveItems: function(index, count, resultItems) {
+    //     var _results = [];
+    //     for (var i = 0; i < resultItems.length; i++) {
+    //       item = resultItems[i];
+    //       if (!this.items.hasOwnProperty(index + i)) {
+    //         _results.push(this.items[index + i] = item);
+    //       }
+    //     }
+    //     return _results;
+    //   },
+    //   getItems: function(index, count, successCallback) {
+    //     var result = [];
+    //     var isCached = true;
 
-        for (var i = index; i <= (index+count-1); i++) {
-          if (!this.items.hasOwnProperty(i)) {
-            isCached = false;
-            return;
-          }
-          result.push(this.items[i]);
-        }
+    //     for (var i = index; i <= (index+count-1); i++) {
+    //       if (!this.items.hasOwnProperty(i)) {
+    //         isCached = false;
+    //         return;
+    //       }
+    //       result.push(this.items[i]);
+    //     }
 
-        successCallback(result);
-        return true;
-      },
-      clear: function() {
-        this.items = {};
-      }
-    },
+    //     successCallback(result);
+    //     return true;
+    //   },
+    //   clear: function() {
+    //     this.items = {};
+    //   }
+    // },
     get: function(index, count, success) {
       var delay = 10;
       $timeout(function() {
@@ -481,9 +479,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     }
   };
   $scope.datasource = datasource;
-  // datasource;
-  // datasource.cache.initialize();
-  $scope.datasource.cache.initialize();
+  // $scope.datasource.cache.initialize();
   console.log($scope.room);
 
   // OnResume
@@ -495,7 +491,6 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     getRoomUsers();
     RoomService.getRoomMessages($scope.room.id);
     $scope.room.viewMessages = _.values($scope.room.messages);
-    // $scope.datasource.cache.initialize();
     // $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
     //   return $filter('amChatGrouping')(msg.created);
     // });
@@ -597,25 +592,25 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     }
 
   });
-  $scope.$on('urlViewLoaded', function(event, args) {
-    console.log('urlViewLoaded');
-    angular.forEach(args, function(val, id) {
-      if (val) {
-        var msg = $scope.room.messages[id];
-        if (msg) {
-          $NUChatDirectory.saveToDirectory(msg);
-          // if (scrollHandle && msg.ownerId === $scope.currentUser.id) {
-          //   scrollHandle.scrollBottom();
-          //   console.log('scroll to bottom');
-          // }
-        }
-      }
-    });
-    // console.log(RoomService.get());
-    // console.log($stateParams.roomId);
-    // console.log(data.roomId);
-    // Saving the message into the Directory by type.
-  });
+  // $scope.$on('urlViewLoaded', function(event, args) {
+  //   console.log('urlViewLoaded');
+  //   angular.forEach(args, function(val, id) {
+  //     if (val) {
+  //       var msg = $scope.room.messages[id];
+  //       if (msg) {
+  //         $NUChatDirectory.saveToDirectory(msg);
+  //         // if (scrollHandle && msg.ownerId === $scope.currentUser.id) {
+  //         //   scrollHandle.scrollBottom();
+  //         //   console.log('scroll to bottom');
+  //         // }
+  //       }
+  //     }
+  //   });
+  //   // console.log(RoomService.get());
+  //   // console.log($stateParams.roomId);
+  //   // console.log(data.roomId);
+  //   // Saving the message into the Directory by type.
+  // });
 
   $scope.$on('updateObjMsg', function(event, args) {
     console.log('on updateObjMsg');

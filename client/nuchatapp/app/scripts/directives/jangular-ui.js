@@ -15,6 +15,8 @@
  *  9)  Center Image
  *  10) Rich Article
  *  11) Side Panel
+ *  12) Group Tag
+ *  13) Next Calendar
  */
 (function() {
 	var jangularUI = angular.module('jangular.ui', ['Nuchatapp.configs']);
@@ -112,7 +114,7 @@
 					if (!obj.image) {
 						obj.image = obj.url+(obj.url.lastIndexOf('/') === (obj.url.length-1) ? '' : '/')+'favicon.ico';
 					} else if (obj.image.indexOf('/') == 0 || obj.image.indexOf('http') != 0) {
-						obj.image = obj.url+(obj.image.indexOf('/') === 0 ? '' : '/')+obj.image;
+						obj.image = (obj.image.indexOf('//') === 0 ? 'http:' : obj.url)+(obj.image.indexOf('/') === 0 ? '' : '/')+obj.image;
 					}
 					return obj;
 				}, function(err) {
@@ -1192,6 +1194,8 @@
 			transclude: true,
 			template: '<div class="buttons-wrapper" ng-transclude></div>',
 			link: function(scope, elem, attrs) {
+				var floatTitleTemplate = '<div class="float-title"></div>';
+
 				var classes = attrs.class;
 				var floatOptions = attrs.float ? attrs.float.split(' ') : ['bottom', 'right'];
 				scope.isExpanded = false;
@@ -1215,6 +1219,9 @@
 					var ngIf = 'isExpanded';
 					if (btnElm.attr('collapse-if')) {
 						ngIf += ' && '+btnElm.attr('collapse-if');
+					}
+					if (btnElm.attr('title')) {
+						btnElm.append(angular.element(floatTitleTemplate).html(btnElm.attr('title')));
 					}
 					console.log(ngIf);
 					btnElm.attr('ng-if', ngIf);
@@ -1719,12 +1726,17 @@
   jangularUI.directive('urlView', ['$timeout', '$rootScope', function($timeout, $rootScope) {
   	return {
   		restrict: 'EA',
+  		scope: {
+  			content: '=contentObj',
+  			clickHandler: '=',
+  			maxLength: '=',
+  		},
   		template: '<a class="url-view" ng-click="clickHandler()">'+
   								'<div class="content">'+
 	  								'<div class="graph"><img ng-src="{{ view.image }}" ng-if="view.image"></div>'+
 	  								'<div class="info">'+
-		  								'<h5 class="title" ng-bind-html="view.title"></h5>'+
-		  								'<p class="descript" ng-bind-html="view.description"></p>'+
+		  								'<h5 class="title" ng-bind-html="view.title | limitTo:64"></h5>'+
+		  								'<p class="descript" ng-bind-html="view.description | limitTo:36"></p>'+
 		  								'<div class="comment">{{ view.comment }}</div>'+
 		  								'<div class="tags"><span class="badge" ng-repeat="tag in content.tags | limitTo:5">{{ tag }}</span><span ng-if="content.tags.length > 5">...</span></div>'+
 		  							'</div>'+
@@ -1732,36 +1744,47 @@
 	  						'</a>',
   		link: function(scope, elem, attrs) {
   			function applyView() {
-  				$timeout(function() {
-	  				scope.content = scope[attrs.contentObj];
-	  				scope.clickHandler = scope[attrs.clickHandler];
+  				// $timeout(function() {
 	  				// console.log(scope.content);
-	  				if (scope.content) {
-	  					scope.view = scope.content.linkView;
-		  				// console.log(scope.view);
-		  				if (scope[attrs.maxLength] && scope.view.description && scope.view.description.length > scope[attrs.maxLength]) {
-		  					scope.view.description = scope.view.description.substr(0, scope[attrs.maxLength])+'...';
-		  				}
-		  				if (scope.view.url) {
-		  					var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
-				  			if (noScheme.lastIndexOf('/') >= 0) {
-				  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
-				  			} else {
-				  				scope.view.comment = noScheme;
-				  			}
-		  				}
-			  			var params = {};
-			  			params[scope.content.id] = true;
-			  			$rootScope.$broadcast('urlViewLoaded', params);
-	  				} else {
-	  					var watcher = scope.$watch('contentObj', function(newVal) {
-	  						newVal && applyView() && watcher();
-	  					});
-	  				}
-	  			});
+	  				// if (scope.content) {
+					scope.view = scope.content.linkView;
+  				// console.log(scope.view);
+  				if (scope.view) {
+  					parseView();
+  				} else {
+  					var watcher = scope.$watch('content.linkView', function(newVal) {
+  						// console.log(newVal);
+  						scope.view = newVal;
+  						// console.log(scope.view);
+  						newVal && parseView() && watcher();
+  					});
+  				}
+	  				// }
+	  			// });
+  			}
+
+  			function parseView() {
+  				if (scope.maxLength && scope.view.description && scope.view.description.length > scope.maxLength) {
+  					scope.view.description = scope.view.description.substr(0, scope.maxLength)+'...';
+  				}
+  				if (scope.view.url) {
+  					var noScheme = scope.view.url.replace(/(http|ftp|https):\/\//gi, '');
+		  			if (noScheme.lastIndexOf('/') >= 0) {
+		  				scope.view.comment = noScheme.substring(0, noScheme.lastIndexOf('/'));
+		  			} else {
+		  				scope.view.comment = noScheme;
+		  			}
+  				}
+	  			var params = {};
+	  			params[scope.content.id] = true;
+	  			$rootScope.$broadcast('urlViewLoaded', params);
   			}
   			
-				applyView();
+  			var watcher = scope.$watch('content', function(newVal) {
+					// console.log(newVal);
+					newVal && applyView();
+				});
+				// applyView();
 
   			// scope.$watch('contentObj', function(newVal, oldVal) {
   			// 	if (newVal && newVal !== oldVal) {
@@ -1926,6 +1949,9 @@
 		};
   }]);
 
+	/**
+	 * Group Tag
+	 */
 	jangularUI.directive('groupTag', function() {
 		return {
 			restrict: 'EA',
@@ -1935,7 +1961,114 @@
 				scope.name = attrs.name || 'Undefined';
 			}
 		};
-	})
+	});
+
+	/**
+	 * Next Calendar
+	 */
+	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', function($filter, $compile, $timeout) {
+		return {
+			restrict: 'E',
+			link: function(scope, elem, attrs) {
+				var monthTemplate =
+					'<div class="header">\
+    				<i class="fa fa-caret-left left" ng-click="previous()"></i>\
+  					<span>{{ month.format("MMMM YYYY") }}</span>\
+  					<i class="fa fa-caret-right right" ng-click="next()"></i>\
+					</div>\
+					<div class="week names">\
+				    <span class="day">Sun</span>\
+				    <span class="day">Mon</span>\
+				    <span class="day">Tue</span>\
+				    <span class="day">Wed</span>\
+				    <span class="day">Thu</span>\
+				    <span class="day">Fri</span>\
+				    <span class="day">Sat</span>\
+					</div>\
+					<div class="week" ng-repeat="week in weeks">\
+					  <span class="day" ng-class="{ today: day.isToday, \'different-month\': !day.isCurrentMonth, selected: day.date.isSame(selected) }" ng-click="select(day)" ng-repeat="day in week.days"><div class="day-tag">{{day.number}}</div></span>\
+					</div>';
+				var weekTemplate = '';
+				var dayTemplate = '';
+
+				var $container = null;
+				if (attrs.parentContainer) {
+					$timeout(function() {
+						$container = angular.element(document.getElementById(attrs.parentContainer));
+						elem.height($container.height());
+						var bgImg = $container.css('background-image');
+						var bgSize = $container.css('background-size');
+						bgImg && document.styleSheets[0].addRule('next-calendar::before', 'background-image: '+bgImg);
+						bgSize && document.styleSheets[0].addRule('next-calendar::before', 'background-size: '+bgSize);
+					});
+				}
+				scope.selected = _removeTime(scope[attrs.selected] || moment());
+        scope.month = scope.selected.clone();
+
+        var start = scope.selected.clone();
+        start.date(1);
+        _removeTime(start.day(0));
+
+        _buildMonth(scope, start, scope.month);
+
+        // Init
+        replaceTemplate(monthTemplate);
+
+        scope.select = function(day) {
+          scope.selected = day.date;  
+        };
+
+        scope.next = function() {
+          var next = scope.month.clone();
+          _removeTime(next.month(next.month()+1)).date(1);
+          scope.month.month(scope.month.month()+1);
+          _buildMonth(scope, next, scope.month);
+        };
+
+        scope.previous = function() {
+          var previous = scope.month.clone();
+          _removeTime(previous.month(previous.month()-1).date(1));
+          scope.month.month(scope.month.month()-1);
+          _buildMonth(scope, previous, scope.month);
+        };
+
+        function replaceTemplate(tempalte) {
+        	elem.empty().append($compile(tempalte)(scope));
+        }
+
+				function _removeTime(date) {
+		      return date.day(0).hour(0).minute(0).second(0).millisecond(0);
+		    }
+
+		    function _buildMonth(scope, start, month) {
+	        scope.weeks = [];
+	        var done = false, date = start.clone(), monthIndex = date.month(), count = 0;
+	        while (!done) {
+            scope.weeks.push({ days: _buildWeek(date.clone(), month) });
+            date.add(1, "w");
+            done = count++ > 2 && monthIndex !== date.month();
+            monthIndex = date.month();
+	        }
+		    }
+
+		    function _buildWeek(date, month) {
+	        var days = [];
+	        for (var i = 0; i < 7; i++) {
+            days.push({
+              name: date.format("dd").substring(0, 1),
+              number: date.date(),
+              isCurrentMonth: date.month() === month.month(),
+              isToday: date.isSame(new Date(), "day"),
+              date: date
+            });
+            date = date.clone();
+            date.add(1, "d");
+	        }
+	        return days;
+		    }
+			}
+		};
+	}]);
 
 	// Services
   // Service of type
@@ -1950,8 +2083,8 @@
   	return _self;
   });
   jangularUI.factory('$juiUtility', ['$http', function($http) {
-  	function getSummaryLink(link, obj) {
-  		return parseSummaryLink(link, obj, $http);
+  	function getSummaryLink(text, obj) {
+  		return parseSummaryLink(getLinks(text)[0], obj, $http);
   	}
   	return {
   		getSummaryLink: getSummaryLink,

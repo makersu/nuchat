@@ -34,6 +34,8 @@ angular.module('Nuchatapp.controllers', [])
 
 	];
 
+  $scope.selectedDay = moment();
+
   $scope.displayEvents = _events;
 
   $scope.changeDate = function( el, cont, dateProp ) {

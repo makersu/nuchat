@@ -19,7 +19,7 @@
     <a class="button button-clear icon fa fa-th-large" ng-click="gotoDirectory()"></a>
   </ion-nav-buttons>
 
-	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()" ui-scroll-viewport buffer-size="25" overflow-scroll="true">
+	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()" ui-scroll-viewport overflow-scroll="true">
 
 		<!-- <accordion close-others="false"> -->
 			<!-- <accordion-group ng-repeat="group in room.groupedMessages" is-open="group.open" id="{{ ::group.name }}"> -->
@@ -37,7 +37,7 @@
 							<div class="message-detail">
 								<!-- <span ng-click="viewProfile(message)" 
 								class="bold">{{toUser.username}}</span>, -->
-								<span am-time-ago="::message.created"></span>
+								<span am-time-ago="message.created"></span>
 								<!-- <a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a> -->
 							</div>
 							<div class="actions royal">
