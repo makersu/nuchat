@@ -1,4 +1,25 @@
 angular.module('Nuchatapp.directives', [])
+  .directive('imgCache', function() {
+    return {
+      restrict: 'A',
+      link: function(scope, el, attrs) {
+
+        attrs.$observe('ngSrc', function(src) {
+
+          ImgCache.isCached(src, function(path, success) {
+            if (success) {
+              ImgCache.useCachedFile(el);
+            } else {
+              ImgCache.cacheFile(src, function() {
+                ImgCache.useCachedFile(el);
+              });
+            }
+          });
+
+        });
+      }
+    };
+  })
   .directive('rangeCal', function($rootScope) {
       return {
           restrict: 'AE',

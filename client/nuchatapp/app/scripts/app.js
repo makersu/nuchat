@@ -132,6 +132,19 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
 
   });
 })
+.run(function($ionicPlatform){
+    ImgCache.options.debug = true;
+    ImgCache.options.chromeQuota = 50*1024*1024;
+
+    $ionicPlatform.ready(function() {
+      ImgCache.init(function() {
+          console.log('ImgCache init: success!');
+      }, function(){
+          console.log('ImgCache init: error! Check the log for errors');
+      });
+    });//end $ionicPlatform.ready
+    
+})
 // .run(function ($state, signaling) {
     // signaling.on('messageReceived', function (name, message) {
     //   switch (message.type) {

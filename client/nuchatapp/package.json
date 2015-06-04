@@ -68,7 +68,8 @@
     {
       "locator": "https://github.com/EddyVerbruggen/Calendar-PhoneGap-Plugin.git",
       "id": "nl.x-services.plugins.calendar"
-    }
+    },
+    "org.apache.cordova.file-transfer"
   ],
   "cordovaPlatforms": []
 }

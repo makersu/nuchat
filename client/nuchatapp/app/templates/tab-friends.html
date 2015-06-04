@@ -9,7 +9,7 @@
     </ion-refresher>
     <ion-list>
       <ion-item class="item-avatar item-icon-right" collection-repeat="friend in friends" type="item-text-wrap" ng-click="friendAction(friend.id)">
-        <img ng-src="{{ friend.avatarThumbnail || 'images/profile.png' }}">
+        <img img-cache ng-src="{{ friend.avatarThumbnail || 'images/profile.png' }}">
         {{friend.username}}
         <i class="icon ion-chevron-right icon-accessory"></i>
       </ion-item>
@@ -22,9 +22,9 @@
     <ion-content scroll="false">
       <div class="profile">
         <div class="profile-bg">
-          <img ng-src="{{ selected.profile || selected.avatarThumbnail }}">
+          <img img-cache ng-src="{{ selected.profile || selected.avatarThumbnail }}">
         </div>
-        <img class="thumbnail" ng-src="{{ selected.avatarThumbnail }}">
+        <img img-cache class="thumbnail" ng-src="{{ selected.avatarThumbnail }}">
         <div class="name">{{ ::selected.username }}</div>
       </div>
       <div class="actions">

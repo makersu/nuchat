@@ -42,4 +42,7 @@
     <feature name="SocialSharing">
         <param name="id" value="nl.x-services.plugins.socialsharing" />
     </feature>
+    <feature name="File Transfer">
+        <param name="id" value="org.apache.cordova.file-transfer" />
+    </feature>
 </widget>
