@@ -1966,9 +1966,15 @@
 	/**
 	 * Next Calendar
 	 */
-	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', function($filter, $compile, $timeout) {
+	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', 'moment', '$nextCalendar', function($filter, $compile, $timeout, moment, $nextCalendar) {
 		return {
 			restrict: 'E',
+			scope: {
+				nextEvents: '=events',
+				parentContainer: '@',
+				selected: '=',
+				viewMode: '@',
+			},
 			link: function(scope, elem, attrs) {
 				var monthTemplate =
 					'<div class="header">\
@@ -1977,33 +1983,27 @@
   					<i class="fa fa-caret-right right" ng-click="next()"></i>\
 					</div>\
 					<div class="week names">\
-				    <span class="day">Sun</span>\
-				    <span class="day">Mon</span>\
-				    <span class="day">Tue</span>\
-				    <span class="day">Wed</span>\
-				    <span class="day">Thu</span>\
-				    <span class="day">Fri</span>\
-				    <span class="day">Sat</span>\
+				    <span class="day" ng-repeat="weekday in _weekdays">{{ ::weekday }}</span>\
 					</div>\
 					<div class="week" ng-repeat="week in weeks">\
-					  <span class="day" ng-class="{ today: day.isToday, \'different-month\': !day.isCurrentMonth, selected: day.date.isSame(selected) }" ng-click="select(day)" ng-repeat="day in week.days">\
+					  <span class="day" ng-class="{ today: day.isToday, \'different-month\': !day.isCurrentMonth, selected: day.date.isSame(selected, \'d\') }" ng-click="select(day)" ng-repeat="day in week.days">\
 					  	<div class="day-tag">{{day.number}}</div>\
 					  	<div class="event-tags">\
-					  		<span class="badge badge-{{evt.type}}" ng-repeat="evt in day.events | limitTo:4"></span>\
+					  		<span class="badge badge-{{evt.type}}" ng-repeat="evt in day.events | limitTo:5"></span>\
 					  	</div>\
 					  </span>\
 					</div>';
 				var weekTemplate = '';
-				var dayTemplate = '';
+				var dayTemplate = '<div>test day</div>';
+				scope._weekdays = moment.weekdaysShort();
 				// Parameters from view
-				_nextEvents = scope[attrs.events];
-				console.log(_nextEvents);
+				console.log(scope.nextEvents);
 
 				/* Month View */
 				var $container = null;
-				if (attrs.parentContainer) {
+				if (scope.parentContainer) {
 					$timeout(function() {
-						$container = angular.element(document.getElementById(attrs.parentContainer));
+						$container = angular.element(document.getElementById(scope.parentContainer));
 						elem.height($container.height());
 						var bgImg = $container.css('background-image');
 						var bgSize = $container.css('background-size');
@@ -2011,17 +2011,29 @@
 						bgSize && document.styleSheets[0].addRule('next-calendar::before', 'background-size: '+bgSize);
 					});
 				}
-				scope.selected = _removeTime(scope[attrs.selected] || moment());
-        scope.month = scope.selected.clone();
+				scope.selected = scope.selected || moment();
+        scope.month = scope.selected.clone().startOf('month');
 
-        var start = scope.selected.clone();
-        start.date(1);
-        _removeTime(start.day(0));
+        var start = scope.month.clone();
+        start.startOf('week');
 
+        scope.viewMode = scope.viewMode || 'month';
         _buildMonth(scope, start, scope.month);
 
         // Init
-        _replaceTemplate(monthTemplate);
+        $nextCalendar.setInstance(scope);
+        scope.$watch('viewMode', function(newVal) {
+        	if (newVal) {
+        		_replaceTemplate(eval(scope.viewMode+'Template'));
+        	}
+        });
+
+        scope.setMonthView = function() {
+        	scope.viewMode = 'month';
+        }
+        scope.setDayView = function() {
+        	scope.viewMode = 'day';
+        }
 
         scope.select = function(day) {
           scope.selected = day.date;  
@@ -2029,16 +2041,18 @@
 
         scope.next = function() {
           var next = scope.month.clone();
-          _removeTime(next.month(next.month()+1)).date(1);
+          next.month(next.month()+1).startOf('month');
           scope.month.month(scope.month.month()+1);
-          _buildMonth(scope, next, scope.month);
+          var start = next.clone().startOf('week');
+          _buildMonth(scope, start, scope.month);
         };
 
         scope.previous = function() {
           var previous = scope.month.clone();
-          _removeTime(previous.month(previous.month()-1).date(1));
+          previous.month(previous.month()-1).startOf('month');
           scope.month.month(scope.month.month()-1);
-          _buildMonth(scope, previous, scope.month);
+          var start = previous.clone().startOf('week');
+          _buildMonth(scope, start, scope.month);
         };
 
         function _replaceTemplate(tempalte) {
@@ -2061,14 +2075,9 @@
 		    }
 
 		    function _buildWeek(date, month) {
-		    	// To make sure start the week from Sunday.
-		    	if (date.day() > 0) {
-		    		date.subtract(date.day(), "d");
-		    	}
-
 	        var days = [];
 	        for (var i = 0; i < 7; i++) {
-						var evts = $filter('filter')(_nextEvents, function(ev) {
+						var evts = $filter('filter')(scope.nextEvents, function(ev) {
 							if (moment(ev.startDate).isSame(date, 'day')) {
 								return ev;
 							}
@@ -2089,6 +2098,22 @@
 			}
 		};
 	}]);
+	// Service of Next Calendar
+	jangularUI.factory('$nextCalendar', function() {
+		var _instance = null;
+
+		function getInstance() {
+			return _instance;
+		}
+		function setInstance(instance) {
+			_instance = instance;
+		}
+
+		return {
+			setInstance: setInstance,
+			getInstance: getInstance,
+		};
+	});
 
 	// Services
   // Service of type

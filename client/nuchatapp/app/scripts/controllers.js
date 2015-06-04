@@ -12,7 +12,7 @@ angular.module('Nuchatapp.controllers', [])
 .controller('DirLinksCtrl', DirLinksCtrl)
 .controller('DirCalendarCtrl', DirCalendarCtrl)
 .controller('VideoCallCtrl', VideoCallCtrl)
-.controller('CalCtrl', function($scope, $localstorage, $state, $window, $rootScope) {
+.controller('CalCtrl', function($scope, $localstorage, $state, $window, $rootScope, $nextCalendar) {
 
   var _events = [
 		{
@@ -89,6 +89,13 @@ angular.module('Nuchatapp.controllers', [])
 	  }
 
 	];
+
+  $scope.change2DayView = function() {
+    $nextCalendar.getInstance().setDayView();
+  };
+  $scope.change2MonthView = function() {
+    $nextCalendar.getInstance().setMonthView();
+  };
 
   // $scope.selectedDay = moment();
 

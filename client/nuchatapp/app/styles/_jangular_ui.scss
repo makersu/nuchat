@@ -782,10 +782,14 @@ next-calendar {
   	padding: 5px;
   	.badge {
   		display: inline-block;
+  		min-width: $monthViewEventTag_width;
   		width: $monthViewEventTag_width;
   		height: $monthViewEventTag_width;
   		vertical-align: top;
   		padding: 0;
+  		& + .badge {
+  			margin-left: 1px;
+  		}
   	}
   }
 }
