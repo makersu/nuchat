@@ -3,8 +3,9 @@ angular.module('Nuchatapp.directives', [])
     return {
       restrict: 'A',
       link: function(scope, el, attrs) {
+        var cacheAttr = attrs.imgCache || 'ngSrc';
 
-        attrs.$observe('ngSrc', function(src) {
+        attrs.$observe(cacheAttr, function(src) {
 
           ImgCache.isCached(src, function(path, success) {
             if (success) {

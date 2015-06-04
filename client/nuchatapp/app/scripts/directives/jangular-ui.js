@@ -362,12 +362,12 @@
 					console.log('parseImg');
 					// scope[msg].type = METATYPE.IMG;
 					scope[msg].isImg = true;
-					var imgSrc = scope[msg].thumbnailFileId ? _remoteSrv+scope[msg].thumbnailFileId : _message;
+					var imgSrc = $sce.trustAsResourceUrl(scope[msg].thumbnailFileId ? _remoteSrv+scope[msg].thumbnailFileId : _message);
 					scope[msg].uploading = !scope[msg].thumbnailFileId;
-					console.log('parseImg uploading? '+scope[msg].uploading);
-					console.log(scope[msg]);
+					// console.log('parseImg uploading? '+scope[msg].uploading);
+					// console.log(scope[msg]);
 					// var $imgElem = angular.element('<img id="img'+scope[msg].id+'" src="'+imgSrc+'">');
-					var $imgElem = angular.element('<div id="img'+scope[msg].id+'" afkl-lazy-image="'+imgSrc+'" class="afkl-lazy-wrapper afkl-img-ratio-1-1">');
+					var $imgElem = angular.element('<img id="img'+scope[msg].id+'" img-cache ng-src="'+imgSrc+'">');
 					_msgContent.append( $compile($imgElem)(scope) ).append( $compile('<ion-spinner ng-if="msg.uploading"></ion-spinner>')(scope) );
 					$imgElem.on('click', scope[metaOption].imgSetting.clickHandler ? function() {
 						scope[metaOption].imgSetting.clickHandler(scope[msg].id || scope[msg].timestamp);
@@ -1341,7 +1341,7 @@
 												'<ion-slide ng-repeat="img in viewList">'+
 												  '<ion-scroll zooming="true" min-zoom="1" direction="xy" style="height:100%" delegate-handle="imgViewerScrollHandle{{$index}}" on-scroll="onImageScroll($event)">'+
 												    '<div class="img-container">'+
-												      '<div afkl-lazy-image="{{ img.src }}" class="afkl-lazy-wrapper afkl-img-ratio-1-1"></div>'+
+												      '<img img-cache ng-src="{{ img.src }}">'+
 												    '</div>'+
 												  '</ion-scroll>'+
 												'</ion-slide>'+
@@ -1509,7 +1509,7 @@
   		restrict: 'E',
   		transclude: true,
   		replace: true,
-  		template: '<div class="img-wrapper"><img><div ng-transclude></div></div>',
+  		template: '<div class="img-wrapper"><img img-cache ng-src="{{ imgSrc }}"><div ng-transclude></div></div>',
   		link: function(scope, elem, attrs, ctrl, transclude) {
   			var width = attrs.width;
   			var height = attrs.height;
@@ -1546,7 +1546,8 @@
   				if (!newVal) {
   					throw 'Illegal src value: attribute img-src must be specified.';
   				}
-  				img.attr('src', newVal);
+  				// img.attr('src', newVal);
+  				scope.imgSrc = newVal;
   			});
 
   			function isPercentage(value) {
@@ -1733,7 +1734,7 @@
   		},
   		template: '<a class="url-view" ng-click="clickHandler()">'+
   								'<div class="content">'+
-	  								'<div class="graph"><img ng-src="{{ view.image }}" ng-if="view.image"></div>'+
+	  								'<div class="graph"><img img-cache ng-src="{{ view.image }}" ng-if="view.image"></div>'+
 	  								'<div class="info">'+
 		  								'<h5 class="title" ng-bind-html="view.title | limitTo:64"></h5>'+
 		  								'<p class="descript" ng-bind-html="view.description | limitTo:36"></p>'+

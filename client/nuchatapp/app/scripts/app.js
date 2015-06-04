@@ -134,7 +134,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
 })
 .run(function($ionicPlatform){
     ImgCache.options.debug = true;
-    ImgCache.options.chromeQuota = 50*1024*1024;
+    ImgCache.options.chromeQuota = 25*1024*1024;
 
     $ionicPlatform.ready(function() {
       ImgCache.init(function() {
