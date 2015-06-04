@@ -1966,7 +1966,8 @@
 	/**
 	 * Next Calendar
 	 */
-	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', 'moment', '$nextCalendar', function($filter, $compile, $timeout, moment, $nextCalendar) {
+	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', 'moment', '$nextCalendar', '$ionicGesture',
+												function($filter, $compile, $timeout, moment, $nextCalendar, $ionicGesture) {
 		return {
 			restrict: 'E',
 			scope: {
@@ -1978,9 +1979,9 @@
 			link: function(scope, elem, attrs) {
 				var monthTemplate =
 					'<div class="header">\
-    				<i class="fa fa-caret-left left" ng-click="previous()"></i>\
+    				<i class="fa fa-caret-left left" ng-click="prevMonth()"></i>\
   					<span>{{ month.format("MMMM YYYY") }}</span>\
-  					<i class="fa fa-caret-right right" ng-click="next()"></i>\
+  					<i class="fa fa-caret-right right" ng-click="nextMonth()"></i>\
 					</div>\
 					<div class="week names">\
 				    <span class="day" ng-repeat="weekday in _weekdays">{{ ::weekday }}</span>\
@@ -1995,6 +1996,8 @@
 					</div>';
 				var weekTemplate = '';
 				var dayTemplate = '<div>test day</div>';
+				var swipeNextGesture = null;
+				var swipePrevGesture = null;
 				scope._weekdays = moment.weekdaysShort();
 				// Parameters from view
 				console.log(scope.nextEvents);
@@ -2020,11 +2023,31 @@
         scope.viewMode = scope.viewMode || 'month';
         _buildMonth(scope, start, scope.month);
 
-        // Init
+        /* Init */
+        console.log('init');
+        // Binding swipe events
         $nextCalendar.setInstance(scope);
         scope.$watch('viewMode', function(newVal) {
         	if (newVal) {
+        		switch (newVal) {
+        			case 'month':
+        				scope.swipeNext = function() {
+        					scope.nextMonth();
+        					scope.$apply();
+        				};
+        				scope.swipePrev = function() {
+        					scope.prevMonth();
+        					scope.$apply();
+        				};
+        				break;
+        			case 'day':
+        				break;
+        		}
         		_replaceTemplate(eval(scope.viewMode+'Template'));
+        		swipeNextGesture && $ionicGesture.off(swipeNextGesture, 'swipeleft', scope.swipeNext);
+        		swipeNextGesture = $ionicGesture.on('swipeleft', scope.swipeNext, elem);
+        		swipePrevGesture && $ionicGesture.off(swipePrevGesture, 'swiperight', scope.swipePrev);
+        		swipePrevGesture = $ionicGesture.on('swiperight', scope.swipePrev, elem);
         	}
         });
 
@@ -2039,7 +2062,7 @@
           scope.selected = day.date;  
         };
 
-        scope.next = function() {
+        scope.nextMonth = function() {
           var next = scope.month.clone();
           next.month(next.month()+1).startOf('month');
           scope.month.month(scope.month.month()+1);
@@ -2047,7 +2070,7 @@
           _buildMonth(scope, start, scope.month);
         };
 
-        scope.previous = function() {
+        scope.prevMonth = function() {
           var previous = scope.month.clone();
           previous.month(previous.month()-1).startOf('month');
           scope.month.month(scope.month.month()-1);
