@@ -5,7 +5,7 @@
 				Account details
 			</div>
 			<div class="item item-thumbnail-left">
-				<img img-cache ng-src="{{ avatarUrl || 'images/profile.png' }}" ng-click="openMetaMenu()">
+				<img img-cache ng-src="{{ avatarUrl || 'images/profile.png' }}" onerror="this.src='images/profile.png'" ng-click="openMetaMenu()">
 				<p>Username: {{ currentUser.username }}</p>
 				<p>Email: {{ currentUser.email }}</p>
 				<p>Created: {{ currentUser.created | date:'medium' }}</p>

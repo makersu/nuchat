@@ -29,8 +29,8 @@
 
 					<group-tag name="{{ message.text }}" ng-if="message.type === 'group'"></group-tag>
 					<div ng-if="message.type !== 'group'">
-						<img ng-click="viewProfile(message)" class="profile-pic left" ng-if="currentUser.id !== message.ownerId"
-						ng-src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="onProfilePicError(this)" />
+						<img img-cache ng-click="viewProfile(message)" class="profile-pic left" ng-if="currentUser.id !== message.ownerId"
+						ng-src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="this.src='images/profile.png'" />
 						<div class="chat-bubble" ng-class="{'left': currentUser.id !== message.ownerId, 'right': currentUser.id === message.ownerId}">
 							<meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll">
 							</meta-msg>
@@ -114,12 +114,12 @@
 					<accordion-heading>{{ ::'MEMBERS' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !members.open, 'ion-chevron-up': members.open}"></i></accordion-heading>
 					// <ion-content>
 						<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
-							<img ng-src="{{ currentUser.avatarThumbnail }}">
+							<img img-cache ng-src="{{ currentUser.avatarThumbnail }}">
 							{{ ::currentUser.username }}
 						</ion-item>
 						<ion-item class="item-avatar" ng-repeat="usr in joinerList"
 							item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
-							<img ng-src="{{ usr.avatarThumbnail }}">
+							<img img-cache ng-src="{{ usr.avatarThumbnail }}">
 							{{ usr.username }}
 						</ion-item>
 					// </ion-content>

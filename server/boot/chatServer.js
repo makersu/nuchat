@@ -360,13 +360,14 @@ module.exports = function(app) {
         console.log('*on room:join');
         console.log(data);
 
-        app.models.room.findById(data.room,function(err, obj) {
+        app.models.room.findById(data.room, function(err, obj) {
           if (err) {
             console.log(err);
             cb(err);
           }
           if (!obj) {
             cb("!obj");
+            return;
           }
 
           console.log(obj);
