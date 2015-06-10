@@ -1,0 +1,12 @@
+.loading {
+	.spinner {
+		stroke: $loadingSpinner_color;
+		& + span {
+			margin-left: 5px;
+		}
+	}
+	.spinner, .spinner + span {
+		display: inline-block;
+		vertical-align: middle;
+	}
+}

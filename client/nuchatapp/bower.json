@@ -18,7 +18,8 @@
     "ionic": "~v1.0.0-rc.5",
     "afkl-lazy-image": "~0.1.0",
     "angular-ui-utils": "~0.2.3",
-    "imgcache.js": "~0.7.6"
+    "imgcache.js": "~0.7.6",
+    "moment-range": "~2.0.2"
   },
   "devDependencies": {
     "angular-mocks": "~1.2.17",

@@ -26,11 +26,15 @@ function DirLinksCtrl($scope, $rootScope, $NUChatLinks, $NUChatTags, $scrolls, $
 	$scope.editTags = function(link) {
 		$rootScope.editTags(link, true);
 		link.isFlipped = false;
-	}
-	$scope.delLink = function(link) {
-		// link.isFlipped = false;
-		$NUChatLinks.remove(link.id);
-		$scope.linkList = getOrderedLinks();
+	};
+	// $scope.delLink = function(link) {
+	// 	// link.isFlipped = false;
+	// 	$NUChatLinks.remove(link.id);
+	// 	$scope.linkList = getOrderedLinks();
+	// };
+	$scope.starLink = function(link) {
+		$NUChatTags.setFavorite(link);
+		link.isFlipped = false;
 	};
 	$scope.addLink = function(isEdit) {
 		$scope.toEditLink($scope, isEdit)

@@ -22,29 +22,29 @@ angular.module('Nuchatapp.directives', [])
     };
   })
   .directive('rangeCal', function($rootScope) {
-      return {
-          restrict: 'AE',
-          scope:{
-              now: '@',
-              rangeChange: '=',
-          },
-          link: function(scope, element, attrs) {
-              var triggerRelink = function(){
-                  $(element).rangeCalendar({
-                    lang: attrs.lang,
-                      theme: attrs.theme,
-                      start: attrs.start,
-                      startRangeWidth: parseInt(attrs.startRangeWidth),
-                      minRangeWidth: parseInt(attrs.minRangeWidth),
-                      maxRangeWidth: parseInt(attrs.maxRangeWidth),
-                      changeRangeCallback: scope.rangeChange,
-                  }).setStartDate(scope.now);
-              }
+    return {
+      restrict: 'AE',
+      scope:{
+        now: '@',
+        rangeChange: '=',
+      },
+      link: function(scope, element, attrs) {
+        var triggerRelink = function(){
+          $(element).rangeCalendar({
+            lang: attrs.lang,
+              theme: attrs.theme,
+              start: attrs.start,
+              startRangeWidth: parseInt(attrs.startRangeWidth),
+              minRangeWidth: parseInt(attrs.minRangeWidth),
+              maxRangeWidth: parseInt(attrs.maxRangeWidth),
+              changeRangeCallback: scope.rangeChange,
+          }).setStartDate(scope.now);
+        }
 
-              triggerRelink();                
-              $rootScope.$on(attrs.relinkEvent, triggerRelink);
-          }
-      };
+        triggerRelink();                
+        $rootScope.$on(attrs.relinkEvent, triggerRelink);
+      }
+    };
   })
 	.directive('videoView', function ($rootScope, $timeout) {
     return {

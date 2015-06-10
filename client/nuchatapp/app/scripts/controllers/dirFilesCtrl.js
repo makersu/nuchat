@@ -1,4 +1,4 @@
-function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $filter, $ionicActionSheet, $checkFormat, ENV) {
+function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $NUChatObject, $scrolls, $filter, $ionicActionSheet, $checkFormat, $gridMenu, ENV, LBSocket, $ionicLoading) {
 	/* Variables */
 	// Private
 
@@ -6,10 +6,57 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 
 	/* Methods */
 	// Private
-	var getOrderedFiles = function() {
+	function errorHandler(err) {
+		console.error(err);
+	}
+	function showUploading() {
+		$ionicLoading.show({
+  		template: '<ion-spinner icon="spiral"></ion-spinner> '+$filter('translate')('UPLOADING')
+  	});
+	}
+	function hideUploading() {
+		$ionicLoading.hide();
+	}
+	function getOrderedFiles() {
 		return $filter('orderBy')($NUChatFiles.getFiles($scope.room.messages), '-created');
+	};
+	function refreshList() {
+		console.log($scope.room);
+		$NUChatTags.setItemList($scope.fileList = getOrderedFiles());
+	}
+	function addFiles() {
+		$scope.openMetaMenu();
 	}
 	// Scope public
+	/* Choose files from device or cloud drive? */
+  $scope.choosePhoto = function() {
+    $NUChatObject.choosePhotosUpload(
+      function(results) {
+      	showUploading();
+        $scope.closeMetaMenu();
+      }, errorHandler, {
+        width: 640
+      }
+    );
+  };
+  $scope.capturePhoto = function() {
+    $NUChatObject.capturePhotoUpload(function(msg) {
+    	showUploading();
+      $scope.closeMetaMenu();
+    }, errorHandler);
+  };
+  $scope.captureVoice = function() {
+    $NUChatObject.captureAudioUpload(function(msg) {
+    	showUploading();
+      $scope.closeMetaMenu();
+    }, errorHandler);
+  };
+  $scope.captureVideo = function() {
+    $NUChatObject.captureVideoUpload(function(msg) {
+    	showUploading();
+      $scope.closeMetaMenu();
+    }, errorHandler)
+  };
 	$scope.editTags = function(file) {
 		$rootScope.editTags(file, true);
 		file.isFlipped = false;
@@ -21,9 +68,10 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 		$ionicActionSheet.show({
 	   	buttons: [
 	     	{ text: '<i class="icon ion-edit"></i> '+$filter('translate')('MANAGE_TAGS') },
+	     	{ text: '<i class="icon ion-ios-star"></i> '+$filter('translate')('STAR') },
 	     	{ text: '<i class="icon ion-share"></i> '+$filter('translate')('SHARE') },
 	   	],
-	   	destructiveText: $filter('translate')('DELETE'),
+	   	// destructiveText: $filter('translate')('DELETE'),
 	   	titleText: $filter('translate')('MANAGE_FILE'),
 	   	cancelText: $filter('translate')('CANCEL'),
 	   	cancel: function() {
@@ -36,6 +84,9 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 	   				$rootScope.editTags(file, true);
 	   				break;
 	   			case 1:
+	   				$NUChatTags.setFavorite(file);
+	   				break;
+	   			case 2:
 	   				if ( $checkFormat.isImg(file.type) ) {
 	   					window.plugins.socialsharing.share(null, null, ENV.GRIDFS_BASE_URL+file.originalFileId);
 	   				} else {
@@ -52,7 +103,8 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 	// Events
 	$scope.$on('$ionicView.enter', function() {
 		// console.log('enter directory file');
-		$NUChatTags.setItemList($scope.fileList = getOrderedFiles());
+		// $NUChatTags.setItemList($scope.fileList = getOrderedFiles());
+		refreshList();
 		$scrolls.setContentContainer('.directory .view-container[nav-view="active"] .scroll-content');
 		$scrolls.resize();
 
@@ -69,8 +121,33 @@ function DirFilesCtrl($scope, $rootScope, $NUChatFiles, $NUChatTags, $scrolls, $
 		$rootScope.reset = function() {
 			$scope.fileList = $NUChatTags.getOriginalList();
 		};
+		$rootScope.addDir = addFiles;
+
+		/* Grid Menu */
+	  $scope.openMetaMenu = function() {
+	  	if (!$scope.metaMenu) {
+		    $gridMenu.fromTemplateUrl('metamenu.html', {
+		      scope: $scope,
+		      position: 'bottom'
+		    }).then(function(menu) {
+		      $scope.metaMenu = menu;
+		      $scope.metaMenu.show();
+		    });
+		  } else {
+		  	$scope.metaMenu.show();
+		  }
+	  };
+	  $scope.closeMetaMenu = function() {
+	    $scope.metaMenu.hide();
+	  };
   });
   $scope.$on('onTagFiltered', function() {
 		$scope.fileList = $NUChatTags.getFilteredList();
+	});
+	LBSocket.on('room:messages:new', function(newMsg) {
+		$scope.room.messages[newMsg.message.id] = newMsg.message;
+		console.log($scope.room.messages);
+    refreshList();
+    hideUploading();
 	});
 }

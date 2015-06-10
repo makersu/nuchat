@@ -105,10 +105,17 @@ grid-menu {
 }
 .grid-menu {
 	position: absolute;
-	top: 0;
 	width: 100%;
-	background-color: $gridMenu_bg_color;
 	z-index: 8;
+	background-color: $gridMenu_bg_color;
+	// Position
+	&.menu-top {
+		top: 0;
+	}
+	&.menu-bottom {
+		bottom: 0;
+	}
+
 	.row {
 		margin: 0;
 		.tab-item {
@@ -116,6 +123,16 @@ grid-menu {
 		}
 		.icon {
 			margin-bottom: 5px;
+		}
+	}
+
+	// Other themes
+	&.royal {
+		background-color: $gridMenuRoyal_bg_color;
+		.row {
+			.tab-item {
+				color: $gridMenuTabRoyal_font_color;
+			}
 		}
 	}
 }
@@ -126,14 +143,29 @@ grid-menu {
 }
 .grid-menu.ng-enter,
 .grid-menu.ng-leave.ng-leave-active {
-  top: -50px;
   opacity: 0;
 }
-
 .grid-menu.ng-leave,
 .grid-menu.ng-enter.ng-enter-active {
-  top: 0;
   opacity: 1;
+}
+// Position top
+.grid-menu.menu-top.ng-enter,
+.grid-menu.menu-top.ng-leave.ng-leave-active {
+  top: -50px;
+}
+.grid-menu.menu-top.ng-leave,
+.grid-menu.menu-top.ng-enter.ng-enter-active {
+  top: 0;
+}
+// Position bottom
+.grid-menu.menu-bottom.ng-enter,
+.grid-menu.menu-bottom.ng-leave.ng-leave-active {
+  bottom: -50px;
+}
+.grid-menu.menu-bottom.ng-leave,
+.grid-menu.menu-bottom.ng-enter.ng-enter-active {
+  bottom: 0;
 }
 
 /* Collapse Buttons */
@@ -608,6 +640,19 @@ grid-menu {
 }
 
 /* Next Calendar */
+$default_selected_color: #6b46e5;//#E3F2FF;
+$default_secondary_color: white;//#6b46e5;//#2875C7;
+$default_font_color: #6b46e5;//white;
+$default_today_color: darken($default_font_color, 20%);
+// Royal
+$royal_selected_color: white;//#E3F2FF;
+$royal_secondary_color: #6b46e5;//#2875C7;
+$royal_font_color: white;
+$royal_today_color: lighten($royal_secondary_color, 20%);
+
+$spacing: 10px;
+$icon_width: 60px;
+$header_height: 60px;
 @mixin vertical-centre ($height) {
   height: $height;
   line-height: $height !important;
@@ -634,25 +679,28 @@ grid-menu {
 			}
 		}
 	}
+	// Day View
+	.months {
+		.cell {
+			color: $primary_color;
+			.bullet {
+				background-color: $primary_color;
+			}
+			&.selected {
+				background-color: $primary_color;
+				color: $secondary_color;
+				.bullet {
+					background-color: $secondary_color;
+				}
+			}
+		}
+	}
 }
 
 .border-box {
 	@include box-sizing(border-box);
 }
 
-$default_selected_color: #6b46e5;//#E3F2FF;
-$default_secondary_color: white;//#6b46e5;//#2875C7;
-$default_font_color: #6b46e5;//white;
-$default_today_color: darken($default_font_color, 20%);
-// Royal
-$royal_selected_color: white;//#E3F2FF;
-$royal_secondary_color: #6b46e5;//#2875C7;
-$royal_font_color: white;
-$royal_today_color: lighten($royal_secondary_color, 20%);
-
-$spacing: 10px;
-$icon_width: 60px;
-$header_height: 60px;
 next-calendar {
   float: left;
   display: block;
@@ -790,6 +838,37 @@ next-calendar {
   		& + .badge {
   			margin-left: 1px;
   		}
+  	}
+  }
+
+  /* Day View */
+  .months {
+  	position: relative;
+  	margin: 0;
+  	padding: 0;
+  	height: 40px;
+  	.cell {
+  		font-size: 14px;
+  		font-weight: 100;
+  		padding: 10px;
+  		text-align: center;
+  		.bullet {
+  			display: none;
+  			position: absolute;
+  			left: 15px;
+  			top: 17px;
+  			height: 7px;
+  			width: 7px;
+  		}
+  		.month-name {
+  			font-weight: bold;
+  			text-transform: uppercase;
+  		}
+  		&.current {
+  			.bullet {
+					display: block;
+  			}
+			}
   	}
   }
 }

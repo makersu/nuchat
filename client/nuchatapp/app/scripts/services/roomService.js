@@ -46,8 +46,8 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
   			$rootScope.$broadcast('uploaded', {msg: newMessageInfo.message});
   		}
   	}
-  	else{
-  		var message=newMessageInfo.message
+  	else if (newMessageInfo.message.ownerId != User.getCachedCurrent().id) {
+  		var message = newMessageInfo.message;
 			// Sending the local notification.
 			cordova.plugins.notification.local.schedule({
 			// $cordovaLocalNotification.add({
@@ -77,6 +77,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	    	addMessage(messages.messages[i])
 	    	// updateRoomInfo(messages.messages[i]);//???
 	    }
+			grouping(getRoom(roomId));
 
 	    $timeout(function() {
 	    	// Insert the Unread-Note before the 1st message.
@@ -100,7 +101,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
   //TODO:?
   function addMessage(message) {
-  	// console.log('addMessage');
+  	console.log('addMessage');
 		// console.log(message);
 		var room = getRoom(message.roomId);
 		if (!message.id) {
@@ -113,7 +114,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 			room.messages[message.id] = message;
 		}
 		// console.log(room);
-		grouping(room, message);
+		// grouping(room, message);
 		// console.log(room);
 		
 		$rootScope.$broadcast('onNewMessage', { msg: message });

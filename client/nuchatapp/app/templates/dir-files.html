@@ -9,3 +9,18 @@
 		</flip-item>
 	</ion-content>
 </ion-view>
+
+<script id="metamenu.html" type="text/ng-template">
+	<grid-menu>
+		<div class="row">
+	  	<div class="col tab-item" ng-click="choosePhoto()"><i class="icon ion-image"></i>{{ ::'SEND_PHOTO' | translate }}</div>
+	  	<div class="col tab-item" ng-click="capturePhoto()"><i class="icon ion-camera"></i>{{ ::'CAPTURE_PHOTO' | translate }}</div>
+	  	<div class="col tab-item" ng-click="captureVoice()"><i class="icon ion-mic-a"></i>{{ ::'VOICE_MESSAGE' | translate }}</div>
+	  </div>
+	  <div class="row">
+	  	<div class="col tab-item" ng-click="captureVideo()"><i class="icon ion-ios-videocam"></i>{{ ::'CAPTURE_VIDEO' | translate }}</div>
+	  	<div class="col tab-item" ng-click=""></div>
+	  	<div class="col tab-item" ng-click=""></div>
+	  </div>
+	</grid-menu>
+</script>

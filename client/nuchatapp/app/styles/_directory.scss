@@ -61,7 +61,7 @@
 		position: absolute;
 		color: $fileIcon_font_color;
 		background-color: $fileIcon_bg_color;
-		padding: 0 5px;
+		padding: 2px 5px;
 		font-size: $fileIcon_font_size;
 		@include border-radius(50%);
 		&.icon-right {

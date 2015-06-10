@@ -665,6 +665,8 @@
 	  	var element = $compile(templateString)(scope);
 	  	var wrapper = element[0].querySelector('.menu-wrapper');
 	  	var menu = angular.element(wrapper.querySelector('.grid-menu'));
+	  	var pos = options.position || 'top';
+	  	menu.addClass('menu-'+pos);
 
 	  	var menu = {
 	  		$el: element,
@@ -1967,8 +1969,8 @@
 	/**
 	 * Next Calendar
 	 */
-	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', 'moment', '$nextCalendar', '$ionicGesture',
-												function($filter, $compile, $timeout, moment, $nextCalendar, $ionicGesture) {
+	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', 'moment', '$nextCalendar', '$ionicGesture', '$ionicScrollDelegate', '$location',
+												function($filter, $compile, $timeout, moment, $nextCalendar, $ionicGesture, $ionicScrollDelegate, $location) {
 		return {
 			restrict: 'E',
 			scope: {
@@ -1996,10 +1998,12 @@
 					  </span>\
 					</div>';
 				var weekTemplate = '';
-				var dayTemplate = '<div>test day</div>';
+				var dayTemplate = '<ion-scroll class="months" direction="x"><div class="cell" ng-class="{current: m.isCurrentMonth, selected: m.month.isSame(selected, \'month\')}" id="{{ m.id }}" collection-repeat="m in monthList" item-width="105" ng-click="selectMonth(m)"><i class="bullet"></i><span class="month-name">{{ m.name }}</span> {{ m.year }}</div></ion-scroll>';
 				var swipeNextGesture = null;
 				var swipePrevGesture = null;
+				var _rangeMonths = null;
 				scope._weekdays = moment.weekdaysShort();
+				scope.rangeMonths = {};
 				// Parameters from view
 				console.log(scope.nextEvents);
 
@@ -2023,6 +2027,7 @@
 
         scope.viewMode = scope.viewMode || 'month';
         _buildMonth(scope, start, scope.month);
+        _buildRangeMonth(scope, scope.month);
 
         /* Init */
         console.log('init');
@@ -2040,15 +2045,19 @@
         					scope.prevMonth();
         					scope.$apply();
         				};
+        				swipeNextGesture && $ionicGesture.off(swipeNextGesture, 'swipeleft', scope.swipeNext);
+		        		swipeNextGesture = $ionicGesture.on('swipeleft', scope.swipeNext, elem);
+		        		swipePrevGesture && $ionicGesture.off(swipePrevGesture, 'swiperight', scope.swipePrev);
+		        		swipePrevGesture = $ionicGesture.on('swiperight', scope.swipePrev, elem);
         				break;
         			case 'day':
+        				console.log(scope.selected);
+        				swipeNextGesture && $ionicGesture.off(swipeNextGesture, 'swipeleft', scope.swipeNext);
+		        		swipePrevGesture && $ionicGesture.off(swipePrevGesture, 'swiperight', scope.swipePrev);
+		        		$location.hash(scope.selected.id);
         				break;
         		}
         		_replaceTemplate(eval(scope.viewMode+'Template'));
-        		swipeNextGesture && $ionicGesture.off(swipeNextGesture, 'swipeleft', scope.swipeNext);
-        		swipeNextGesture = $ionicGesture.on('swipeleft', scope.swipeNext, elem);
-        		swipePrevGesture && $ionicGesture.off(swipePrevGesture, 'swiperight', scope.swipePrev);
-        		swipePrevGesture = $ionicGesture.on('swiperight', scope.swipePrev, elem);
         	}
         });
 
@@ -2060,7 +2069,11 @@
         }
 
         scope.select = function(day) {
-          scope.selected = day.date;  
+          scope.selected = day.date;
+        };
+
+        scope.selectMonth = function(month) {
+        	scope.selected = month.month;
         };
 
         scope.nextMonth = function() {
@@ -2118,6 +2131,24 @@
             date.add(1, "d");
 	        }
 	        return days;
+		    }
+
+		    function _buildRangeMonth(scope, month) {
+		    	var start = month.clone().subtract(1, 'year');
+		    	var end = month.clone().add(1, 'year').endOf('month');
+		    	_rangeMonths = moment.range(start, end);
+		    	_rangeMonths.by('M', function(m) {
+		    		var monObj = {
+		    			id: m.format('YYYYMM'),
+		    			name: m.format('MMM'),
+		    			year: m.format('YY'),
+		    			isCurrentMonth: m.month() === month.month() && m.year() === month.year(),
+		    			month: m,
+		    		};
+		    		monObj.isCurrentMonth && (scope.selected = monObj.month);
+		    		scope.rangeMonths[m.format('YYYYMM')] = monObj;
+		    	});
+		    	scope.monthList = _.values(scope.rangeMonths);
 		    }
 			}
 		};
