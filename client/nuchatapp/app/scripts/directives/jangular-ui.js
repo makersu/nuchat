@@ -1734,7 +1734,7 @@
   			clickHandler: '=',
   			maxLength: '=',
   		},
-  		template: '<a class="url-view" ng-click="clickHandler()">'+
+  		template: '<a class="url-view" ng-click="clickHandler(view.url)">'+
   								'<div class="content">'+
 	  								'<div class="graph"><img img-cache ng-src="{{ view.image }}" ng-if="view.image"></div>'+
 	  								'<div class="info">'+
