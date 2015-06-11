@@ -263,28 +263,67 @@ module.exports = function(app) {
       //
       // Create Room
       //
-      socket.on('rooms:create', function(data, cb) {
-        console.log('rooms:create')
+      // socket.on('rooms:create', function(data, cb) {
+      //   console.log('rooms:create')
+      //   console.log(data)
+      //   app.models.room.create(data ,function(err, obj){
+      //     if(err){
+      //       console.log(err)
+      //       cb(err);
+      //     }
+      //     console.log(obj);
+      //     // socket.emit('rooms:new',obj);
+      //     obj.joiners.forEach(function(joiner){
+      //       console.log('emit rooms:new')
+      //       console.log(joiner)
+      //       app.sio.sockets.to(joiner).emit('rooms:new', obj);
+      //     })
+          
+      //     if(cb){
+      //       cb(null, obj);
+      //     }
+      //   });//
+        
+      // });//end socket.on('rooms:create')
+
+      //
+      // Create Room
+      //
+      socket.on('rooms:create:group', function(data, cb) {
+        console.log('*on rooms:create:group');
         console.log(data)
-        app.models.room.create(data ,function(err, obj){
+
+        app.models.user.findById(data.user,function(err, user) {
           if(err){
             console.log(err)
             cb(err);
+            return;
           }
-          console.log(obj);
-          // socket.emit('rooms:new',obj);
-          obj.joiners.forEach(function(joiner){
-            console.log('emit rooms:new')
-            console.log(joiner)
-            app.sio.sockets.to(joiner).emit('rooms:new', obj);
-          })
           
-          if(cb){
-            cb(null, obj);
-          }
-        });//
+          delete data.user
+
+          console.log(user)
+          user.rooms.create(data ,function(err, roomObj){
+            if(err){
+              console.log(err)
+              cb(err);
+            }
+            console.log(roomObj);
+            roomObj.joiners.forEach(function(joiner){
+              console.log('emit rooms:new')
+              console.log(joiner)
+              app.sio.sockets.to(joiner).emit('rooms:new', roomObj);
+            })
+
+            socket.join(roomObj.id);//???  
+            cb(null, roomObj);
+            
+          });//end create room
+
+        });//end find user  
         
-      });//end socket.on('rooms:create')
+      });//socket.on
+
 
 	  	//
       // Roomlist request
@@ -463,8 +502,8 @@ module.exports = function(app) {
       // });//socket.on
 
 
-      socket.on('friend:join', function(data, cb) {
-        console.log('*on friend:join')
+      socket.on('rooms:create:private', function(data, cb) {
+        console.log('*on rooms:create:private')
         console.log(data)
 
         //create self room?
@@ -506,7 +545,7 @@ module.exports = function(app) {
                 joiners: [data.user, data.friend]
               }
               
-              user.privateRooms.create(newPrivateRoom ,function(err, roomObj){
+              user.rooms.create(newPrivateRoom ,function(err, roomObj){
                 if(err){
                   console.log(err)
                   cb(err);

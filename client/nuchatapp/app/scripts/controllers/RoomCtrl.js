@@ -28,9 +28,10 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
  
   $scope.newRoom={};
 
-  $scope.createRoom = function() {
-    console.log('createRoom');//
+  $scope.createGroupRoom = function() {
+    console.log('createGroupRoom');//
 
+    $scope.newRoom.user=User.getCachedCurrent().id;
     $scope.newRoom.type='group';
     $scope.newRoom.joiners=[];
     $scope.newRoom.joiners.push(User.getCachedCurrent().id)
@@ -43,32 +44,24 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     })
 
     console.log($scope.newRoom);
-    RoomService.createRoom($scope.newRoom);
+    RoomService.createGroupRoom($scope.newRoom);
     $location.path('/tab/chats');
   };
 
   $scope.doRefresh = function() {
     console.log('doRefresh');//
     
-    $scope.availableRooms = RoomService.getAllRooms();
+    // $scope.availableRooms = RoomService.getAllRooms();
+    $scope.availableRooms = RoomService.rooms;
+
     var unWatchAvailableRooms = $scope.$watch('availableRooms', function(newVal) {
       if (newVal) {
         $scope.availableRoomList = _.values(newVal);
       }
     }, true);
-    $scope.friends = FriendService.getAllFriends();
+    // $scope.friends = FriendService.getAllFriends();
+    $scope.friends = _.values(FriendService.friends);
 
-    //
-    // angular.forEach($scope.availableRooms, function(room) {
-    //   if (isPrivate(room)) {
-    //     console.log('yes private');
-    //     console.log(room);
-    //     console.log(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId);
-    //     console.log( FriendService.get(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId) );
-    //     room.profile = FriendService.get(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId).avatarThumbnail;
-    //   }
-    // });
-    //
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply();
   };
