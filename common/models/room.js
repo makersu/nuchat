@@ -1,9 +1,11 @@
 module.exports = function(room) {
-	room.beforeCreate = function(next, modelInstance) {
-		modelInstance.created = new Date();
-		console.log(modelInstance)
-	  //your logic goes here
+
+	room.observe('before save', function updateTimestamp(ctx, next) {
+	  if (ctx.instance) {
+	    // console.log('create');
+	    ctx.instance.created = new Date();
+	  }
 	  next();
-	};
+	});
 
 };

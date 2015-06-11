@@ -41,8 +41,8 @@ module.exports = function(app) {
       // join self room
       //
       socket.on('self:join', function (userId) {
-        console.log('self:join')
-        console.log(userId)
+        console.log('*on self:join');
+        console.log(userId);
         socket.join(userId);
       });
 
@@ -105,7 +105,7 @@ module.exports = function(app) {
       // get friends
       //
       socket.on('friends:get', function (data, cb) {
-        console.log('friends:get')
+        console.log('*on friends:get')
         console.log(data)
         
         app.models.user.findById(data.user,function(err,user){
@@ -318,7 +318,7 @@ module.exports = function(app) {
       // })//socket.on
 
       socket.on('rooms:get', function(data, cb) {
-        console.log('rooms:get')
+        console.log('*on rooms:get')
         console.log(data)
 
         // var filter={
@@ -608,8 +608,8 @@ module.exports = function(app) {
                         //limit: 10,
                       }
         
-        if(data.messageId){
-          filter.where.id={ gt:data.messageId }
+        if(data.lastMessageId){
+          filter.where.id={ gt:data.lastMessageId }
         }
 
         console.log(JSON.stringify(filter))
@@ -632,7 +632,7 @@ module.exports = function(app) {
       // New Message
       //
       socket.on('room:messages:new', function(data) {
-        console.log('room:messages:new')
+        console.log('*on room:messages:new')
         console.log(data)
         // app.models.message.create(data,function(err, obj){
         //   if(err){
@@ -682,12 +682,12 @@ module.exports = function(app) {
       //
       socket.on('room:files:new', function(data) {
         console.log('room:files:new')
-        // console.log(data.type)
+        console.log(data)
         if(data.type.indexOf('image')!=-1){
           createRoomImageMessage(data)
         }
         else if(data.type.indexOf('video')!=-1){
-          createRoomVideoMessage(data)
+          // createRoomVideoMessage(data)
         }
         else if(data.type.indexOf('audio')!=-1){
           createRoomAudioMessage(data)  
@@ -827,7 +827,7 @@ module.exports = function(app) {
           app.models.message.count({roomId: obj.roomId},function(err,count){
             console.log(count)
             data.total=count
-            console.log(data.message.timestamp)
+            // console.log(data.message.timestamp)
             console.log(data)
             console.log('emit room:messages:new')
             app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
@@ -1066,7 +1066,7 @@ module.exports = function(app) {
       };//createRoomAudioMessage
 
 	  	socket.on('disconnect', function(){
-	  		console.log('user disconnected');
+	  		console.log('*user disconnected');
 	  	});
 	  });
 
