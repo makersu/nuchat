@@ -73,19 +73,24 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
   		console.log('room:messages:get')
 	    //console.log(messages)
 	    console.log(messages.messages.length)
-	    for(var i=0;i<messages.messages.length;i++){
+	    for (var i = 0; i < messages.messages.length; i++) {
 	    	addMessage(messages.messages[i])
 	    	// updateRoomInfo(messages.messages[i]);//???
 	    }
-			grouping(getRoom(roomId));
+	    if (!messages.messages.length) {
+				grouping(getRoom(roomId));
+	    }
 
 	    $timeout(function() {
 	    	// Insert the Unread-Note before the 1st message.
 		    if (messages.messages.length) {
-		    	var firstMsgEl = document.getElementById('item-'+messages.messages[0].id);
-		    	var parentEl = angular.element(firstMsgEl).parent()[0];
-		    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
-		    	parentEl && parentEl.insertBefore(note, firstMsgEl);
+		    	var unread = document.getElementById('unreadStart');
+		    	if (!unread) {
+		    		var firstMsgEl = document.getElementById('item-'+messages.messages[0].id);
+			    	var parentEl = angular.element(firstMsgEl).parent()[0];
+			    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
+			    	parentEl && parentEl.insertBefore(note, firstMsgEl);
+		    	}
 		    } else {
 		    	var msgContainer = document.getElementById('msgContainer');
 		    	var unread = document.getElementById('unreadStart');
@@ -114,42 +119,35 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 			room.messages[message.id] = message;
 		}
 		// console.log(room);
-		// grouping(room, message);
+		// grouping(room);
 		// console.log(room);
 		
 		$rootScope.$broadcast('onNewMessage', { msg: message });
   }
 
   function grouping(room, newMsg) {
-  	if ( newMsg && _prevLatestMsg && !$utils.sameDate(newMsg.created, _prevLatestMsg.created) ) {
-      // var msgs = {};
-      // msgs[newMsg.id] = newMsg;
-      // var newGroup = $filter('groupBy')(msgs, 'created', function(msg) {
-      //     return $filter('amChatGrouping')(msg.created);
-      // });
-      // room.groupedMessages = room.groupedMessages.concat(newGroup);
-      var groupName = $filter('amChatGrouping')(newMsg.created);
-      room.viewMessages.push({type: METATYPE.GROUP, text: groupName});
-      newMsg.group = groupName;
-      room.viewMessages.push(newMsg);
-    } else if (!_prevLatestMsg) {
-      room.viewMessages = $filter('groupDiv')(room.messages, function(msg) {
-        return $filter('amChatGrouping')(msg.created);
-      });
-      console.log(room.viewMessages);
-      // Open the latest group.
-      // getLastGroup(room).open = true;
-    } else {
-      // Append to the latest group.
-      // getLastGroup(room).items.push(newMsg);
-      newMsg.group = _prevLatestMsg.group;
-      room.viewMessages.push(newMsg);
-    }
+  	// if ( newMsg && _prevLatestMsg && !$utils.sameDate(newMsg.created, _prevLatestMsg.created) ) {
+   //    var groupName = $filter('amChatGrouping')(newMsg.created);
+   //    room.viewMessages.push({type: METATYPE.GROUP, text: groupName});
+   //    newMsg.group = groupName;
+   //    room.viewMessages.push(newMsg);
+   //  } else if (!_prevLatestMsg) {
+	  room.viewMessages = $filter('groupDiv')(room.messages, function(msg) {
+	    return $filter('amChatGrouping')(msg.created);
+	  });
+	  // console.log(room.viewMessages);
+    // } else {
+    // 	console.log('what!!!');
+    //   // Append to the latest group.
+    //   // getLastGroup(room).items.push(newMsg);
+    //   newMsg.group = _prevLatestMsg.group;
+    //   room.viewMessages.push(newMsg);
+    // }
     // filtering(room);
     $NUChatTags.setItemList(room.viewMessages);
     room.tagList = $NUChatTags.getTagList().tags;
-    console.log(room);
-    _prevLatestMsg = angular.copy(newMsg);
+    // console.log(room);
+    // _prevLatestMsg = angular.copy(newMsg);
   }
 
   function groupByDate(room) {

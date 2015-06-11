@@ -149,11 +149,13 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       console.log('scrolling to unreadStart');
     }
     $scope.msgAdapter.applyUpdates(function(item, scope) {
+      // console.log($scope.room.viewMessages.length);
       // console.log(scope.$index);
-      if ( scope.$index === $scope.room.viewMessages.length-1 ) {
+      if ( scope.$index === $scope.room.viewMessages.length ) {
         return [item, message];
       }
     });
+    RoomService.grouping($scope.room);
   }
 
   // Scope Public
@@ -490,7 +492,6 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     // Getting the other users joined the room.
     getRoomUsers();
     RoomService.getRoomMessages($scope.room.id);
-    $scope.room.viewMessages = _.values($scope.room.messages);
     // $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
     //   return $filter('amChatGrouping')(msg.created);
     // });
@@ -514,6 +515,13 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   $scope.$on('$destroy', function() {
     $scope.metaMenu.remove();
     $scope.rightMenu.remove();
+  });
+
+  $scope.$on('onResume', function() {
+    $scope.friends = FriendService.friends;
+    // Getting the other users joined the room.
+    getRoomUsers();
+    RoomService.getRoomMessages($scope.room.id);
   });
 
   // Reading unread messages from storage(or TODO: DB?)

@@ -78,6 +78,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
         cordova.plugins.notification.local.clear(ids);
       });
       $rootScope.isInBackground = false;
+      $rootScope.$broadcast('onResume');
     });
     document.addEventListener('pause', function() {
       $rootScope.isInBackground = true;
