@@ -8,54 +8,69 @@ function FriendService(User, LBSocket, ENV, $q, PouchService) {
 	function getAllFriends() {
 		console.log('getAllFriends');
 
-		//loadFriends();
-		emitGetFriends();
+		emitGetAllFriends();
 		
-		console.log(friends);//
-		return _.values(friends);
+		return _.values(friends);//return array
 	}
 
 	//load friends from pouchdb
-	function loadFriends(){
-		console.log('loadFriends');
-		PouchService.getFriends().then(function(rows){
-			console.log(rows);
+	function loadAllFriends(){
+		console.log('loadAllFriends');
+		PouchService.getAllFriends().then(function(rows){
+			console.log(rows.length);
 			rows.forEach(function(row){
 				// console.log(row);
-				addFriend(row.key);
+				addFriend(row);
 			})
 		});
 	}
 
 	//TODO: refactoring rename and PouchService?
-	function emitGetFriends(){
+	function emitGetAllFriends(){
 		console.log('emitGetFriends');
-		LBSocket.emit('friends:get', { user: User.getCachedCurrent().id }, function(err,friendObjs) {
+		LBSocket.emit('friends:get', { user: User.getCachedCurrent().id }, function(err, friendObjs) {
 			if (err) {
 				console.log(err);
 			}
 			else {
-				console.log(friendObjs);
-				friendObjs.forEach(function(friendObj){
-					addFriend(friendObj);
-					//TODO: addFriend failed if saveFriend failed
-					PouchService.saveFriend(friendObj).then(function(doc){
-						// console.log(doc);
-						// addFriend(doc);
-					},function(err){
-						console.log(err);
-					});//end PouchService.saveFriend
-				});
+				addFriends(friendObjs);
 			}
+		});
+	}
+
+	//add friends to friend list
+	function addFriends(users){
+		console.log('addFriends');
+		console.log(users.length);
+		users.forEach(function(user){
+			addFriend(user);
 		});
 	}
 
 	//add friend to friend list
 	function addFriend(user){
-		console.log('addFriend');
-		console.log(user);
+		// console.log('addFriend');
 		updateAvatar(user);
+		// console.log(user);
 		friends[user.id] = user;
+	}
+
+	//save friends to pouchdb
+	function saveFriends(users){
+		console.log('saveFriends');
+		users.forEach(function(user){
+			saveFriend(user);
+		});
+	}
+
+	//save friend to pouchdb
+	function saveFriend(user){
+		//TODO: addFriend failed if saveFriend failed
+		PouchService.saveFriend(user).then(function(doc){
+			console.log(doc);
+		},function(err){
+			console.log(err);
+		});//end PouchService.saveFriend
 	}
 
 	//TODO: refactoring pouchdb and emit name?
@@ -69,10 +84,8 @@ function FriendService(User, LBSocket, ENV, $q, PouchService) {
 				console.error(err);
 			}
 			else {
-				newFriendObjs.forEach(function(newFriendObj){
-					console.log(newFriendObj);
-					addFriend(newFriendObj);
-				});
+				console.log(newFriendObjs.length);
+				addFriends(newFriendObjs);
 				q.resolve( _.values(friends) );
 			}
 		});
@@ -80,22 +93,44 @@ function FriendService(User, LBSocket, ENV, $q, PouchService) {
 	}
 
 	//update avatar url
-	function updateAvatar(friend){
-    if(friend.avatarThumbnail){
-      friend.avatarThumbnail=ENV.GRIDFS_BASE_URL+friend.avatarThumbnail;
+	function updateAvatar(user){
+    if(user.avatarThumbnail){
+    	if(user.avatarThumbnail.indexOf('http')==-1){
+    		user.avatarThumbnail=ENV.GRIDFS_BASE_URL+user.avatarThumbnail;
+    	}  
     }
     else{
-			friend.avatarThumbnail='images/profile.png';
+			user.avatarThumbnail='images/profile.png';
     }
-    console.log(friend.avatarThumbnail);
+    // console.log(user.avatarThumbnail);
   }
 
 	function getFriend(friendId) {
+		console.log('getFriend');
+		// console.log(friends);//
     return friends[friendId];
   }
 
   function removeAll(){
 		friends = {};
+  }
+
+  function searchFriend(data){
+		console.log('searchFriend');
+
+		var deferred = $q.defer();
+		LBSocket.emit('friends:find',data,function(err,results){
+      if(err){
+        console.log(err);
+        deferred.reject(err);
+      }
+      else{
+        console.log(results);
+        deferred.resolve(results);
+      }
+    });
+
+		return deferred.promise;
   }
 
   // getFriends();
@@ -105,7 +140,8 @@ function FriendService(User, LBSocket, ENV, $q, PouchService) {
 		getAllFriends: getAllFriends,
 		getFriend: getFriend,
 		addNewFriends: addNewFriends,
-		removeAll: removeAll
+		removeAll: removeAll,
+		searchFriend: searchFriend
   };
 
   return service;

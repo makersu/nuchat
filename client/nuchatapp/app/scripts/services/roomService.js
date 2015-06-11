@@ -302,6 +302,26 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		console.log(newRoom)
 		LBSocket.emit('rooms:create:group', newRoom)
 	}
+
+	function createPrivateRoom(privateroom){
+		console.log('createGroupRoom')
+		console.log(privateroom)
+		
+		var deferred = $q.defer();
+
+    LBSocket.emit('rooms:create:private', privateroom, function(err, room) {
+      console.log('rooms:create:private callback');
+      if(err){
+      	deferred.reject(err);
+      }
+      else{
+      	console.log(room);
+      	deferred.resolve(room);
+      }
+		});
+
+		return deferred.promise;
+	}
 	
 	function getRoom(roomId) {
 		return rooms[roomId];
@@ -381,6 +401,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		rooms: rooms,
 		getAllRooms: getAllRooms,
 		createGroupRoom: createGroupRoom,
+		createPrivateRoom: createPrivateRoom,
 		setCurrentRoom: setCurrentRoom,
 		getCurrentRoom: getCurrentRoom,
 		getRoomMessages: getRoomMessages,
