@@ -1,5 +1,5 @@
 function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate, User, LBSocket, RoomService, $localstorage, $q, $filter,
-            $ionicScrollDelegate, $ionicTabsDelegate, $ionicGesture, $gridMenu, $sidePanel, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
+            $ionicScrollDelegate, $ionicTabsDelegate, $ionicGesture, $ionicModal, $gridMenu, $sidePanel, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
             $location, $utils, FriendService, $imageViewer, $checkFormat) {
 
   // var data = {}
@@ -27,6 +27,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   
   $scope.msgAdapter = {};
   // Scope Public
+  $scope.roomModalTitle = $filter('translate')('MANAGE_ROOM');
 	$scope.currentUser = User.getCachedCurrent();
   $scope.currentUser.avatarThumbnail = ENV.GRIDFS_BASE_URL+$scope.currentUser.avatarThumbnail;
   $scope.joinerList = [];
@@ -117,24 +118,21 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       });
     }
   }
-  var openTheLastGroup = function() {
-    RoomService.getLastGroup($scope.room) && (function() {
-      RoomService.getLastGroup($scope.room).open = true;
-    })();
-  };
   /* Getting the all the users joined this room except the currentUser
    */
   function getRoomUsers() {
     $scope.joinerList = [];
     // console.log($scope.room);//
     angular.forEach($scope.room.joiners, function(joiner) {
-      $scope.friends[joiner] && $scope.joinerList.push($scope.friends[joiner]);
+      $scope.friends[joiner] && $scope.joinerList.push($scope.friends[joiner]) && ($scope.friends[joiner].selected = true);
     });
-    // if ( RoomService.isPrivate($scope.room) ) {
-    //   $scope.otherUsers.push($scope.friends[$scope.room.ownerId === $scope.currentUser.id ? $scope.room.friend : $scope.room.ownerId]);
-    // } else {
-    //   // TODO: Getting user in the group.
-    // }
+    ($scope.isGroupOwner = RoomService.isGroup($scope.room) && $scope.currentUser.id === $scope.room.ownerId) && ($scope.friendList = _.values($scope.friends));
+    console.log(RoomService.isGroup($scope.room));
+    console.log($scope.currentUser.id === $scope.room.ownerId);
+    console.log($scope.currentUser.id);
+    console.log($scope.room);
+    console.log($scope.room.ownerId);
+    console.log($scope.isGroupOwner);
   }
 
   /* Appending the message to ui-scroll list
@@ -164,11 +162,11 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
 
     //console.log($stateParams.roomId)
     //scope.input.room=$stateParams.roomId
-    console.log($scope.room);
+    // console.log($scope.room);
     $checkFormat.isLink($scope.input) && ($scope.input.type = METATYPE.LINK);
     $scope.input.roomId = $scope.room.id;
     $scope.input.ownerId = $scope.currentUser.id;
-    console.log($scope.input);
+    // console.log($scope.input);
 
     if (isLocal) {
       $scope.input.created = new Date().toISOString();
@@ -219,6 +217,40 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   $scope.closeMetaMenu = function() {
     $scope.metaMenu.hide();
   };
+  // Room Menu
+  $scope.openRoomMenu = function() {
+    if (!$scope.roomMenu) {
+      $gridMenu.fromTemplateUrl('roommenu.html', {
+        scope: $scope,
+        hasHeader: true
+      }).then(function(menu) {
+        $scope.roomMenu = menu;
+        $scope.roomMenu.show();
+      });
+    } else {
+      $scope.roomMenu.show();
+    }
+  };
+  $scope.closeRoomMenu = function() {
+    $scope.roomMenu.hide();
+  };
+  // Room Modal
+  $scope.openRoomModalEdit = function() {
+    if (!$scope.roomModal) {
+      $ionicModal.fromTemplateUrl('templates/modals/modalCreateEditRoom.html', {
+        scope: $scope
+      }).then(function(modal) {
+        $scope.roomModal = modal;
+        $scope.roomModal.show();
+      });
+    } else {
+      $scope.roomModal.show();
+    }
+    $scope.roomMenu.hide();
+  };
+  $scope.closeRoomModal = function() {
+    $scope.roomModal.hide();
+  };
   /* Side Menu */
   if (!$scope.rightMenu) {
     $sidePanel.fromTemplateUrl('rightMenu.html', {
@@ -230,6 +262,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   }
   $scope.openFilterPanel = function() {
     console.log('openFilterPanel');
+    $scope.roomMenu.hide();
     $scope.rightMenu.show();
   };
   $scope.closeFilterPanel = function() {
@@ -407,7 +440,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   // console.log('ChatCtrl');
   // console.log($stateParams.roomId);
   RoomService.setCurrentRoom($stateParams.roomId);
-  $scope.room = RoomService.getCurrentRoom();
+  $scope.theRoom = $scope.room = RoomService.getCurrentRoom();
   var datasource = {
     _revision: 0,
     // cache: {

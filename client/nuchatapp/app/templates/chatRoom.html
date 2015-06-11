@@ -15,8 +15,8 @@
     <a class="button icon-left ion-chevron-left button-clear" href="#/tab/chats">{{ ::'CHAT' | translate }}</a>
   </ion-nav-buttons>
   <ion-nav-buttons side="right">
- 		<a class="button button-clear icon fa fa-filter" ng-click="openFilterPanel()"></a>
     <a class="button button-clear icon fa fa-th-large" ng-click="gotoDirectory()"></a>
+    <a class="button button-clear icon ion-android-more-vertical" ng-click="openRoomMenu()"></a>
   </ion-nav-buttons>
 
 	<ion-content id="msgContainer" has-bouncing="!editing" scroll="!editing" class="has-header has-footer" delegate-handle="userMessageScroll" on-scroll="checkScroll()" ui-scroll-viewport overflow-scroll="true">
@@ -103,6 +103,15 @@
 	  </div>
 	</grid-menu>
 </script>
+<script id="roommenu.html" type="text/ng-template">
+	<grid-menu>
+		<div class="row">
+	  	<div class="col tab-item" ng-click="openFilterPanel()"><i class="icon fa fa-filter"></i>{{ ::'FILTERS' | translate }}</div>
+	  	<div class="col tab-item" ng-if="isGroupOwner" ng-click="openRoomModalEdit()"><i class="icon ion-gear-b"></i>{{ ::'MANAGE_ROOM' | translate }}</div>
+	  	<div class="col tab-item" ng-click=""></div>
+	  </div>
+	</grid-menu>
+</script>
 <script id="rightMenu.html" type="text/ng-template">
 	<side-panel class="has-header">
 		<ion-content>
@@ -112,17 +121,15 @@
 			<accordion>
 				<accordion-group is-open="members.open" id="members">
 					<accordion-heading>{{ ::'MEMBERS' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !members.open, 'ion-chevron-up': members.open}"></i></accordion-heading>
-					// <ion-content>
-						<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
-							<img img-cache ng-src="{{ currentUser.avatarThumbnail }}">
-							{{ ::currentUser.username }}
-						</ion-item>
-						<ion-item class="item-avatar" ng-repeat="usr in joinerList"
-							item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
-							<img img-cache ng-src="{{ usr.avatarThumbnail }}">
-							{{ usr.username }}
-						</ion-item>
-					// </ion-content>
+					<ion-item class="item-avatar" ng-click="filterByUser(currentUser)">
+						<img img-cache ng-src="{{ currentUser.avatarThumbnail }}">
+						{{ ::currentUser.username }}
+					</ion-item>
+					<ion-item class="item-avatar" ng-repeat="usr in joinerList"
+						item-width="100%" item-height="60px" ng-click="filterByUser(usr)">
+						<img img-cache ng-src="{{ usr.avatarThumbnail }}">
+						{{ usr.username }}
+					</ion-item>
 				</accordion-group>
 				<accordion-group is-open="dt.open" id="datepicker">
 					<accordion-heading>{{ ::'DATE' | translate }}<i class="icon" ng-class="{'ion-chevron-down': !dt.open, 'ion-chevron-up': dt.open}"></i></accordion-heading>

@@ -7,6 +7,9 @@
     			&::before {
     				font-size: $navIcon_font_size;
     			}
+          &.ion-android-more-vertical {
+            padding: 0 8px;
+          }
         }
       }
 		}

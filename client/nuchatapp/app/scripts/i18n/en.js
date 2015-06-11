@@ -20,6 +20,11 @@ var enTranslate = function ($translateProvider) {
 		LESS: 'Less',
 		SHARE: 'Share',
 		UPLOADING: 'Uploading...',
+		FILTERS: 'Filters',
+
+		// Room
+		CREATE_ROOM: 'Create Room',
+		MANAGE_ROOM: 'Manage Room',
 
 		// Messages
 		SENT_IMG: 'Sent an image',
@@ -58,6 +63,7 @@ var enTranslate = function ($translateProvider) {
 
 		// Friends
 		SEARCH_OR_ADD_FRIENDS: 'Search/Add Friends',
+		SEARCH_FRIENDS: 'Search Friends',
 		NEW_FRIENDS: 'New Friends',
 		ADD_TO_FRIEND_LIST: 'Add To Friend List'
 	});

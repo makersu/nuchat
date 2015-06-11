@@ -20,6 +20,11 @@ var chtTranslate = function ($translateProvider) {
 		LESS: '隱藏',
 		SHARE: '分享',
 		UPLOADING: '上傳中...',
+		FILTERS: '篩選器',
+
+		// Room
+		CREATE_ROOM: '新增聊天室',
+		MANAGE_ROOM: '管理聊天室',
 
 		// Messages
 		SENT_IMG: '傳送了圖片',
@@ -59,6 +64,8 @@ var chtTranslate = function ($translateProvider) {
 
 		// Friends
 		SEARCH_OR_ADD_FRIENDS: '搜尋/新增好友',
+		SEARCH_FRIENDS: '搜尋好友',
 		NEW_FRIENDS: '新增好友',
+		ADD_TO_FRIEND_LIST: '加入好友名單'
 	});
 };
