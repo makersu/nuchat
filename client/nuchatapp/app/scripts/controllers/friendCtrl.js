@@ -43,18 +43,31 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
       friend: friendId
     };
 
-    LBSocket.emit('friend:join', privateroom, function(err, room) {
-      console.log('friend:join callback');
+  //   LBSocket.emit('rooms:create:private', privateroom, function(err, room) {
+  //     console.log('rooms:create:private callback');
+  //     console.log(room);
+  //     if(room.id){
+  //       console.log($ionicHistory.backView());
+  //       console.log($ionicHistory.currentView());
+  //     	//$ionicHistory.currentView($ionicHistory.backView());
+  //       $scope.friendModal.isShown() && $scope.closeFriendModal();
+  //       $state.go('tab.chatRoom',{roomId:room.id},{location: 'replace'});
+  //       // $location.path('/tab/room/'+room.id);
+  //     }
+		// });
+
+    RoomService.createPrivateRoom(privateroom).then(function(room){
+      console.log('RoomService.createPrivateRoom.then');
       console.log(room);
       if(room.id){
         console.log($ionicHistory.backView());
         console.log($ionicHistory.currentView());
-      	//$ionicHistory.currentView($ionicHistory.backView());
+        
         $scope.friendModal.isShown() && $scope.closeFriendModal();
         $state.go('tab.chatRoom',{roomId:room.id},{location: 'replace'});
-        // $location.path('/tab/room/'+room.id);
+       
       }
-		});
+    });
 
 	};
 
@@ -68,7 +81,8 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
 
   $scope.doRefresh = function() {
     console.log('doRefresh')
-    $scope.friends=FriendService.getAllFriends();
+    // $scope.friends=FriendService.getAllFriends();
+    $scope.friends=_.values(FriendService.friends);
     console.log($scope.friends);
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply()
@@ -102,20 +116,26 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
     console.log(data)
     console.log('friends:find')
     //TODO: refactoring rename results?
-    LBSocket.emit('friends:find',data,function(err,results){
-      if(err){
-        console.log(err)
-      }
-      else{
-        console.log(results)
-        $scope.results=results;
-      }
+    // LBSocket.emit('friends:find',data,function(err,results){
+    //   if(err){
+    //     console.log(err)
+    //   }
+    //   else{
+    //     console.log(results)
+    //     $scope.results=results;
+    //   }
+    // });
+    FriendService.searchFriend(data).then(function(results){
+      console.log('FriendService.searchFriend.then');
+      console.log(results);
+      $scope.results=results;
     });
+
   }
 
   $scope.addNewFriends = function(results){
     console.log('addNewFriends')
-    console.log(results)
+    // console.log(results)
     if(!results){
       $scope.hideSearchFriendModal()
       return;

@@ -15,14 +15,6 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		//add room then join room
 		addRoom(room);
 
-		//TODO: addroom/joinroom failed if saveRoom failed
-		PouchService.saveRoom(room).then(function(doc){
-			console.log(doc);
-			// addRoom(doc);
-		},function(err){
-			console.log(err);
-		});//end PouchService.saveRoom
-
   });//rooms:new
 
 	//when get new message
@@ -63,9 +55,9 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
   function getRoomMessages(roomId){
   	var data = {}
   	data.roomId=roomId
-  	var lastMessage= getLastMessage(roomId)
-  	if(lastMessage && lastMessage.id){
-  		data.messageId = lastMessage.id
+  	var lastMessageId = getLastMessageId(roomId)
+  	if( lastMessageId ){
+  		data.lastMessageId = lastMessageId
   	}
   	// console.log(data);
 
@@ -161,8 +153,8 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
   }
 
   function isPrivate(room) {
-  	console.log('isPrivate');
-  	console.log(room)
+  	// console.log('isPrivate');
+  	// console.log(room)
   	return (room.type && room.type === 'private');
   }
 
@@ -203,9 +195,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	function getAllRooms() {
 		console.log('getAllRooms');
 
-		// loadRooms();
-
-		emitGetRooms();
+		emitGetAllRooms();
 		
   	return rooms;
 	}
@@ -222,30 +212,31 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	}
 
 	//TODO: refactoring rename and PouchService?
-	function emitGetRooms(){
+	function emitGetAllRooms(){
+		console.log('emitGetAllRooms');
 		LBSocket.emit('rooms:get', { user: User.getCachedCurrent().id }, function(err, roomObjs) {
 			if (err) {
 				console.error(err);
-				return;
 			}
-			
-			roomObjs.forEach(function(roomObj){
-				addRoom(roomObj);
-				PouchService.saveRoom(roomObj).then(function(doc){
-					// console.log(doc);
-					// addRoom(doc);
-				},function(err){
-					console.log(err);
-				});//end PouchService.saveRoom
-			});//end roomObjs
-			
+			else{
+					addRooms(roomObjs);
+			}			
+		});
+	}
+
+	function addRooms(rooms) {
+		console.log('addRooms');
+		console.log(rooms.length);
+		// console.log(rooms);
+		rooms.forEach(function(room){
+			addRoom(room);
 		});
 	}
 
 	//addRoom then joinRoom
 	function addRoom(room) {
 		console.log('addRoom')
-		console.log(room);
+		// console.log(room);
 
 		if( isPrivate(room) ) {
     	// $timeout(function() {
@@ -293,7 +284,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 			console.log(roomObj);
 
 			LBSocket.emit('room:info', {room: roomObj.id} , function(err, roomInfo){
-				console.log('room:info');
+				console.log('emit room:info');
 					if (err) {
 					console.error(err);
 					return;
@@ -306,10 +297,30 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
 	}
 
-	function createRoom(newRoom){
-		console.log('createRoom')
+	function createGroupRoom(newRoom){
+		console.log('createGroupRoom')
 		console.log(newRoom)
-		LBSocket.emit('rooms:create', newRoom)
+		LBSocket.emit('rooms:create:group', newRoom)
+	}
+
+	function createPrivateRoom(privateroom){
+		console.log('createGroupRoom')
+		console.log(privateroom)
+		
+		var deferred = $q.defer();
+
+    LBSocket.emit('rooms:create:private', privateroom, function(err, room) {
+      console.log('rooms:create:private callback');
+      if(err){
+      	deferred.reject(err);
+      }
+      else{
+      	console.log(room);
+      	deferred.resolve(room);
+      }
+		});
+
+		return deferred.promise;
 	}
 	
 	function getRoom(roomId) {
@@ -346,19 +357,33 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
 	//TODO:?
 	function getLastMessage(roomId) {
-		console.log('getLastMessage')
-		console.log(roomId)
+		console.log('getLastMessage');
+		// console.log(roomId);
 		var room = getRoom(roomId);
 		console.log(room);//
-		var lastMessage={}
+		var lastMessage;
 		if(room.messages){
 			var lastKeyIndex=Object.keys(room.messages).length - 1
-			console.log(lastKeyIndex)
+			console.log(lastKeyIndex);//
 
 			lastMessage= room.messages[Object.keys(room.messages)[lastKeyIndex]]
-			console.log(lastMessage)
+			// console.log(lastMessage);
 		}
 		return lastMessage;	
+	}
+
+	function getLastMessageId(roomId) {
+		console.log('getLastMessageId');
+		console.log(roomId)
+		var lastMessage=getLastMessage(roomId)
+		console.log(lastMessage);//
+		var lastMessageId;
+
+		if(lastMessage){
+			lastMessageId=lastMessage.id;
+		}
+
+		return lastMessageId;	
 	}
 
 	function createMessage(newMessage){
@@ -370,9 +395,13 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		rooms = {};
 	}
 
+	getAllRooms();//
+
 	var service = {
+		rooms: rooms,
 		getAllRooms: getAllRooms,
-		createRoom: createRoom,
+		createGroupRoom: createGroupRoom,
+		createPrivateRoom: createPrivateRoom,
 		setCurrentRoom: setCurrentRoom,
 		getCurrentRoom: getCurrentRoom,
 		getRoomMessages: getRoomMessages,

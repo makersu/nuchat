@@ -39,10 +39,11 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     }
     // $location.path('/tab/createRoom');
   };
- 
-  $scope.createRoom = function() {
-    console.log('createRoom');//
 
+  $scope.updateGroupRoom = function() {
+    console.log('createGroupRoom');//
+
+    $scope.theRoom.user=User.getCachedCurrent().id;
     $scope.theRoom.type='group';
     $scope.theRoom.joiners=[];
     $scope.theRoom.joiners.push(User.getCachedCurrent().id)
@@ -52,10 +53,10 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
         console.log(friend);
         $scope.theRoom.joiners.push(friend.id);
       }
-    })
+    });
 
     console.log($scope.theRoom);
-    RoomService.createRoom($scope.theRoom);
+    RoomService.createGroupRoom($scope.theRoom);
     // $location.path('/tab/chats');
     $scope.roomModal.hide();
   };
@@ -67,25 +68,16 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
   $scope.doRefresh = function() {
     console.log('doRefresh');//
     
-    $scope.availableRooms = RoomService.getAllRooms();
+    // $scope.availableRooms = RoomService.getAllRooms();
+    $scope.availableRooms = RoomService.rooms;
+
     var unWatchAvailableRooms = $scope.$watch('availableRooms', function(newVal) {
       if (newVal) {
         $scope.availableRoomList = _.values(newVal);
       }
     }, true);
-    $scope.friendList = FriendService.getAllFriends();
 
-    //
-    // angular.forEach($scope.availableRooms, function(room) {
-    //   if (isPrivate(room)) {
-    //     console.log('yes private');
-    //     console.log(room);
-    //     console.log(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId);
-    //     console.log( FriendService.get(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId) );
-    //     room.profile = FriendService.get(User.getCachedCurrent().id === room.ownerId ? room.friend : room.ownerId).avatarThumbnail;
-    //   }
-    // });
-    //
+    $scope.friendList = _.values(FriendService.friends);
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply();
   };

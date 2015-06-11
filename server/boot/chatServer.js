@@ -41,8 +41,8 @@ module.exports = function(app) {
       // join self room
       //
       socket.on('self:join', function (userId) {
-        console.log('self:join')
-        console.log(userId)
+        console.log('*on self:join');
+        console.log(userId);
         socket.join(userId);
       });
 
@@ -105,7 +105,7 @@ module.exports = function(app) {
       // get friends
       //
       socket.on('friends:get', function (data, cb) {
-        console.log('friends:get')
+        console.log('*on friends:get')
         console.log(data)
         
         app.models.user.findById(data.user,function(err,user){
@@ -263,28 +263,67 @@ module.exports = function(app) {
       //
       // Create Room
       //
-      socket.on('rooms:create', function(data, cb) {
-        console.log('rooms:create')
+      // socket.on('rooms:create', function(data, cb) {
+      //   console.log('rooms:create')
+      //   console.log(data)
+      //   app.models.room.create(data ,function(err, obj){
+      //     if(err){
+      //       console.log(err)
+      //       cb(err);
+      //     }
+      //     console.log(obj);
+      //     // socket.emit('rooms:new',obj);
+      //     obj.joiners.forEach(function(joiner){
+      //       console.log('emit rooms:new')
+      //       console.log(joiner)
+      //       app.sio.sockets.to(joiner).emit('rooms:new', obj);
+      //     })
+          
+      //     if(cb){
+      //       cb(null, obj);
+      //     }
+      //   });//
+        
+      // });//end socket.on('rooms:create')
+
+      //
+      // Create Room
+      //
+      socket.on('rooms:create:group', function(data, cb) {
+        console.log('*on rooms:create:group');
         console.log(data)
-        app.models.room.create(data ,function(err, obj){
+
+        app.models.user.findById(data.user,function(err, user) {
           if(err){
             console.log(err)
             cb(err);
+            return;
           }
-          console.log(obj);
-          // socket.emit('rooms:new',obj);
-          obj.joiners.forEach(function(joiner){
-            console.log('emit rooms:new')
-            console.log(joiner)
-            app.sio.sockets.to(joiner).emit('rooms:new', obj);
-          })
           
-          if(cb){
-            cb(null, obj);
-          }
-        });//
+          delete data.user
+
+          console.log(user)
+          user.rooms.create(data ,function(err, roomObj){
+            if(err){
+              console.log(err)
+              cb(err);
+            }
+            console.log(roomObj);
+            roomObj.joiners.forEach(function(joiner){
+              console.log('emit rooms:new')
+              console.log(joiner)
+              app.sio.sockets.to(joiner).emit('rooms:new', roomObj);
+            })
+
+            socket.join(roomObj.id);//???  
+            cb(null, roomObj);
+            
+          });//end create room
+
+        });//end find user  
         
-      });//end socket.on('rooms:create')
+      });//socket.on
+
 
 	  	//
       // Roomlist request
@@ -318,7 +357,7 @@ module.exports = function(app) {
       // })//socket.on
 
       socket.on('rooms:get', function(data, cb) {
-        console.log('rooms:get')
+        console.log('*on rooms:get')
         console.log(data)
 
         // var filter={
@@ -463,8 +502,8 @@ module.exports = function(app) {
       // });//socket.on
 
 
-      socket.on('friend:join', function(data, cb) {
-        console.log('*on friend:join')
+      socket.on('rooms:create:private', function(data, cb) {
+        console.log('*on rooms:create:private')
         console.log(data)
 
         //create self room?
@@ -506,7 +545,7 @@ module.exports = function(app) {
                 joiners: [data.user, data.friend]
               }
               
-              user.privateRooms.create(newPrivateRoom ,function(err, roomObj){
+              user.rooms.create(newPrivateRoom ,function(err, roomObj){
                 if(err){
                   console.log(err)
                   cb(err);
@@ -608,8 +647,8 @@ module.exports = function(app) {
                         //limit: 10,
                       }
         
-        if(data.messageId){
-          filter.where.id={ gt:data.messageId }
+        if(data.lastMessageId){
+          filter.where.id={ gt:data.lastMessageId }
         }
 
         console.log(JSON.stringify(filter))
@@ -632,7 +671,7 @@ module.exports = function(app) {
       // New Message
       //
       socket.on('room:messages:new', function(data) {
-        console.log('room:messages:new')
+        console.log('*on room:messages:new')
         console.log(data)
         // app.models.message.create(data,function(err, obj){
         //   if(err){
@@ -682,12 +721,12 @@ module.exports = function(app) {
       //
       socket.on('room:files:new', function(data) {
         console.log('room:files:new')
-        // console.log(data.type)
+        console.log(data)
         if(data.type.indexOf('image')!=-1){
           createRoomImageMessage(data)
         }
         else if(data.type.indexOf('video')!=-1){
-          createRoomVideoMessage(data)
+          // createRoomVideoMessage(data)
         }
         else if(data.type.indexOf('audio')!=-1){
           createRoomAudioMessage(data)  
@@ -827,7 +866,7 @@ module.exports = function(app) {
           app.models.message.count({roomId: obj.roomId},function(err,count){
             console.log(count)
             data.total=count
-            console.log(data.message.timestamp)
+            // console.log(data.message.timestamp)
             console.log(data)
             console.log('emit room:messages:new')
             app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
@@ -1066,7 +1105,7 @@ module.exports = function(app) {
       };//createRoomAudioMessage
 
 	  	socket.on('disconnect', function(){
-	  		console.log('user disconnected');
+	  		console.log('*user disconnected');
 	  	});
 	  });
 

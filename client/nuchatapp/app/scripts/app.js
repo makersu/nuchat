@@ -218,16 +218,6 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       }
     })
     //
-    .state('tab.createRoom', {
-      url: '/createRoom',
-      views: {
-        'tab-chats': {
-          templateUrl: 'templates/createRoom.html',
-          controller: 'RoomCtrl'
-        }
-      }
-    })
-    //
     .state('tab.chatRoom', {
       url: '/room/:roomId',
       views: {
