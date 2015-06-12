@@ -1,0 +1,34 @@
+<ion-modal-view>
+  <ion-header-bar align-title="left" class="bar-royal">
+    <h1 class="title">{{ roomModalTitle }}</h1>
+    <div class="buttons">
+      <button class="button button-clear button-icon icon ion-checkmark" ng-click="updateGroupRoom()"></button>
+      <button class="button button-clear button-icon icon ion-close" ng-click="closeRoomModal()"></button>
+    </div>
+  </ion-header-bar>
+  <ion-content has-tabs="true">
+    <div class="list">
+      <label class="item item-input">
+        <span class="input-label">Room Name</span>
+        <input type="text" ng-model="theRoom.name" required>
+      </label>
+      <label class="item item-input">
+        <span class="input-label">Description</span>
+        <input type="text" ng-model="theRoom.description">
+      </label>
+      <label class="item royal">{{ 'MEMBERS' | translate }}</label>
+      <label class="item item-input">
+        <i class="icon ion-search placeholder-icon"></i>
+        <input type="text" ng-model="searchFriend" placeholder="{{ 'SEARCH_FRIENDS' | translate }}">
+      </label>
+      <ion-list>
+        <div collection-repeat="friend in friendList | orderBy:'username' | filter:searchFriend">
+          <ion-checkbox ng-model="friend.selected">{{ friend.username }}</ion-checkbox>
+        </div>
+      </ion-list>
+    </div>
+    <!-- <div class="padding">
+      <button class="button button-royal button-block" ng-click="createRoom()" >Create Room</button>
+    </div> -->
+  </ion-content>
+</ion-modal-view>

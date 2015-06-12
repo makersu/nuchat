@@ -127,12 +127,6 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       $scope.friends[joiner] && $scope.joinerList.push($scope.friends[joiner]) && ($scope.friends[joiner].selected = true);
     });
     ($scope.isGroupOwner = RoomService.isGroup($scope.room) && $scope.currentUser.id === $scope.room.ownerId) && ($scope.friendList = _.values($scope.friends));
-    console.log(RoomService.isGroup($scope.room));
-    console.log($scope.currentUser.id === $scope.room.ownerId);
-    console.log($scope.currentUser.id);
-    console.log($scope.room);
-    console.log($scope.room.ownerId);
-    console.log($scope.isGroupOwner);
   }
 
   /* Appending the message to ui-scroll list
@@ -536,7 +530,6 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     $NUChatLinks.reset();
 
     slideoutTabs();
-    // openTheLastGroup();
 
   });
 
@@ -618,7 +611,6 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
         console.error('Cannot find the user('+args.msg.ownerId+') from the friend list');
       }
     } else {  // If sent by self, opening the group.
-      openTheLastGroup();
       $scope.notify = false;
       // $timeout(function() {
       //   scrollHandle.scrollBottom();
