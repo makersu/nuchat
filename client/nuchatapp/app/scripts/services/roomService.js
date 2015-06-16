@@ -17,6 +17,26 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
   });//rooms:new
 
+	//TODO: update joinerList in chatCtrl
+	LBSocket.on('rooms:group:update', function(updatedRoom) {
+    console.log('on rooms:group:update');
+		console.log(updatedRoom);
+		var room=getRoom(updatedRoom.id);
+		console.log(room);
+		if(room){
+			room.name=updatedRoom.name;
+			room.description=updatedRoom.description;
+			room.joiners=updatedRoom.joiners;
+		}
+
+  });//rooms:group:update
+
+  LBSocket.on('rooms:group:remove', function(room) {
+    console.log('on rooms:group:remove');
+		console.log(room);
+  });//rooms:group:remove
+
+
 	//when get new message
   LBSocket.on('room:messages:new', function(newMessageInfo) {
   	console.log('room:messages:new');
@@ -300,7 +320,17 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	function createGroupRoom(newRoom){
 		console.log('createGroupRoom')
 		console.log(newRoom)
-		LBSocket.emit('rooms:create:group', newRoom)
+		LBSocket.emit('rooms:group:create', newRoom)
+	}
+
+	function updateGroupRoom(updateRoom){
+		console.log('updateGroupRoom')
+		console.log(updateRoom)
+		LBSocket.emit('rooms:group:update', updateRoom, function(err,obj){
+			if(err){
+				console.log(err);
+			}
+		})
 	}
 
 	function createPrivateRoom(privateroom){
@@ -309,8 +339,8 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		
 		var deferred = $q.defer();
 
-    LBSocket.emit('rooms:create:private', privateroom, function(err, room) {
-      console.log('rooms:create:private callback');
+    LBSocket.emit('rooms:private:create', privateroom, function(err, room) {
+      console.log('rooms:private:create callback');
       if(err){
       	deferred.reject(err);
       }
@@ -401,6 +431,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		rooms: rooms,
 		getAllRooms: getAllRooms,
 		createGroupRoom: createGroupRoom,
+		updateGroupRoom: updateGroupRoom,
 		createPrivateRoom: createPrivateRoom,
 		setCurrentRoom: setCurrentRoom,
 		getCurrentRoom: getCurrentRoom,

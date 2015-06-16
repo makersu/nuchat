@@ -40,8 +40,8 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     // $location.path('/tab/createRoom');
   };
 
-  $scope.updateGroupRoom = function() {
-    console.log('createGroupRoom');//
+  $scope.upsertGroupRoom = function() {
+    console.log('updateGroupRoom');//
 
     $scope.theRoom.user=User.getCachedCurrent().id;
     $scope.theRoom.type='group';
@@ -58,6 +58,11 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     console.log($scope.theRoom);
     RoomService.createGroupRoom($scope.theRoom);
     // $location.path('/tab/chats');
+
+    //TODO: remvoe joiners
+    $scope.theRoom={};
+    // console.log($scope.theRoom)
+
     $scope.roomModal.hide();
   };
 

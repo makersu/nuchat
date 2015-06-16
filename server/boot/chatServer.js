@@ -289,8 +289,8 @@ module.exports = function(app) {
       //
       // Create Room
       //
-      socket.on('rooms:create:group', function(data, cb) {
-        console.log('*on rooms:create:group');
+      socket.on('rooms:group:create', function(data, cb) {
+        console.log('*on rooms:group:create');
         console.log(data)
 
         app.models.user.findById(data.user,function(err, user) {
@@ -321,6 +321,75 @@ module.exports = function(app) {
           });//end create room
 
         });//end find user  
+        
+      });//socket.on
+
+      socket.on('rooms:group:update', function(data, cb) {
+        console.log('*on rooms:group:update');
+        console.log(data)
+
+        if(!data.name){
+          cb('err: !data.name');
+          return;
+        }
+
+        app.models.room.findById(data.id, function(err, roomObj) {
+          if(err){
+            console.log(err)
+            cb(err);
+            return;
+          }
+          
+          // console.log(roomObj);
+
+          if(roomObj.id){
+            app.models.room.updateAll({_id:roomObj.id}, data, function(err,info){
+              if(err){
+                console.log(err)
+                cb(err)
+              }
+              console.log(info);
+
+              //TODO: reselect and emit removed user?
+              if(info.count && data.name){
+                
+                data.id=roomObj.id//TODO: updateAll will remove data.id?
+                // console.log(data)
+
+                //notify update
+                data.joiners.forEach(function(joiner){
+                  // console.log(joiner)
+                  // app.sio.sockets.to(joiner).emit('rooms:group:update', data);
+                  if(roomObj.joiners.indexOf(joiner) != -1){
+                    console.log('emit rooms:group:update')
+                    console.log(joiner);
+                    app.sio.sockets.to(joiner).emit('rooms:group:update', data);
+                  }
+                  else{
+                    console.log('emit rooms:new');
+                    console.log(joiner);
+                    app.sio.sockets.to(joiner).emit('rooms:new', data);
+                  }
+                })
+
+                //notify remove
+                roomObj.joiners.forEach(function(oldJoiner){
+                  if(data.joiners.indexOf(oldJoiner)==-1){
+                    console.log('emit rooms:group:remove')
+                    console.log(oldJoiner);
+                    app.sio.sockets.to(oldJoiner).emit('rooms:group:remove', data);
+                  }
+                })
+
+              }//end if info.count
+              
+            });
+          }
+          else{
+            console.log('!roomObj.id, room not found!');
+          }
+
+        });//end room.findById
         
       });//socket.on
 
@@ -373,7 +442,8 @@ module.exports = function(app) {
         var filter={
           "where": { 
             "or": [
-              { "joiners": { in: [data.user]}}
+              { "joiners": { in: [data.user]}},
+              {"ownerId": data.user}
             ]
           }
         }
@@ -502,8 +572,8 @@ module.exports = function(app) {
       // });//socket.on
 
 
-      socket.on('rooms:create:private', function(data, cb) {
-        console.log('*on rooms:create:private')
+      socket.on('rooms:private:create', function(data, cb) {
+        console.log('*on rooms:private:create')
         console.log(data)
 
         //create self room?

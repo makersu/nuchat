@@ -225,6 +225,32 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       $scope.roomMenu.show();
     }
   };
+
+  $scope.upsertGroupRoom = function() {
+    console.log('updateGroupRoom');//
+    console.log($scope.theRoom);
+
+    var updateRoom={}
+    updateRoom.id=$scope.theRoom.id
+    updateRoom.name=$scope.theRoom.name
+    updateRoom.description=$scope.theRoom.description
+    updateRoom.joiners=[]
+    updateRoom.joiners.push(User.getCachedCurrent().id)
+
+    $scope.friendList.forEach(function(friend){
+      if(friend.selected){
+        // console.log(friend);
+          updateRoom.joiners.push(friend.id);
+      }
+    });
+
+    console.log(updateRoom);
+    RoomService.updateGroupRoom(updateRoom);
+
+    // $location.path('/tab/chats');
+    $scope.roomModal.hide();
+  };
+
   $scope.closeRoomMenu = function() {
     $scope.roomMenu.hide();
   };
