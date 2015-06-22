@@ -256,11 +256,11 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	//addRoom then joinRoom
 	function addRoom(room) {
 		console.log('addRoom')
-		// console.log(room);
+		console.log(room);
 
 		if( isPrivate(room) ) {
-    	// $timeout(function() {
-				var friend;
+    	if(room.joiners){
+    		var friend;
 	    	// console.log(room.joiners)
 	    	room.joiners.forEach(function(joiner){
 	    		// console.log(joiner)
@@ -273,15 +273,21 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	    	//if private and it's friend
 	    	if (friend && !rooms[room.id]) {
 	    		room.name = friend.username;
-	  			room.profile = friend.avatarThumbnail;
+	  			room.roomThumbnail = friend.avatarThumbnail;
 	  			room.messages = {};
 			    // console.log(room);
 					rooms[room.id] = room;
 					joinRoom(room);
 	    	}
-    	// });
+
+    	}
+    	else{
+    		console.log('!room.joiners')
+    	}
+				
     }
     else{
+    	console.log(room.type);
 			if(!rooms[room.id]){
 				room.messages = {};
 				rooms[room.id] = room;
