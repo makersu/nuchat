@@ -1,18 +1,23 @@
-function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService, signaling, SignalingService) {
+function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService, signaling, SignalingService, $state, $timeout) {
   console.log('LoginCtrl');
 
-  $scope.credentials = {};
-  
   /**
    * Redirect user to the app if already logged in
    */
-  console.log('User.getCachedCurrent()='+User.getCachedCurrent());//
+  console.log(User.getCachedCurrent());
   if (User.getCachedCurrent()!==null) {
-    // Getting the friend list
-    FriendService.getFriends();
-    $location.path('/tab/chats');
+    FriendService.getAllFriends();//
+    console.log('$state.go(tab.chats);');
+    $state.go('tab.chats');
   }
 
+  /**
+   * Currently you need to initialiate the variables
+   * you use whith ng-model. This seems to be a bug with
+   * ionic creating a child scope for the ion-content directive
+   */
+  $scope.credentials = {};
+  
   /**
    * @name showAlert()
    * @param {string} title
@@ -52,8 +57,8 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
         console.log('signaling.emit login');//
         signaling.emit('signalingLogin', User.getCachedCurrent().id);
 
-        $ionicHistory.nextViewOptions({disableBack: true});//
-        // console.log($location.nextAfterLogin)//
+        // $ionicHistory.nextViewOptions({disableBack: true, disableAnimate: true});//
+
         var next = $location.nextAfterLogin || '/tab/chats';
         $location.nextAfterLogin = null;
         $location.path(next);

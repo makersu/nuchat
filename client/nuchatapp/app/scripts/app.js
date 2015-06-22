@@ -9,7 +9,7 @@
 angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile',
     'Nuchatapp.configs', 'Nuchatapp.controllers', 'Nuchatapp.services', 'Nuchatapp.filters', 'Nuchatapp.directives', 'Nuchatapp.translate', 'Nuchatapp.constants',
     'lbServices', 'angularMoment', 'monospaced.elastic', 'ngCordova', 'ui.bootstrap', 'ui.scroll', 'ui.scroll.jqlite', 'btford.socket-io', 'afkl.lazyImage'])
-.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags, $location, $ionicScrollDelegate, LBSocket, $cordovaCalendar) {
+.run(function($ionicPlatform, $filter, $cordovaLocalNotification, $rootScope, $timeout, $ionicModal, $NUChatTags, $location, $ionicScrollDelegate, LBSocket, $cordovaCalendar, User, FriendService, $state) {
   $ionicPlatform.ready(function() {
     // Hide the accessory bar by default (remove this to show the accessory bar above the keyboard
     // for form inputs)
@@ -86,6 +86,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     // Listen to stateChangeSuccess event
     $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
       console.log('on $stateChangeSuccess');
+      
       /** Moved to the $ionicView.enter event of the specified state controller. **/
       // var tabs = null;
       // var tabHandles = $filter('filter')($ionicTabsDelegate._instances, { $$delegateHandle: 'chatDelegate' });
@@ -119,6 +120,20 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       // }
     });
 
+    $rootScope.$on('$stateChangeStart', function(event, toState) {
+      console.log('$stateChangeStart');
+      console.log(toState.name);
+      if ((toState.name === 'login') ) {
+        console.log('toState.name === login');
+        if (User.getCachedCurrent()!==null) {
+          // FriendService.getAllFriends();//
+          event.preventDefault();//
+          console.log('$state.go(tab.chats);');
+          $state.go('tab.chats');
+        } 
+      }
+    });
+
     // $cordovaCalendar.createEvent({
     //   title: 'chatbox event created by Mark',
     //   location: 'The Moon',
@@ -145,6 +160,14 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       });
     });//end $ionicPlatform.ready
     
+})
+.run(function (User) {
+  //Check if User is authenticated
+  if (User.getCachedCurrent() == null) {
+      console.log('User.getCachedCurrent() == null');
+      var user=User.getCurrent();
+      console.log(user);
+  }
 })
 // .run(function ($state, signaling) {
     // signaling.on('messageReceived', function (name, message) {
@@ -173,7 +196,8 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     .state('login', {
       url: '/login',
       templateUrl: 'templates/login.html',
-      controller: 'LoginCtrl'
+      controller: 'LoginCtrl',
+      cache: false
     })
     // setup an abstract state for the tabs directive
     .state('tab', {
