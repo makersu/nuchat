@@ -271,14 +271,21 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	    	})
 	    	console.log(friend);
 	    	//if private and it's friend
-	    	if (friend && !rooms[room.id]) {
-	    		room.name = friend.username;
-	  			room.roomThumbnail = friend.avatarThumbnail;
-	  			room.messages = {};
-			    // console.log(room);
-					rooms[room.id] = room;
-					joinRoom(room);
-	    	}
+	    	// if (friend && !rooms[room.id]) {
+	    	if (friend) {
+	    		if (!rooms[room.id]) {
+		    		room.name = friend.username;
+		  			room.roomThumbnail = friend.avatarThumbnail;
+		  			room.messages = {};
+				    // console.log(room);
+						rooms[room.id] = room;
+	    		}
+					joinRoom(room.id);
+				}
+				else{
+					console.log('!friend');
+					console.log(room.joiners)
+				}	
 
     	}
     	else{
@@ -291,17 +298,17 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 			if(!rooms[room.id]){
 				room.messages = {};
 				rooms[room.id] = room;
-				joinRoom(room);
 			}
+			joinRoom(room.id);
 		}
 
 	}
 
-	function joinRoom(room){
+	function joinRoom(roomId){
 		console.log('joinRoom');
-		console.log(room);
+		console.log(roomId);
 
-		LBSocket.emit('room:join', {room: room.id}, function(err, roomObj) {
+		LBSocket.emit('room:join', {room: roomId}, function(err, roomObj) {
 			console.log('room:join');
 			if (err) {
 				console.error(err);
@@ -367,6 +374,10 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		console.log(roomId);//
 		_currentRoomId = roomId;
 		_filterBy = {};
+		if(roomId!=-1){
+			joinRoom(roomId);//
+		}
+		
 	}
 
 	function getCurrentRoom() {

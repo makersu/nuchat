@@ -74,6 +74,7 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     console.log('doRefresh');//
     
     // $scope.availableRooms = RoomService.getAllRooms();
+    RoomService.getAllRooms();//
     $scope.availableRooms = RoomService.rooms;
 
     var unWatchAvailableRooms = $scope.$watch('availableRooms', function(newVal) {
