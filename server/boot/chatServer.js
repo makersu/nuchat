@@ -582,12 +582,25 @@ module.exports = function(app) {
           return;
         }
 
+        // var filter={
+        //   "where": { 
+        //     "and" : [
+        //       {"type": "private"},
+        //       {inq: [data.user, data.friend]}
+        //     ]
+        //   }
+        // }
+
         var filter={
-          "where": { 
-            "and" : [
+          "where": {
+            "and":[
               {"type": "private"},
-              {inq: [data.user, data.friend]}
+              { "or": [
+                {"joiners" : [ data.user, data.friend ]},
+                {"joiners" : [ data.friend, data.user ]}
+              ]}
             ]
+            
           }
         }
 
