@@ -1,0 +1,24 @@
+<chatbox title="{{ roomName }}">
+  <group-tag class="group-tag-sm" name="{{ message.text }}" ng-if="message.type === 'group'"></group-tag>
+  <div ng-if="message.type !== 'group'">
+    <img img-cache ng-click="viewProfile(message)" class="profile-pic left" ng-if="currentUser.id !== message.ownerId"
+    ng-src="{{ friends[message.ownerId].avatarThumbnail || 'images/profile.png' }}" onerror="this.src='images/profile.png'" />
+    <div class="chat-bubble" ng-class="{'left': currentUser.id !== message.ownerId, 'right': currentUser.id === message.ownerId}">
+      <meta-msg class="message" msg="message" meta-option="messageOptions" scroll-handle="userMessageScroll">
+      </meta-msg>
+      <div class="message-detail">
+        <!-- <span ng-click="viewProfile(message)" 
+        class="bold">{{toUser.username}}</span>, -->
+        <span am-time-ago="message.created"></span>
+        <!-- <a href="javascript:" ng-if="::message.isImg" ng-click="editImg(message)">{{ ::'EDIT' | translate }}</a> -->
+      </div>
+      <!-- <div class="actions royal">
+        <span class="act-icon" href="javascript:" ng-click="editTags(message)"><i class="button-icon icon ion-pricetag"></i></span>
+        <span class="act-icon" href="javascript:" ng-click="star(message)"><i class="button-icon icon" ng-class="isFavorite(message)"></i></span>
+        <span class="act-icon" href="javascript:" ng-click="share(message)"><i class="button-icon icon ion-share"></i></span>
+      </div> -->
+    </div>
+  </div>
+
+  <div class="cf"></div>
+</chatbox>

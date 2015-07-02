@@ -1,0 +1,448 @@
+/* Color */
+/* Layout */
+/* Fonts */
+/* Chatbox */
+/* line 2, ../sass/_jangular_ui.scss */
+chatbox {
+  display: none;
+  position: relative;
+  text-align: right;
+  vertical-align: bottom;
+  margin-right: 5px;
+  border: 1px solid #b2b2b2;
+}
+/* line 12, ../sass/_jangular_ui.scss */
+chatbox.minimize .chat-box {
+  width: 250px !important;
+  height: auto !important;
+  min-height: initial !important;
+}
+
+/* line 19, ../sass/_jangular_ui.scss */
+.chat-box {
+  position: relative;
+  min-width: 250px;
+  min-height: 250px;
+  height: 250px;
+}
+/* line 26, ../sass/_jangular_ui.scss */
+.chat-box .chat-header {
+  text-align: left;
+  padding: 2px 5px;
+  color: #333;
+  background-color: #f8f8f8;
+  border-bottom: 1px solid #b2b2b2;
+}
+/* line 32, ../sass/_jangular_ui.scss */
+.chat-box .chat-header i {
+  float: right;
+  padding: 0 5px;
+  cursor: pointer;
+}
+/* line 39, ../sass/_jangular_ui.scss */
+.chat-box .chat-content {
+  position: absolute;
+  width: 100%;
+  top: 25px;
+  bottom: 32px;
+  background-color: #fff;
+}
+/* line 48, ../sass/_jangular_ui.scss */
+.chat-box .bar.bar-footer {
+  padding: 5px 0;
+  height: 32px;
+}
+/* line 51, ../sass/_jangular_ui.scss */
+.chat-box .bar.bar-footer .button {
+  min-height: 18px;
+  line-height: 18px;
+}
+/* line 55, ../sass/_jangular_ui.scss */
+.chat-box .bar.bar-footer .button.button-icon:before {
+  font-size: 18px;
+}
+/* line 58, ../sass/_jangular_ui.scss */
+.chat-box .bar.bar-footer .button.button-icon.ion-plus {
+  pointer-events: none;
+}
+/* line 63, ../sass/_jangular_ui.scss */
+.chat-box .bar.bar-footer .footer-btn-wrap {
+  position: relative;
+  cursor: pointer;
+}
+/* line 66, ../sass/_jangular_ui.scss */
+.chat-box .bar.bar-footer .footer-btn-wrap input[type="file"] {
+  filter: progid:DXImageTransform.Microsoft.Alpha(Opacity=0);
+  opacity: 0;
+  position: absolute;
+  width: 100px;
+  height: 100%;
+  left: -65px;
+  cursor: pointer;
+}
+/* line 75, ../sass/_jangular_ui.scss */
+.chat-box .bar.bar-footer .item-input-wrapper {
+  background-color: transparent;
+  padding: 0;
+}
+/* line 79, ../sass/_jangular_ui.scss */
+.chat-box .bar.bar-footer textarea {
+  width: 100%;
+  line-height: 12px;
+}
+
+/* line 87, ../sass/_jangular_ui.scss */
+.chat-panel {
+  position: fixed;
+  z-index: 999;
+  right: 0;
+}
+/* line 91, ../sass/_jangular_ui.scss */
+.chat-panel.panel-bottom {
+  bottom: 0;
+}
+
+/* Url View */
+/* line 97, ../sass/_jangular_ui.scss */
+.url-view {
+  background: #fff;
+  margin: 5px 0;
+  padding: 5px;
+  border: 1px solid #bdbdbd;
+  text-decoration: none;
+  display: block;
+}
+/* line 105, ../sass/_jangular_ui.scss */
+.url-view:hover, .url-view:active {
+  text-decoration: none;
+}
+/* line 109, ../sass/_jangular_ui.scss */
+.url-view img {
+  width: 100%;
+  max-width: inherit;
+  max-height: inherit;
+}
+/* line 114, ../sass/_jangular_ui.scss */
+.url-view h5 {
+  color: #444;
+}
+/* line 117, ../sass/_jangular_ui.scss */
+.url-view p {
+  color: #767676;
+  font-size: 13px;
+}
+/* line 121, ../sass/_jangular_ui.scss */
+.url-view .comment {
+  color: #a1a1a1;
+  font-size: 12px;
+}
+/* line 125, ../sass/_jangular_ui.scss */
+.url-view h5, .url-view p, .url-view .comment {
+  padding: 0 2px;
+}
+
+/* line 131, ../sass/_jangular_ui.scss */
+.img-left .url-view {
+  height: 95%;
+}
+/* line 133, ../sass/_jangular_ui.scss */
+.img-left .url-view .content {
+  display: -webkit-flex;
+  display: flex;
+}
+/* line 136, ../sass/_jangular_ui.scss */
+.img-left .url-view .graph {
+  -webkit-flex: 1;
+  flex: 1;
+  display: inline-block;
+  margin: 5px 5px 0 2px;
+}
+/* line 141, ../sass/_jangular_ui.scss */
+.img-left .url-view img {
+  height: 100%;
+}
+/* line 144, ../sass/_jangular_ui.scss */
+.img-left .url-view .info {
+  -webkit-flex: 4;
+  flex: 4;
+  display: inline-block;
+}
+/* line 147, ../sass/_jangular_ui.scss */
+.img-left .url-view .info h5 {
+  margin-top: 5px;
+  margin-bottom: 0;
+  font-weight: 700;
+}
+/* line 152, ../sass/_jangular_ui.scss */
+.img-left .url-view .info p {
+  margin: 0;
+}
+/* line 156, ../sass/_jangular_ui.scss */
+.img-left .url-view .comment {
+  margin: 1px 0 2px;
+}
+/* line 161, ../sass/_jangular_ui.scss */
+.img-left.brief h5 {
+  white-space: nowrap;
+  overflow: hidden;
+}
+/* line 165, ../sass/_jangular_ui.scss */
+.img-left.brief p {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+/* Resize Edge */
+/* line 173, ../sass/_jangular_ui.scss */
+.resize-edge {
+  position: absolute;
+}
+/* line 175, ../sass/_jangular_ui.scss */
+.resize-edge.resize-top, .resize-edge.resize-bottom {
+  cursor: ns-resize;
+  height: 4px;
+  width: 100%;
+}
+/* line 180, ../sass/_jangular_ui.scss */
+.resize-edge.resize-top {
+  top: -2px;
+}
+/* line 183, ../sass/_jangular_ui.scss */
+.resize-edge.resize-bottom {
+  bottom: -2px;
+}
+/* line 186, ../sass/_jangular_ui.scss */
+.resize-edge.resize-left, .resize-edge.resize-right {
+  cursor: ew-resize;
+  width: 4px;
+  height: 100%;
+}
+/* line 191, ../sass/_jangular_ui.scss */
+.resize-edge.resize-left {
+  left: -2px;
+}
+/* line 194, ../sass/_jangular_ui.scss */
+.resize-edge.resize-right {
+  right: -2px;
+}
+/* line 197, ../sass/_jangular_ui.scss */
+.resize-edge.resize-corner {
+  width: 4px;
+  height: 4px;
+}
+/* line 200, ../sass/_jangular_ui.scss */
+.resize-edge.resize-corner.resize-left.resize-top, .resize-edge.resize-corner.resize-right.resize-bottom {
+  cursor: nwse-resize;
+}
+/* line 203, ../sass/_jangular_ui.scss */
+.resize-edge.resize-corner.resize-left.resize-bottom, .resize-edge.resize-corner.resize-right.resize-top {
+  cursor: nesw-resize;
+}
+
+/* Message */
+/* line 210, ../sass/_jangular_ui.scss */
+.message {
+  font-size: 14px;
+}
+/* line 212, ../sass/_jangular_ui.scss */
+.message a {
+  color: blueviolet !important;
+}
+/* line 215, ../sass/_jangular_ui.scss */
+.message img {
+  max-width: 160px;
+  max-height: 160px;
+}
+/* line 219, ../sass/_jangular_ui.scss */
+.message img.audio {
+  width: 85%;
+  vertical-align: baseline;
+  margin-right: 5px;
+}
+/* line 223, ../sass/_jangular_ui.scss */
+.message img.audio + .icon {
+  font-size: 30px;
+}
+/* line 228, ../sass/_jangular_ui.scss */
+.message audio {
+  min-width: 150px;
+  width: 100%;
+}
+/* line 232, ../sass/_jangular_ui.scss */
+.message .video-thumb {
+  width: 160px;
+  max-height: 100px;
+}
+/* line 236, ../sass/_jangular_ui.scss */
+.message .video-thumb + .ion-play {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  -moz-transform: translate3d(-50%, -50%, 0);
+  -webkit-transform: translate3d(-50%, -50%, 0);
+  transform: translate3d(-50%, -50%, 0);
+  border: 1px solid #fff;
+  -moz-border-radius: 50%;
+  -webkit-border-radius: 50%;
+  border-radius: 50%;
+  font-size: 28px;
+  padding: 6px 12px;
+  color: #fff;
+}
+/* line 248, ../sass/_jangular_ui.scss */
+.message video {
+  background-color: black;
+}
+
+/* line 253, ../sass/_jangular_ui.scss */
+.message-detail {
+  white-space: nowrap;
+  font-size: 13px;
+  color: blueviolet;
+}
+
+/* line 259, ../sass/_jangular_ui.scss */
+.message-wrapper {
+  position: relative;
+  display: inline-block !important;
+  width: 100%;
+}
+/* line 263, ../sass/_jangular_ui.scss */
+.message-wrapper:last-child {
+  margin-bottom: 10px;
+}
+/* line 269, ../sass/_jangular_ui.scss */
+.message-wrapper img.profile-pic {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 10px;
+}
+/* line 275, ../sass/_jangular_ui.scss */
+.message-wrapper img.profile-pic.left {
+  left: 5px;
+}
+/* line 278, ../sass/_jangular_ui.scss */
+.message-wrapper img.profile-pic.right {
+  right: 10px;
+}
+/* line 287, ../sass/_jangular_ui.scss */
+.message-wrapper .actions .act-icon i {
+  padding: 0;
+}
+/* line 289, ../sass/_jangular_ui.scss */
+.message-wrapper .actions .act-icon i:before {
+  font-size: 18px;
+  padding: 2px 5px;
+}
+/* line 293, ../sass/_jangular_ui.scss */
+.message-wrapper .actions .act-icon i.outline {
+  text-shadow: -1px -1px 0 #886aea, -1px 1px 0 #886aea, 1px -1px 0 #886aea, 1px 1px 0 #886aea;
+}
+/* line 299, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble {
+  border-radius: 5px;
+  display: inline-block;
+  padding: 8px;
+  position: relative;
+  margin: 10px;
+  max-width: 90%;
+}
+/* line 306, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble:before {
+  content: "\00a0";
+  display: block;
+  height: 16px;
+  width: 9px;
+  position: absolute;
+  bottom: -7.5px;
+}
+/* line 314, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble.left {
+  background-color: #e6e5eb;
+  float: left;
+  margin-left: 45px;
+}
+/* line 318, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble.left:before {
+  background-color: #e6e5eb;
+  left: 10px;
+  -webkit-transform: rotate(70deg) skew(5deg);
+}
+/* line 324, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble.left .act-icon .outline {
+  color: #e6e5eb;
+}
+/* line 329, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble.right {
+  background-color: #C1B3ED;
+  color: #fff;
+  float: right;
+  margin-right: 5px;
+}
+/* line 334, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble.right:before {
+  background-color: #C1B3ED;
+  right: 10px;
+  -webkit-transform: rotate(118deg) skew(-5deg);
+}
+/* line 339, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble.right a.autolinker {
+  color: #fff;
+  font-weight: bold;
+}
+/* line 344, ../sass/_jangular_ui.scss */
+.message-wrapper .chat-bubble.right .act-icon .outline {
+  color: #C1B3ED;
+}
+
+/* line 353, ../sass/_jangular_ui.scss */
+.tags .badge {
+  background-color: #aaa;
+  color: #fff;
+  padding: 1px 6px;
+  font-size: 12px;
+  line-height: 15px;
+}
+
+/* Group Tag */
+/* line 363, ../sass/_jangular_ui.scss */
+.group-tag {
+  text-align: center;
+  margin: 10px auto;
+}
+/* line 366, ../sass/_jangular_ui.scss */
+.group-tag hr, .group-tag .group-name {
+  display: inline-block;
+  vertical-align: middle;
+}
+/* line 370, ../sass/_jangular_ui.scss */
+.group-tag hr {
+  width: 25%;
+  border-width: 2px;
+  margin: 0 10px;
+}
+/* line 375, ../sass/_jangular_ui.scss */
+.group-tag .group-name {
+  background-color: #bdbdbd;
+  font-weight: 700;
+  color: #fff;
+  -moz-border-radius: 20px;
+  -webkit-border-radius: 20px;
+  border-radius: 20px;
+  padding: 0px 12px;
+}
+/* line 383, ../sass/_jangular_ui.scss */
+.group-tag.group-tag-sm {
+  margin: 5px auto;
+}
+/* line 385, ../sass/_jangular_ui.scss */
+.group-tag.group-tag-sm hr {
+  width: 15%;
+  border: 1px solid #bdbdbd;
+}
+/* line 389, ../sass/_jangular_ui.scss */
+.group-tag.group-tag-sm .group-name {
+  font-size: 12px;
+}

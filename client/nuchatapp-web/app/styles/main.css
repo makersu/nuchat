@@ -1,0 +1,15 @@
+/* Color */
+/* Layout */
+/* Chatbox */
+.chat-box {
+  width: 250px;
+  height: 250px;
+  position: absolute;
+  border: 1px solid #666; }
+  .chat-box.align-bottom {
+    bottom: 0; }
+  .chat-box .chat-header {
+    padding: 2px 5px;
+    color: #333; }
+
+/*# sourceMappingURL=main.css.map */
