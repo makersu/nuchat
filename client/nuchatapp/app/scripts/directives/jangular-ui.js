@@ -171,6 +171,10 @@
 		// return false;
 	}
 
+	function isFile(contentType) {
+		return checkType(contentType, 'application/');
+	}
+
 	function isLink(content) {
 		return ( content.type && checkType(content.type, METATYPE.LINK) ) || getLinks(content.text);
 	}
@@ -309,6 +313,7 @@
 							parseVideo();
 							break;
 						case METATYPE.FILE:
+							parseFile();
 							break;
 						default:
 							parseUnknown();
@@ -327,6 +332,8 @@
 						parseAudio();
 					} else if ( isVideo(scope[msg].type) ) {
 						parseVideo();
+					} else if ( isFile(scope[msg].type) ) {
+						parseFile();
 					} else {
 						parseText();
 					}
@@ -446,6 +453,11 @@
 						_msgContent.append($playBtn);
 					}
 					_msgContent.append($compile('<ion-spinner icon="crescent" ng-if="msg.uploading"></ion-spinner>')(scope));
+				}
+
+				function parseFile() {
+					var fileTpl = '<div class="message-file"><img ng-src="'+scope[msg].typeIcon+'"><div class="message-file-info">'+scope[msg].text+'<div class="message-file-detail">'+$filter('translate')('SIZE')+': '+$filter('byteFormat')(scope[msg].size)+'</div></div></div>';
+					_msgContent.append($compile(fileTpl)(scope));
 				}
 
 				function parseText() {
@@ -2055,6 +2067,7 @@
         				swipeNextGesture && $ionicGesture.off(swipeNextGesture, 'swipeleft', scope.swipeNext);
 		        		swipePrevGesture && $ionicGesture.off(swipePrevGesture, 'swiperight', scope.swipePrev);
 		        		$location.hash(scope.selected.id);
+		        		$ionicScrollDelegate.anchorScroll();
         				break;
         		}
         		_replaceTemplate(eval(scope.viewMode+'Template'));
@@ -2178,6 +2191,7 @@
   	_self.isImg = isImg;
   	_self.isAudio = isAudio;
   	_self.isVideo = isVideo;
+  	_self.isFile = isFile;
   	_self.isLink = isLink;
   	
   	return _self;
@@ -2255,6 +2269,16 @@
 			return groupList;
 		}
 	}]);
+	/* Filter to format the bytes */
+	jangularUI.filter('byteFormat', function() {
+		return function(bytes, precision) {
+			if (isNaN(parseFloat(bytes)) || !isFinite(bytes)) return '-';
+			if (typeof precision === 'undefined') precision = 1;
+			var units = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'],
+				number = Math.floor(Math.log(bytes) / Math.log(1024));
+			return (bytes / Math.pow(1024, Math.floor(number))).toFixed(precision) +  ' ' + units[number];
+		}
+	});
 
   // Constants
   jangularUI.constant('METATYPE', METATYPE);
