@@ -24,15 +24,15 @@
     "public": false
   },
   "user": {
-    "dataSource": "db",
+    "dataSource": "chs",
     "public": true
   },
   "room": {
-    "dataSource": "db",
+    "dataSource": "chs",
     "public": true
   },
   "message": {
-    "dataSource": "db",
+    "dataSource": "chs",
     "public": true
   }
 }
