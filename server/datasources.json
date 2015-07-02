@@ -1,6 +1,14 @@
-{
-  "db": {
-    "database": "nuchat",
-    "connector": "mongodb"
+{  
+	"db": {
+    "name": "db",
+    "connector": "memory"
+  },
+  "chs": {
+    "connector": "mssql",
+    "host": "52.25.71.38",
+    "port": 1433,
+    "database": "chs_services",
+    "username": "ghuang",
+    "password": "taiwan123"
   }
 }
