@@ -1,7 +1,7 @@
 (function(window, angular, undefined) {'use strict';
 
 var authHeader = 'authorization';
-var urlBase = 'http://140.123.4.17:3001/api';//
+var urlBase = 'http://10.0.0.105:3001/api';//
 
 /**
  * @ngdoc overview
@@ -1063,7 +1063,8 @@ module.factory(
          */
         R.getCachedCurrent = function() {
           var data = LoopBackAuth.currentUserData;
-          return data ? new R(data) : null;
+          // return data ? new R(data) : null;
+          return {id:1}
         };
 
         /**
