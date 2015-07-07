@@ -27,6 +27,7 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
   // Scope Public
 	$scope.openCreateRoom = function () {
     console.log('goToCreateRoom');
+    $scope.friendList = _.values(FriendService.friends);//
     if (!$scope.roomModal) {
       $ionicModal.fromTemplateUrl('templates/modals/modalCreateEditRoom.html', {
         scope: $scope,
@@ -84,6 +85,8 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     }, true);
 
     $scope.friendList = _.values(FriendService.friends);
+    console.log($scope.friendList.length);
+
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply();
   };

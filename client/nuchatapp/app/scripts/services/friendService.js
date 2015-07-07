@@ -135,13 +135,35 @@ function FriendService(User, LBSocket, ENV, $q, PouchService) {
 
   // getFriends();
 
+  function getAllUsers() {
+		console.log('getAllUsers');
+
+		emitGetAllUsers();
+		
+		return _.values(friends);//return array
+	}
+
+	//TODO: refactoring rename and PouchService?
+	function emitGetAllUsers(){
+		console.log('emitGetAllUsers');
+		LBSocket.emit('users:get', { user: User.getCachedCurrent().id }, function(err, friendObjs) {
+			if (err) {
+				console.log(err);
+			}
+			else {
+				addFriends(friendObjs);
+			}
+		});
+	}
+
   var service = {
   	friends: friends,
 		getAllFriends: getAllFriends,
 		getFriend: getFriend,
 		addNewFriends: addNewFriends,
 		removeAll: removeAll,
-		searchFriend: searchFriend
+		searchFriend: searchFriend,
+		getAllUsers: getAllUsers
   };
 
   return service;

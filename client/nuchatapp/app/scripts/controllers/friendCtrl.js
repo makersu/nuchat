@@ -83,7 +83,7 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
     console.log('doRefresh')
     // $scope.friends=FriendService.getAllFriends();
     $scope.friends=_.values(FriendService.friends);
-    console.log($scope.friends);
+    console.log($scope.friends.length);
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply()
   };

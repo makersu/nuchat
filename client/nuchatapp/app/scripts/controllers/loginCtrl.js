@@ -4,12 +4,12 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
   /**
    * Redirect user to the app if already logged in
    */
-  console.log(User.getCachedCurrent());
-  if (User.getCachedCurrent()!==null) {
-    FriendService.getAllFriends();//
+  // console.log(User.getCachedCurrent());
+  // if (User.getCachedCurrent()!==null) {
+    FriendService.getAllUsers();//
     console.log('$state.go(tab.chats);');
     $state.go('tab.chats');
-  }
+  // }
 
   /**
    * Currently you need to initialiate the variables
