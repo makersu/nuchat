@@ -2,6 +2,12 @@
   "name": "user",
   "base": "User",
   "idInjection": true,
+  "options": {
+    "mssql": {
+      "schema": "dbo",
+      "table": "user"
+    }
+  },
   "properties": {
     "friends": {
       "type": "array"
@@ -15,6 +21,13 @@
       "foreignKey": "ownerId"
     }
   },
-  "acls": [],
+  "acls": [
+    {
+      "accessType": "READ",
+      "principalType": "ROLE",
+      "principalId": "$everyone",
+      "permission": "ALLOW"
+    }
+  ],
   "methods": []
 }

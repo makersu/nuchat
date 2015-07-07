@@ -101,6 +101,38 @@ module.exports = function(app) {
       //   });//app.models.User.find
       // })//socket.on
 
+
+      socket.on('users:get', function (data, cb) {
+        console.log('*on users:get')
+        console.log(data)
+        
+        app.models.user.findById(data.user,function(err,user){
+          if(err){
+            console.log(err)
+            cb(err)
+          }
+          console.log(user)
+
+          var filter={
+            fields: {id: true, username: true, email:true, avatarThumbnail:true, avatarOriginal:true }, 
+            "where": { 
+                id:{ inq: user.friends}
+            }
+          }
+          console.log(JSON.stringify(filter))          
+
+          app.models.user.find(function(err, objs){
+            if(err){
+              console.log(err);
+              cb(err);
+            }
+            console.log(objs.length);
+            cb(null, objs);
+          });//user.find
+        });//user.findById
+      })//socket.on
+
+
       //
       // get friends
       //
@@ -442,7 +474,7 @@ module.exports = function(app) {
         var filter={
           "where": { 
             "or": [
-              { "joiners": { in: [data.user]}},
+              { "joiners": { inq: [data.user]}},
               {"ownerId": data.user}
             ]
           }
