@@ -1981,8 +1981,8 @@
 	/**
 	 * Next Calendar
 	 */
-	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', 'moment', '$nextCalendar', '$ionicGesture', '$ionicScrollDelegate', '$location',
-												function($filter, $compile, $timeout, moment, $nextCalendar, $ionicGesture, $ionicScrollDelegate, $location) {
+	jangularUI.directive('nextCalendar', ['$filter', '$compile', '$timeout', 'moment', '$nextCalendar', '$ionicGesture', '$ionicScrollDelegate', '$location', '$anchorScroll',
+												function($filter, $compile, $timeout, moment, $nextCalendar, $ionicGesture, $ionicScrollDelegate, $location, $anchorScroll) {
 		return {
 			restrict: 'E',
 			scope: {
@@ -2010,7 +2010,8 @@
 					  </span>\
 					</div>';
 				var weekTemplate = '';
-				var dayTemplate = '<ion-scroll class="months" direction="x"><div class="cell" ng-class="{current: m.isCurrentMonth, selected: m.month.isSame(selected, \'month\')}" id="{{ m.id }}" collection-repeat="m in monthList" item-width="105" ng-click="selectMonth(m)"><i class="bullet"></i><span class="month-name">{{ m.name }}</span> {{ m.year }}</div></ion-scroll>';
+				var dayTemplate = '<ion-scroll class="months" direction="x"><div class="cell" ng-class="{current: m.isCurrentMonth, selected: m.month.isSame(selected, \'month\')}" id="{{ m.id }}" collection-repeat="m in monthList" item-width="105" ng-click="selectMonth(m)"><i class="bullet"></i><span class="month-name">{{ m.name }}</span> {{ m.year }}</div></ion-scroll>\
+													<ion-scroll class="days" direction="x"><div class="cell" ng-class="{current: d.isCurrentDay, selected: d.day.isSame(selected, \'day\')}" id="{{ d.id }}" collection-repeat="d in dayList" item-width="105" ng-click="selectDay(d)"><i class="bullet"></i><span class="day-name">{{ d.day }}</span> {{ d.name }}</div></ion-scroll>';
 				var swipeNextGesture = null;
 				var swipePrevGesture = null;
 				var _rangeMonths = null;
@@ -2066,10 +2067,16 @@
         				console.log(scope.selected);
         				swipeNextGesture && $ionicGesture.off(swipeNextGesture, 'swipeleft', scope.swipeNext);
 		        		swipePrevGesture && $ionicGesture.off(swipePrevGesture, 'swiperight', scope.swipePrev);
-		        		$location.hash(scope.selected.id);
-		        		$ionicScrollDelegate.anchorScroll();
+		        		$timeout(function() {
+		        			console.log('scroll to current Month');
+		        			console.log(scope.selected);
+		        			$location.hash(scope.selected.format('YYYYMM'));
+		        			console.log($location.hash());
+		        			$ionicScrollDelegate.anchorScroll();
+		        		}, 200);
         				break;
         		}
+		        console.log('replace template');
         		_replaceTemplate(eval(scope.viewMode+'Template'));
         	}
         });
