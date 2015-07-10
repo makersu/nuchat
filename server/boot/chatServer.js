@@ -469,7 +469,7 @@ module.exports = function(app) {
         console.log('*on room:join');
         console.log(data);
 
-        app.models.room.findById(data.room, function(err, obj) {
+        app.models.room.findById(data.roomId, function(err, obj) {
           if (err) {
             console.log(err);
             cb(err);
@@ -671,43 +671,178 @@ module.exports = function(app) {
       //
       // Get room information(last message, total count)
       //
-      socket.on('room:info', function(data, cb) {
-        console.log('*on room:info')
+      // socket.on('room:info', function(data, cb) {
+      //   console.log('*on room:info')
+      //   console.log(data)
+      //   var filter =  { "where":{
+      //                     roomId: data.roomId
+      //                   },
+      //                   order: 'created DESC',
+      //                   limit: 1,
+      //                 }
+
+      //   console.log(filter)
+      //   var lastMessage={}
+      //   app.models.message.find(filter,function(err, objs){
+      //     if(err){
+      //       console.log(err);
+      //       cb(err);
+      //     }
+      //     // console.log(objs);
+      //     if(objs[0]){
+      //       lastMessage=objs[0];
+      //       // console.log(lastMessage);
+      //       // getUnreadMessageCount(data.roomId, data.userId);
+      //       app.models.message.count({roomId: data.room}, function(err,count){
+      //         // console.log(count)
+      //         var roomInfo={"lastMessage": lastMessage, total: count}
+      //         console.log(roomInfo)
+      //         cb(null, roomInfo)
+      //       }); 
+      //     }
+      //     else{
+      //       //no room message yet
+      //       cb(null, {"lastMessage": null, total: 0})
+      //     }
+          
+      //   });
+
+      // });
+
+      //
+      // Get room information(last message, total count)
+      //
+      socket.on('room:messages:last', function(data, cb) {
+        console.log('*on room:messages:last')
         console.log(data)
         var filter =  { "where":{
-                          roomId: data.room
+                          roomId: data.roomId
                         },
                         order: 'created DESC',
                         limit: 1,
                       }
 
         console.log(filter)
-        var lastMessage={}
+
         app.models.message.find(filter,function(err, objs){
+          console.log(objs);
           if(err){
             console.log(err);
             cb(err);
           }
-          // console.log(objs);
-          if(objs[0]){
-            lastMessage=objs[0];
-            // console.log(lastMessage);
-            
-            app.models.message.count({roomId: data.room}, function(err,count){
-              // console.log(count)
-              var roomInfo={"lastMessage": lastMessage, total: count}
-              console.log(roomInfo)
-              cb(null, roomInfo)
-            }); 
-          }
           else{
-            //no room message yet
-            cb(null, {"lastMessage": null, total: 0})
-          }
-          
+            if(objs[0]){
+              cb(null, objs[0]);
+            }
+            else{
+              //no message
+              cb(null, undefined)
+            }
+          }  
         });
 
       });
+
+
+      // socket.on('room:messages:unreadCount', function(data, cb) {
+      //   console.log('*on room:messages:unreadCount')
+
+      //   var existedFilter =  { "where":{
+      //                     roomId: data.roomId,
+      //                     userId: data.userId,
+      //                   },
+      //                 }
+
+      //   console.log(JSON.stringify(existedFilter))
+
+      //   app.models.lastReadMessage.findOne(existedFilter, function(err, existedObj){
+
+      //     // console.log(existedObj);
+          
+      //     var lastReadMessageId;
+          
+      //     if(existedObj){
+      //       // console.log(existedObj);
+      //       lastReadMessageId = existedObj.messageId
+      //     }
+
+      //     console.log(lastReadMessageId);
+
+      //     var countFilter = {
+      //       roomId: data.roomId
+      //     }
+
+      //     if(lastReadMessageId){
+      //       countFilter.id={ gt: lastReadMessageId }
+      //     }
+          
+      //     console.log(JSON.stringify(countFilter))
+
+      //     app.models.message.count(countFilter, function(err, count){
+      //       if(err){
+      //         console.log(err);
+      //         cb(undefined);
+      //         return;
+      //       }
+      //       else{
+      //         console.log(count)
+      //         cb(null, count);
+      //       }
+      //     });          
+           
+      //   });
+
+      // });//end socket.on
+
+      socket.on('room:messages:lastRead', function(data, cb) {
+        console.log('*on room:messages:lastRead')
+        var lastReadMessageInfo={
+          lastReadMessageId: undefined,
+          unreadCount: undefined
+        }
+        var existedFilter =  { "where":{
+                          roomId: data.roomId,
+                          userId: data.userId,
+                        },
+                      }
+
+        console.log(JSON.stringify(existedFilter))
+
+        app.models.lastReadMessage.findOne(existedFilter, function(err, existedObj){
+          // console.log(existedObj);
+
+          if(existedObj){
+            lastReadMessageInfo.lastReadMessageId = existedObj.messageId; 
+          }
+
+          var countFilter = {
+            roomId: data.roomId
+          }
+
+          if(lastReadMessageInfo.lastReadMessageId){
+            countFilter.id={ gt: lastReadMessageInfo.lastReadMessageId }
+          }
+          
+          console.log(JSON.stringify(countFilter))
+
+          app.models.message.count(countFilter, function(err, count){
+            if(err){
+              console.log(err);
+              cb(err);
+              return;
+            }
+            else{
+              console.log(count)
+              lastReadMessageInfo.unreadCount = count;
+              console.log(lastReadMessageInfo)
+              cb(null, lastReadMessageInfo);
+            }
+          });          
+           
+        });
+
+      });//end socket.on
+
 
       //
       // Get Messages
@@ -740,15 +875,180 @@ module.exports = function(app) {
           console.log(objs.length)
           if(cb){
             //fn(objs)//
-            cb({"messages":objs})
+            cb(objs)
           }
           
         });
 
 
       });
-       
 
+      socket.on('room:lastReadMessage:update', function(data,cb) {
+        console.log('*on room:lastReadMessage:update');
+        console.log(data)
+
+        var existedFilter =  { "where":{
+                          roomId: data.roomId,
+                          userId: data.userId,
+                        },
+                      }
+
+        console.log(JSON.stringify(existedFilter))
+
+        app.models.lastReadMessage.findOne(existedFilter,function(err,existedObj){
+          if(existedObj){
+               var filter =  { "where":{
+                          roomId: data.roomId,
+                          userId: data.userId,
+                          messageId: { lt:data.messageId }
+                        },
+                      }
+
+                console.log(JSON.stringify(filter))
+
+                app.models.lastReadMessage.findOne(filter,function(err,obj){
+                
+                  console.log(obj);
+                  if( obj ){
+                    data.id=obj.id
+                    app.models.lastReadMessage.upsert(data,function(err,obj){
+                      if(err){
+                        console.log(err)//
+                        cb(err);
+                        return;
+                      }
+                      console.log(obj)//
+                      cb(null,obj);
+                    });
+
+                  }
+                  else{
+                    cb(null,null)//TODO
+                  }
+                  
+                });
+
+          }
+          else{
+            console.log('!existedObj')//
+            console.log('create')
+            app.models.lastReadMessage.create(data, function(err,obj){
+              if(err){
+                console.log(err);
+                cb(err);
+                return;  
+              }
+              else{
+                console.log(obj)
+                cb(null, obj);
+              }
+            });
+          }
+        });
+
+      });//end
+
+      // socket.on('room:lastReadMessage:update', function(data,cb) {
+      //   console.log('*on room:lastReadMessage:update');
+      //   console.log(data)
+
+      //   var filter =  { "where":{
+      //                     roomId: data.roomId,
+      //                     userId: data.userId,
+      //                     messageId: { lt:data.messageId }
+      //                   },
+      //                 }
+
+      //   console.log(JSON.stringify(filter))
+
+      //   app.models.lastReadMessage.findOne(filter,function(err,obj){
+      //     console.log(obj)//
+
+      //     if( obj ){
+      //       console.log('obj.id')
+      //       data.id=obj.id;
+      //       app.models.lastReadMessage.upsert(data,function(err,obj){
+      //         if(err){
+      //           console.log(err)//
+      //           cb(err);
+      //           return;
+      //         }
+      //         console.log(obj)//
+      //         cb(null,obj);
+      //       });
+
+      //     }
+      //     else{
+      //       var existedFilter =  { "where":{
+      //                     roomId: data.roomId,
+      //                     userId: data.userId,
+      //                   },
+      //                 }
+
+      //       console.log(JSON.stringify(existedFilter))
+
+      //       app.models.lastReadMessage.findOne(existedFilter,function(err,existedObj){
+      //         if(!existedObj){
+
+      //         }
+      //         else{
+
+      //         }
+      //       });  
+
+      //     }//end else
+          
+      //   });
+
+
+      //   // app.models.lastReadMessage.upsert(data,function(err,obj){
+      //   //   if(err){
+      //   //     console.log(err)//
+      //   //     cb(err);
+      //   //     return;
+      //   //   }
+      //   //   console.log(obj)//
+      //   //   cb(null,obj);
+      //   // });
+        
+
+      // });
+       
+      socket.on('room:lastReadMessage:get', function(data,cb) {
+        console.log('*on room:lastReadMessage:get');
+        console.log(data)
+        //var today=new Date()
+        //data.since = data.since || new Date(today).setDate(today.getDate() - 7);
+        // var filter =  { "where":{
+        //                   roomId: data.roomId,
+        //                   created: {gt: data.since }
+        //                 } 
+        //               }
+        //data.messageId = data.messageId || 0 ;
+        var filter =  { "where":{
+                          roomId: data.roomId
+                        },
+                        order: 'created ASC',
+                        //limit: 10,
+                      }
+        
+        if(data.lastMessageId){
+          filter.where.id={ gt:data.lastMessageId }
+        }
+
+        console.log(JSON.stringify(filter))
+
+        app.models.message.find(filter,function(err,objs){
+          console.log(objs.length)
+          if(cb){
+            //fn(objs)//
+            cb(objs)
+          }
+          
+        });
+
+
+      });
 
       //
       // New Message
@@ -781,7 +1081,7 @@ module.exports = function(app) {
             existedObj.tags=data.tags;
 
             // console.log(existedObj);
-            app.models.message.upsert(existedObj,function(err,updatedObj){ //upsert if not master?
+            app.models.message.upsert(existedObj,function(err, updatedObj){ //upsert if not master?
               if(err){
                 console.log(err);
                 cb(err);
@@ -934,6 +1234,7 @@ module.exports = function(app) {
       //createRoomMessage
       var createRoomMessage = function(newMessage, returnTimestamp){
         console.log('createRoomMessage');
+        console.log(newMessage);//
         app.models.message.create(newMessage,function(err, obj){
           if(err){
             console.log(err)
