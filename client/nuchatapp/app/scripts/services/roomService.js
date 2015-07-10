@@ -350,52 +350,12 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 			}
 			console.log(roomObj);
 
-
-			// LBSocket.emit('room:info', {roomId: roomObj.id} , function(err, roomInfo){
-			// 	console.log('emit room:info');
-			// 		if (err) {
-			// 		console.error(err);
-			// 		return;
-			// 	}
-			// 	// console.log(roomInfo);
-			// 	updateRoomInfo(roomInfo);
-			// });//room:messages:last
-
-			// getRoomUnreadCount(roomObj.id, User.getCachedCurrent().id).then(function(unreadCount){
-			// 	updateRoomUnreadCount(roomObj.id, unreadCount);
-			// });
 			emitGetRoomLastMessage(roomObj.id);
 			emitGetLastReadMessageInfo(roomObj.id, User.getCachedCurrent().id);
-
-			// getRoomInfo(roomObj.id, User.getCachedCurrent().id).then(function(roomInfo){
-			// 	console.log(roomInfo);
-			// 	updateRoomInfo(roomInfo);	
-			// });
 
 		});//room:join
 
 	}
-
-	// function getRoomUnreadCount(roomId, userId){
-	// 	console.log('getRoomUnreadCount');//
-
-	// 	var deferred = $q.defer();
-
- //    LBSocket.emit('room:messages:unreadCount', {roomId: roomId, userId: userId} , function(err, unreadCount){
- //      console.log('room:messages:unreadCount');
- //      console.log(unreadCount)//
- //      if(err){
- //      	deferred.reject(err);
- //      }
- //      else{
- //      	deferred.resolve(unreadCount);
- //      }
-	// 	});
-
-	// 	return deferred.promise;
-	// }
-
-
 
 	function emitGetRoomLastMessage(roomId){
 		console.log('getRoomLastMessage');//
@@ -421,25 +381,6 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		}
 	}
 
-	// function emitGetRoomUnreadCount(roomId, userId){
-	// 	console.log('getRoomUnreadCount');//
-
- //    LBSocket.emit('room:messages:unreadCount', {roomId: roomId, userId: userId} , function(err, unreadCount){
- //      console.log('room:messages:unreadCount');//
- //      // console.log(unreadCount);//
- //      if(err){
- //      	console.log(err);
- //      }
- //      else{
- //      	if(unreadCount >= 0){
-	// 				getRoom(roomId).unreadCount=unreadCount;
-	// 				console.log(getRoom(roomId).unreadCount);//
-	// 			}
- //      }
-	// 	});
-
-	// }
-
 	function emitGetLastReadMessageInfo(roomId, userId){
 		console.log('emitGetLastReadMessageInfo');//
 
@@ -459,38 +400,6 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		});
 
 	}
-
-	// function updateRoomUnreadCount(roomId, unreadCount){
-	// 	// console.log('updateRoomUnreadCount');//
-	// 	console.log(unreadCount)//
-
-	// 	if(unreadCount >= 0){
-	// 		getRoom(roomId).unreadCount=unreadCount;
-	// 	}
-	// 	// console.log(getRoom(roomId).unreadCount);
-
-	// }
-
-	// function getRoomInfo(roomId, userId){
-	// 	console.log('getRoomInfo');//
-
-	// 	var deferred = $q.defer();
-
- //    LBSocket.emit('room:info', {roomId: roomId, userId: userId} , function(err, roomInfo){
- //      console.log('room:info callback');
- //      if(err){
- //      	deferred.reject(err);
- //      }
- //      else{
- //      	// console.log(roomInfo);
- //      	deferred.resolve(roomInfo);
- //      }
-	// 	});
-
-	// 	return deferred.promise;
-
-	// }
-
 
 	function createGroupRoom(newRoom){
 		console.log('createGroupRoom')
