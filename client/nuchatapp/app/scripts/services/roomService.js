@@ -39,16 +39,20 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
 	//when get new message
   LBSocket.on('room:messages:new', function(newMessageInfo) {
-  	console.log('room:messages:new');
-  	console.log(newMessageInfo);
-  	console.log(_currentRoomId);
-  	updateRoomInfo({lastMessage: newMessageInfo.message, total: newMessageInfo.total});//???
+		console.log('room:messages:new');
+		console.log(newMessageInfo);
+		console.log(_currentRoomId);
+		//updateRoomInfo({lastMessage: newMessageInfo.message, total: newMessageInfo.total});//???
+		updateRoomLastMessage(newMessageInfo.message);
+		// emitGetLastReadMessageInfo(newMessageInfo.message.roomId, User.getCachedCurrent().id);//???
+
   	if (newMessageInfo.message.roomId == _currentRoomId && !$rootScope.isInBackground) {
   		// syncMessage(data.message)
   		// Checking the owner of the coming message, processing if not self or only text or link type.
   		if (newMessageInfo.message.ownerId != User.getCachedCurrent().id ||
   			!newMessageInfo.message.type || newMessageInfo.message.type === METATYPE.LINK) {
   			addMessage(newMessageInfo.message);
+				emitUpdateRoomLastReadMessage(newMessageInfo.message);
   		} else if ( newMessageInfo.message.ownerId == User.getCachedCurrent().id &&
   								( $checkFormat.isImg(newMessageInfo.message.type) ||
   								  $checkFormat.isAudio(newMessageInfo.message.type) ||
@@ -59,6 +63,8 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
   		}
   	}
   	else if (newMessageInfo.message.ownerId != User.getCachedCurrent().id) {
+			emitGetLastReadMessageInfo(newMessageInfo.message.roomId, User.getCachedCurrent().id);
+
   		var message = newMessageInfo.message;
 			// Sending the local notification.
 			cordova.plugins.notification.local.schedule({
@@ -73,6 +79,8 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
 	//TODO: get everytime when enter room?if current room dont get?
   function getRoomMessages(roomId){
+  	console.log('getRoomMessages');
+  	
   	var data = {}
   	data.roomId=roomId
   	var lastMessageId = getLastMessageId(roomId)
@@ -81,24 +89,27 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
   	}
   	// console.log(data);
 
-  	LBSocket.emit('room:messages:get', data , function(messages){
-  		console.log('room:messages:get')
-	    //console.log(messages)
-	    console.log(messages.messages.length)
-	    for (var i = 0; i < messages.messages.length; i++) {
-	    	addMessage(messages.messages[i])
+  	LBSocket.emit('room:messages:get', data , function(messageObjs){
+  		console.log('room:messages:get')//
+	    // console.log(messages)//
+	    console.log(messageObjs.length)//
+	    for (var i = 0; i < messageObjs.length; i++) {
+	    	addMessage(messageObjs[i])
 	    	// updateRoomInfo(messages.messages[i]);//???
 	    }
-	    if (!messages.messages.length) {
+	    // console.log(_.last(messageObjs))//
+			emitUpdateRoomLastReadMessage(_.last(messageObjs));
+
+	    if (!messageObjs.length) {
 				grouping(getRoom(roomId));
 	    }
 
 	    $timeout(function() {
 	    	// Insert the Unread-Note before the 1st message.
-		    if (messages.messages.length) {
+		    if (messageObjs.length) {
 		    	var unread = document.getElementById('unreadStart');
 		    	if (!unread) {
-		    		var firstMsgEl = document.getElementById('item-'+messages.messages[0].id);
+		    		var firstMsgEl = document.getElementById('item-'+messageObjs[0].id);
 			    	var parentEl = angular.element(firstMsgEl).parent()[0];
 			    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
 			    	parentEl && parentEl.insertBefore(note, firstMsgEl);
@@ -116,7 +127,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	  });
   }
 
-  //TODO:?
+  //TODO: performance?
   function addMessage(message) {
   	console.log('addMessage');
 		// console.log(message);
@@ -135,6 +146,28 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		// console.log(room);
 		
 		$rootScope.$broadcast('onNewMessage', { msg: message });
+  }
+
+  function emitUpdateRoomLastReadMessage(message){
+  	console.log('emitUpdateRoomLastReadMessage')//
+  	console.log(message)//
+  	
+  	if(message){
+	  		var data={};
+		  	data.userId=User.getCachedCurrent().id;
+		  	data.roomId=message.roomId
+		  	data.messageId=message.id
+		  	console.log(data);
+  		LBSocket.emit('room:lastReadMessage:update', data , function(err, lastReadMessageObj){
+  			if(err){
+  				console.log(err)
+  			}
+  			else{
+  				console.log(lastReadMessageObj)//
+  			}
+  		});	
+
+  	}
   }
 
   function grouping(room, newMsg) {
@@ -253,7 +286,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		});
 	}
 
-	//addRoom then joinRoom
+	//TODO: addRoom then joinRoom?
 	function addRoom(room) {
 		console.log('addRoom')
 		console.log(room);
@@ -304,11 +337,12 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
 	}
 
+	//TODO: join room then update room last message and last read message?
 	function joinRoom(roomId){
 		console.log('joinRoom');
 		console.log(roomId);
 
-		LBSocket.emit('room:join', {room: roomId}, function(err, roomObj) {
+		LBSocket.emit('room:join', {roomId: roomId}, function(err, roomObj) {
 			console.log('room:join');
 			if (err) {
 				console.error(err);
@@ -316,17 +350,54 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 			}
 			console.log(roomObj);
 
-			LBSocket.emit('room:info', {room: roomObj.id} , function(err, roomInfo){
-				console.log('emit room:info');
-					if (err) {
-					console.error(err);
-					return;
-				}
-				// console.log(roomInfo);
-				updateRoomInfo(roomInfo);
-			});//room:messages:last
+			emitGetRoomLastMessage(roomObj.id);
+			emitGetLastReadMessageInfo(roomObj.id, User.getCachedCurrent().id);
 
 		});//room:join
+
+	}
+
+	function emitGetRoomLastMessage(roomId){
+		console.log('getRoomLastMessage');//
+
+    LBSocket.emit('room:messages:last', {roomId: roomId} , function(err, lastMessage){
+      console.log('room:messages:last');//
+      // console.log(lastMessage);//
+      if(err){
+      	console.log(err);
+      }
+      else{
+      	updateRoomLastMessage(lastMessage)
+      }
+		});
+
+	}
+
+	function updateRoomLastMessage(lastMessage){
+		console.log('updateRoomLastMessage');
+		if(lastMessage){
+					getRoom(lastMessage.roomId).lastMessage=lastMessage;
+					console.log(getRoom(lastMessage.roomId).lastMessage);//
+		}
+	}
+
+	function emitGetLastReadMessageInfo(roomId, userId){
+		console.log('emitGetLastReadMessageInfo');//
+
+    LBSocket.emit('room:messages:lastRead', {roomId: roomId, userId: userId} , function(err, lastReadMessageInfo){
+      console.log('room:messages:lastRead');//
+      console.log(lastReadMessageInfo);
+
+      if(err){
+      	console.log(err);
+      }
+      else{
+      	if(lastReadMessageInfo.unreadCount >= 0){
+					getRoom(roomId).unreadCount=lastReadMessageInfo.unreadCount;
+					console.log(getRoom(roomId).unreadCount);//
+				}
+      }
+		});
 
 	}
 
@@ -370,20 +441,21 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		return rooms[roomId];
 	}
 
+	//TODO: setCurrentRoom then joinRoom?
 	function setCurrentRoom(roomId) {
+		console.log('setCurrentRoom');//
 		console.log(roomId);//
 		_currentRoomId = roomId;
 		_filterBy = {};
 		if(roomId!=-1){
-			joinRoom(roomId);//
+			joinRoom(roomId);
 		}
 		
 	}
 
 	function getCurrentRoom() {
+		console.log('getCurrentRoom');//
 		console.log(_currentRoomId);//
-		// console.log(rooms)
-		// console.log(rooms[_currentRoomId])
 		return rooms[_currentRoomId];
 	}
 
@@ -407,7 +479,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		console.log('getLastMessage');
 		// console.log(roomId);
 		var room = getRoom(roomId);
-		console.log(room);//
+		// console.log(room);//
 		var lastMessage;
 		if(room.messages){
 			var lastKeyIndex=Object.keys(room.messages).length - 1
