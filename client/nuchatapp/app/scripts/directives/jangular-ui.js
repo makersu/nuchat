@@ -2257,7 +2257,7 @@
 			var sortedArr = $filter('orderBy')(collection, prop);
 			var groupName = '_UNDEFINED_';
 			var groupList = [];
-			console.log(prop);
+			// console.log(prop);
 			angular.forEach(sortedArr, function(item) {
 				var gName = '';
 				if ( angular.isFunction(prop) ) {
@@ -2272,7 +2272,6 @@
 				item.group = gName;
 				groupList.push(item);
 			});
-			console.log(groupList);
 			return groupList;
 		}
 	}]);

@@ -1,6 +1,6 @@
 function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate, User, LBSocket, RoomService, $localstorage, $q, $filter,
             $ionicScrollDelegate, $ionicTabsDelegate, $ionicGesture, $ionicModal, $gridMenu, $sidePanel, $timeout, $NUChatObject, $NUChatDirectory, $NUChatLinks, $NUChatTags, METATYPE, ENV,
-            $location, $utils, FriendService, $imageViewer, $checkFormat) {
+            $location, $utils, FriendService, $imageViewer, $checkFormat, $compile) {
 
   // var data = {}
   // data.roomId=$stateParams.roomId
@@ -142,12 +142,32 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
     }
     $scope.msgAdapter.applyUpdates(function(item, scope) {
       // console.log($scope.room.viewMessages.length);
-      // console.log(scope.$index);
-      if ( scope.$index === $scope.room.viewMessages.length ) {
+      // console.log(scope.$index+RoomService.getUnreadMessagePosition($scope.room.id));
+      if ( scope.$index+RoomService.getUnreadMessagePosition($scope.room.id) === $scope.room.viewMessages.length ) {
         return [item, message];
       }
     });
     RoomService.grouping($scope.room);
+  }
+
+  /* Insert Unread Note into message bubbles
+   */
+  function insertUnreadNote() {
+    var msgContainer = document.getElementById('msgContainer');
+    // Insert the unread note
+    var note = document.getElementById('unreadStart');
+    if (!note) {
+      note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
+    }
+    var lastReadMessageId = RoomService.getLastReadMessageId();
+    if (lastReadMessageId && lastReadMessageId !== $scope.room.viewMessages[$scope.room.viewMessages.length-1].id
+      && $scope.room.messages[lastReadMessageId].ownerId !== $scope.currentUser.id) {
+      var lastReadMsgEl = document.getElementById('item-'+lastReadMessageId);
+      var parentEl = angular.element(lastReadMsgEl).parent()[0];
+      parentEl && parentEl.insertBefore(note, lastReadMsgEl.nextSibling);
+    } else if (!lastReadMessageId && $scope.room.viewMessages.length) {
+      angular.element(msgContainer).find('div').eq(0).prepend(note);
+    }
   }
 
   // Scope Public
@@ -517,15 +537,37 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
         // console.log(index);
         index--;
         if ($scope.room.viewMessages) {
-          if (index < 0) {
-            count = count + index;
-            index = 0;
-            if (count <= 0) {
-              success([]);
-              return;
-            }
+          var unreadPosition = RoomService.getUnreadMessagePosition($scope.room.id);
+          // console.log('unreadPosition: '+unreadPosition);
+          var start, end;
+          var actualIndex = index + unreadPosition;
+          start = Math.max(0 - unreadPosition, actualIndex);
+          if (actualIndex === $scope.room.viewMessages.length-1) {
+            start = Math.max(start, $scope.room.viewMessages.length-count);
           }
-          success($scope.room.viewMessages.slice(index, index+count));
+          end = Math.min(actualIndex + count-1, $scope.room.viewMessages.length);
+          // if (index < 0) {
+          //   count = count + index;
+          //   index = 0;
+          //   if (count <= 0) {
+          //     success([]);
+          //     return;
+          //   }
+          // }
+          if (start > end) {
+            success([]);
+          } else {
+            if (start < 0) {
+              count = count + start;
+              start = 0;
+              if (count <= 0) {
+                success([]);
+                return;
+              }
+            }
+            success($scope.room.viewMessages.slice(start, end+1));
+            insertUnreadNote();
+          }
         }
       }, delay);
     },

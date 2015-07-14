@@ -6,6 +6,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	var _currentRoomId = -1;
 	var _prevLatestMsg = null;
 	var _filterBy = {};
+	var _lastReadMessageId = null;
 
 	//when get new room created by self or others
 	LBSocket.on('rooms:new', function(room) {
@@ -104,26 +105,26 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 				grouping(getRoom(roomId));
 	    }
 
-	    $timeout(function() {
-	    	// Insert the Unread-Note before the 1st message.
-		    if (messageObjs.length) {
-		    	var unread = document.getElementById('unreadStart');
-		    	if (!unread) {
-		    		var firstMsgEl = document.getElementById('item-'+messageObjs[0].id);
-			    	var parentEl = angular.element(firstMsgEl).parent()[0];
-			    	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
-			    	parentEl && parentEl.insertBefore(note, firstMsgEl);
-		    	}
-		    } else {
-		    	var msgContainer = document.getElementById('msgContainer');
-		    	var unread = document.getElementById('unreadStart');
-		    	if (unread) {
-		    		angular.element(unread).remove();
-		    	}
-		    	console.log('set unreadstart');
-		    	angular.element(msgContainer).find('div').eq(0).append('<div id="unreadStart"></div>');
-		    }
-	    });
+	    // $timeout(function() {
+	    // 	// Insert the Unread-Note before the 1st message.
+		   //  if (messageObjs.length) {
+		   //  	var unread = document.getElementById('unreadStart');
+		   //  	if (!unread) {
+		   //  		var firstMsgEl = document.getElementById('item-'+messageObjs[0].id);
+			  //   	var parentEl = angular.element(firstMsgEl).parent()[0];
+			  //   	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
+			  //   	parentEl && parentEl.insertBefore(note, firstMsgEl);
+		   //  	}
+		   //  } else {
+		   //  	var msgContainer = document.getElementById('msgContainer');
+		   //  	var unread = document.getElementById('unreadStart');
+		   //  	if (unread) {
+		   //  		angular.element(unread).remove();
+		   //  	}
+		   //  	console.log('set unreadstart');
+		   //  	angular.element(msgContainer).find('div').eq(0).append('<div id="unreadStart"></div>');
+		   //  }
+	    // });
 	  });
   }
 
@@ -391,10 +392,29 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
       if(err){
       	console.log(err);
       }
-      else{
-      	if(lastReadMessageInfo.unreadCount >= 0){
+      else {
+      	if (lastReadMessageInfo.unreadCount >= 0) {
 					getRoom(roomId).unreadCount=lastReadMessageInfo.unreadCount;
 					console.log(getRoom(roomId).unreadCount);//
+					// To check if in the chatroom
+					var msgContainer = document.getElementById('msgContainer');
+					if (msgContainer) {
+						// Insert the unread note
+			    	// var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($rootScope))[0];
+						if (lastReadMessageInfo.lastReadMessageId) {
+							_lastReadMessageId = lastReadMessageInfo.lastReadMessageId;
+							// console.log('Yes lastReadMessageId: '+_lastReadMessageId);
+							// var lastReadMsgEl = document.getElementById('item-'+_lastReadMessageId);
+							// console.log('lastReadMsgEl::');
+							// console.log(lastReadMsgEl);
+				   //  	var parentEl = angular.element(lastReadMsgEl).parent()[0];
+				   //  	console.log('parentEl::');
+				   //  	console.log(parentEl);
+				   //  	parentEl && parentEl.insertAfter(note, lastReadMsgEl);
+						// } else {
+							// angular.element(msgContainer).find('div').eq(0).prepend(note);
+						}
+					}
 				}
       }
 		});
@@ -446,6 +466,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		console.log('setCurrentRoom');//
 		console.log(roomId);//
 		_currentRoomId = roomId;
+		_lastReadMessageId = null;
 		_filterBy = {};
 		if(roomId!=-1){
 			joinRoom(roomId);
@@ -505,6 +526,21 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		return lastMessageId;	
 	}
 
+	function getUnreadMessagePosition(roomId) {
+		var unreadIndex = 0;
+		_.find(getRoom(roomId).viewMessages, function(obj, idx) {
+			if (obj.id === _lastReadMessageId) {
+				unreadIndex = idx;
+				return true;
+			}
+		});
+		return unreadIndex;
+	}
+
+	function getLastReadMessageId() {
+		return _lastReadMessageId;
+	}
+
 	function createMessage(newMessage){
 		console.log('emit room:messages:new')
 		LBSocket.emit('room:messages:new', newMessage);
@@ -538,6 +574,8 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 		filterByUser: filterByUser,
 		filterByDate: filterByDate,
 		getAllGroups: getAllGroups,
+		getUnreadMessagePosition: getUnreadMessagePosition,
+		getLastReadMessageId: getLastReadMessageId,
 	};
 
 	return service;
