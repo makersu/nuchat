@@ -6,6 +6,8 @@ module.exports = function(app) {
   var gm = require('gm');
   var moment = require('moment')
   var md5 = require('MD5');
+  var async =require('async');
+
 
   //var mongodb=require('loopback-connector-mongodb').mongodb
   var GridStore = require('mongodb').GridStore
@@ -15,8 +17,8 @@ module.exports = function(app) {
   	
 	  app.sio.on('connection', function(socket){
 
-	  	console.log('a user connected');
-      socket.emit('connection', 'ready?');
+	  	console.log('*on chat connection');
+      socket.emit('connection', 'connected');
 
       //console.log(socket.handshake)
       //var userData = socket.handshake.user || false;
@@ -74,46 +76,19 @@ module.exports = function(app) {
         console.log('user:profile')
       });
 
-      // //
-      // // UserList request
-      // //
-      // socket.on('friends:get', function (query) {
-      //   console.log('friends:get')
-      //   //console.log(app.models.User)
-        
-      //   app.models.user.find(function(err,friends){
-      //     console.log(friends)
-          
-      //     if(err){
-      //       console.log(err)
-      //     }
-      //     _.each(friends, function(friend) {
-      //       console.log(friend)
-      //       console.log('friends:new')
-      //       socket.emit('friends:new', {
-      //         id: friend.id,
-      //         username: friend.username,
-      //         avatarThumbnail: friend.avatarThumbnail,
-      //         avatarOriginal: friend.avatarOriginal
-      //       });
-      //     });//_.each
-
-      //   });//app.models.User.find
-      // })//socket.on
-
       //
       // get friends
       //
       socket.on('friends:get', function (data, cb) {
-        console.log('*on friends:get')
-        console.log(data)
+        console.log('*on friends:get');//
+        console.log(data);//
         
-        app.models.user.findById(data.user,function(err,user){
+        app.models.user.findById(data.userId, function(err, user){
           if(err){
-            console.log(err)
-            cb(err)
+            console.log(err);
+            cb(err);
           }
-          console.log(user)
+          console.log(user);
 
           var filter={
             fields: {id: true, username: true, email:true, avatarThumbnail:true, avatarOriginal:true }, 
@@ -121,7 +96,7 @@ module.exports = function(app) {
                 id:{ inq: user.friends}
             }
           }
-          console.log(JSON.stringify(filter))          
+          console.log(JSON.stringify(filter));          
 
           app.models.user.find(filter,function(err, objs){
             if(err){
@@ -710,29 +685,29 @@ module.exports = function(app) {
       // });
 
       //
-      // Get room information(last message, total count)
+      // Get room latest message
       //
-      socket.on('room:messages:last', function(data, cb) {
-        console.log('*on room:messages:last')
+      socket.on('room:messages:latest', function(data, cb) {
+        console.log('*on room:messages:latest')
         console.log(data)
         var filter =  { "where":{
                           roomId: data.roomId
                         },
                         order: 'created DESC',
-                        limit: 1,
+                        // limit: 1,
                       }
 
         console.log(filter)
 
-        app.models.message.find(filter,function(err, objs){
-          console.log(objs);
+        app.models.message.findOne(filter,function(err, obj){
           if(err){
             console.log(err);
             cb(err);
           }
           else{
-            if(objs[0]){
-              cb(null, objs[0]);
+            if(obj){
+              console.log(obj);//
+              cb(null, obj);
             }
             else{
               //no message
@@ -794,8 +769,9 @@ module.exports = function(app) {
 
       // });//end socket.on
 
-      socket.on('room:messages:lastRead', function(data, cb) {
-        console.log('*on room:messages:lastRead')
+      socket.on('room:lastReadMessage:get', function(data, cb) {
+        console.log('*on room:lastReadMessage:get')
+        console.log(data);
         var lastReadMessageInfo={
           lastReadMessageId: undefined,
           unreadCount: undefined
@@ -809,9 +785,9 @@ module.exports = function(app) {
         console.log(JSON.stringify(existedFilter))
 
         app.models.lastReadMessage.findOne(existedFilter, function(err, existedObj){
-          // console.log(existedObj);
 
           if(existedObj){
+            console.log(existedObj);//
             lastReadMessageInfo.lastReadMessageId = existedObj.messageId; 
           }
 
@@ -832,7 +808,7 @@ module.exports = function(app) {
               return;
             }
             else{
-              console.log(count)
+              console.log(count);//
               lastReadMessageInfo.unreadCount = count;
               console.log(lastReadMessageInfo)
               cb(null, lastReadMessageInfo);
@@ -858,28 +834,38 @@ module.exports = function(app) {
         //                 } 
         //               }
         //data.messageId = data.messageId || 0 ;
-        var filter =  { "where":{
-                          roomId: data.roomId
+        var filter =  { "where":{ 
+                          or:[{roomId: data.roomId}]
                         },
                         order: 'created ASC',
-                        //limit: 10,
+                        limit: 500,
                       }
         
-        if(data.lastMessageId){
-          filter.where.id={ gt:data.lastMessageId }
+        if(data.lastReadMessageId){
+          var cond={}
+          cond.and=[]
+          cond.and.push({roomId: data.roomId});
+          cond.and.push({id:{ gt:data.lastReadMessageId } });
+          filter.where.or.push(cond)
         }
 
         console.log(JSON.stringify(filter))
 
-        app.models.message.find(filter,function(err,objs){
+        app.models.message.find(filter,function(err, objs){
           console.log(objs.length)
-          if(cb){
-            //fn(objs)//
-            cb(objs)
+          if(err){
+            cb(err);
+          }
+          else{
+            cb(null, objs);
           }
           
         });
 
+
+      });
+
+      socket.on('room:messages:previous', function(data,cb) {
 
       });
 
@@ -895,7 +881,8 @@ module.exports = function(app) {
 
         console.log(JSON.stringify(existedFilter))
 
-        app.models.lastReadMessage.findOne(existedFilter,function(err,existedObj){
+        app.models.lastReadMessage.findOne(existedFilter, function(err, existedObj){
+          console.log(existedObj);
           if(existedObj){
                var filter =  { "where":{
                           roomId: data.roomId,
@@ -906,32 +893,31 @@ module.exports = function(app) {
 
                 console.log(JSON.stringify(filter))
 
-                app.models.lastReadMessage.findOne(filter,function(err,obj){
-                
-                  console.log(obj);
-                  if( obj ){
-                    data.id=obj.id
-                    app.models.lastReadMessage.upsert(data,function(err,obj){
+                app.models.lastReadMessage.findOne(filter,function(err, obj){
+                  console.log(obj);//
+                  if( obj ){  //if find older messageId then update to last read messageId
+                    obj.messageId=data.messageId
+                    app.models.lastReadMessage.upsert(obj,function(err, updatedObj){
                       if(err){
                         console.log(err)//
                         cb(err);
                         return;
                       }
-                      console.log(obj)//
-                      cb(null,obj);
+                      console.log(updatedObj)//
+                      cb(null, updatedObj.messageId);
                     });
 
                   }
-                  else{
-                    cb(null,null)//TODO
+                  else{ //not found older messageId
+                    cb(null, data.messageId)//TODO
                   }
                   
                 });
 
           }
           else{
-            console.log('!existedObj')//
-            console.log('create')
+            console.log('!existedObj then create')//
+
             app.models.lastReadMessage.create(data, function(err,obj){
               if(err){
                 console.log(err);
@@ -1014,41 +1000,41 @@ module.exports = function(app) {
 
       // });
        
-      socket.on('room:lastReadMessage:get', function(data,cb) {
-        console.log('*on room:lastReadMessage:get');
-        console.log(data)
-        //var today=new Date()
-        //data.since = data.since || new Date(today).setDate(today.getDate() - 7);
-        // var filter =  { "where":{
-        //                   roomId: data.roomId,
-        //                   created: {gt: data.since }
-        //                 } 
-        //               }
-        //data.messageId = data.messageId || 0 ;
-        var filter =  { "where":{
-                          roomId: data.roomId
-                        },
-                        order: 'created ASC',
-                        //limit: 10,
-                      }
+      // socket.on('room:lastReadMessage:get', function(data,cb) {
+      //   console.log('*on room:lastReadMessage:get');
+      //   console.log(data)
+      //   //var today=new Date()
+      //   //data.since = data.since || new Date(today).setDate(today.getDate() - 7);
+      //   // var filter =  { "where":{
+      //   //                   roomId: data.roomId,
+      //   //                   created: {gt: data.since }
+      //   //                 } 
+      //   //               }
+      //   //data.messageId = data.messageId || 0 ;
+      //   var filter =  { "where":{
+      //                     roomId: data.roomId
+      //                   },
+      //                   order: 'created ASC',
+      //                   //limit: 10,
+      //                 }
         
-        if(data.lastMessageId){
-          filter.where.id={ gt:data.lastMessageId }
-        }
+      //   if(data.lastMessageId){
+      //     filter.where.id={ gt:data.lastMessageId }
+      //   }
 
-        console.log(JSON.stringify(filter))
+      //   console.log(JSON.stringify(filter))
 
-        app.models.message.find(filter,function(err,objs){
-          console.log(objs.length)
-          if(cb){
-            //fn(objs)//
-            cb(objs)
-          }
+      //   app.models.message.find(filter,function(err,objs){
+      //     console.log(objs.length)
+      //     if(cb){
+      //       //fn(objs)//
+      //       cb(objs)
+      //     }
           
-        });
+      //   });
 
 
-      });
+      // });
 
       //
       // New Message
@@ -1069,35 +1055,143 @@ module.exports = function(app) {
         createRoomMessage(data);
       });//end socket.on
 
+      // //
+      // // update tags of message
+      // //
+      // socket.on('room:message:tags', function(data, cb) {
+      //   console.log('room:message:tags');
+      //   console.log(data);
+      //   // cb(data);
+      //   app.models.message.findById(data.id,function(err, existedObj){          
+      //     if(existedObj){
+      //       existedObj.tags=data.tags;
+
+      //       // console.log(existedObj);
+      //       app.models.message.upsert(existedObj,function(err, updatedObj){ //upsert if not master?
+      //         if(err){
+      //           console.log(err);
+      //           cb(err);
+      //         }
+      //         cb(updatedObj);
+      //         // app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); //???
+      //       });
+      //     }
+      //     else{
+      //       console.log('room:message:tags not existed!');
+      //       cb('room:message:tags not existed!');
+      //     }  
+
+      //   });
+        
+      // });//end socket.on
+
       //
       // update tags of message
       //
       socket.on('room:message:tags', function(data, cb) {
-        console.log('room:message:tags');
+        console.log('*on room:message:tags');
         console.log(data);
-        // cb(data);
-        app.models.message.findById(data.id,function(err, existedObj){          
-          if(existedObj){
-            existedObj.tags=data.tags;
+        // console.log(JSON.stringify(cb));
 
-            // console.log(existedObj);
-            app.models.message.upsert(existedObj,function(err, updatedObj){ //upsert if not master?
-              if(err){
-                console.log(err);
-                cb(err);
-              }
-              cb(updatedObj);
-              // app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); //???
-            });
-          }
-          else{
-            console.log('room:message:tags not existed!');
-            cb('room:message:tags not existed!');
-          }  
+        async.parallel([
+            function(){ //update tags of message
+              app.models.message.findById(data.id,function(err, obj){
+                if(obj){
+                  obj.tags=data.tags;
+                  app.models.message.upsert(obj, function(err, updatedObj){ //upsert if not master?
+                    if(err){
+                      console.log(err);
+                      cb(err);
+                    }
+                    cb(null, updatedObj.tags);
+                    // app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); //???
+                  });
+                }
+                else{
+                  console.log('message does not exist!');
+                  cb('message does not exist!');
+                }  
 
+              });//end app.models.message.findById
+            },
+            function(){ //add tags to room
+              app.models.room.findById(data.roomId,function(err, obj){
+                if(obj){
+                  // console.log(obj);
+                  if(obj.tags){
+                    _.each(data.tags,function(tag){
+                      obj.tags.push(tag);
+                    })
+                  }
+                  else{
+                    obj.tags=data.tags;
+                  }
+                  
+                  // console.log(obj);
+                  app.models.room.upsert(obj, function(err, updatedObj){ //upsert if not master?
+                    if(err){
+                      console.log(err);  
+                    }
+                    else{
+                      console.log(updatedObj);
+                    }
+                  });
+                }
+                else{
+                  console.log('room does not exist!');
+                }
+              });//end app.models.room.findById
+            }
+        ],
+        //async.series callback
+        function(err, results){
+            console.log("async callback")
+            if(err){
+              console.log(err);
+            }
+            else{
+              console.log(results);
+            }
         });
         
+        
       });//end socket.on
+
+      //get tags of room
+      socket.on('room:tags:get', function(data, cb) {
+        console.log('*on room:tags:get');
+        app.models.room.findById(data.roomId,function(err, obj){          
+          if(obj){
+            cb(null, obj.tags);
+          }
+          else{
+            console.log('room:tags:get not existed!');
+            cb('room:tags:get not existed!'); //TODO return message?
+          }  
+        })
+      });
+
+      //update tags of room
+      socket.on('room:tags:update', function(data, cb) {
+        console.log('*on room:tags:update');
+        app.models.room.findById(data.roomId,function(err, obj){
+          if(obj){
+            obj.tags=data.tags;
+            app.models.room.upsert(obj, function(err, updatedObj){ //upsert if not master?
+              if(err){
+                console.log(err);  
+              }
+              else{
+                console.log(updatedObj);
+              }
+            });//end app.models.room.upsert
+          }
+          else{
+            console.log('room:tags:get not existed!');
+            cb('room:tags:get not existed!');
+          }  
+        })
+      });
 
       //
       // New File
@@ -1247,14 +1341,16 @@ module.exports = function(app) {
           if(returnTimestamp){
               data.message.timestamp=returnTimestamp;
           }
-          app.models.message.count({roomId: obj.roomId},function(err,count){
-            console.log(count)
-            data.total=count
-            // console.log(data.message.timestamp)
-            console.log(data)
-            console.log('emit room:messages:new')
-            app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
-          }); 
+          app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
+
+          // app.models.message.count({roomId: obj.roomId},function(err,count){
+          //   console.log(count)
+          //   data.total=count
+          //   // console.log(data.message.timestamp)
+          //   console.log(data)
+          //   console.log('emit room:messages:new')
+          //   app.sio.sockets.in(obj.roomId).emit('room:messages:new', data); 
+          // }); 
           
         });
       };//createRoomMessage
@@ -1408,6 +1504,7 @@ module.exports = function(app) {
       };//createRoomImageMessage
 
       var createRoomVideoMessage = function(data){
+        console.log('createRoomVideoMessage');
         var savePath = '/tmp/'+data.filename
 
         var start=moment()//
@@ -1488,8 +1585,21 @@ module.exports = function(app) {
        
       };//createRoomAudioMessage
 
+      // var getRoomTags = function(data, cb){
+      //   app.models.room.findById(data.roomId,function(err, existedObj){          
+      //     if(existedObj){
+      //       cb(null, existedObj.tags);
+      //     }
+      //     else{
+      //       console.log('room:tags:get not existed!');
+      //       cb('room:tags:get not existed!');
+      //     }  
+      //   })
+      // }
+
 	  	socket.on('disconnect', function(){
-	  		console.log('*user disconnected');
+	  		console.log('*chat disconnect');
+        // console.log(socket);
 	  	});
 	  });
 
