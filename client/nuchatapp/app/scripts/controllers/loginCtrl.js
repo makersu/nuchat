@@ -1,13 +1,11 @@
-function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService, signaling, SignalingService, $state, $timeout) {
+function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket, AccountService, FriendService, SignalingService, $state, $timeout) {
   console.log('LoginCtrl');
-
+  
   /**
    * Redirect user to the app if already logged in
    */
-  console.log(User.getCachedCurrent());
-  if (User.getCachedCurrent()!==null) {
-    FriendService.getAllFriends();//
-    console.log('$state.go(tab.chats);');
+  if (User.getCachedCurrent() !==null || User.getCurrentId() !==null) {
+    FriendService.emitGetAllFriends();
     $state.go('tab.chats');
   }
 
@@ -44,18 +42,22 @@ function LoginCtrl($scope, $location, $ionicPopup, $ionicHistory, User, LBSocket
     // console.log($scope.credentials);//
     $scope.loginResult = User.login({include: 'user', rememberMe: true}, $scope.credentials,
       function () {
+        console.log('User.isAuthenticated()='+User.isAuthenticated());//
+        console.log('User.getCurrentId()='+User.getCurrentId());//
+        console.log('User.getCachedCurrent()='+User.getCachedCurrent());//
 
         $scope.credentials={};
         
         AccountService.setAvatarUrl();
 
-        FriendService.getAllFriends();
+        FriendService.emitGetAllFriends();
 
-        console.log('self:join');//
-        LBSocket.emit('self:join', User.getCachedCurrent().id);
+        // console.log('self:join');//
+        // LBSocket.emit('self:join', User.getCachedCurrent().id);
 
-        console.log('signaling.emit login');//
-        signaling.emit('signalingLogin', User.getCachedCurrent().id);
+        // console.log('signaling.emit login');//
+        // signaling.emit('signalingLogin', User.getCachedCurrent().id);
+        SignalingService.login();
 
         // $ionicHistory.nextViewOptions({disableBack: true, disableAnimate: true});//
 
