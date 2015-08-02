@@ -65,8 +65,13 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       $location.hash($rootScope.currentMsg.id);
       console.log($rootScope.currentMsg);//
       console.log('LBSocket.emit room:message:tags');
-      LBSocket.emit('room:message:tags', $rootScope.currentMsg ,function(tags) { 
-        console.log(tags);
+      LBSocket.emit('room:message:tags', $rootScope.currentMsg ,function(err, updatedTags) {
+        if(err){
+          console.log(err);
+        }
+        else{
+          console.log(updatedTags);
+        }
       });
       $ionicScrollDelegate.anchorScroll();
     };
@@ -85,7 +90,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
     });
     // Listen to stateChangeSuccess event
     $rootScope.$on('$stateChangeSuccess', function(event, toState, toParams, fromState, fromParams) {
-      console.log('on $stateChangeSuccess');
+      // console.log('on $stateChangeSuccess');
       
       /** Moved to the $ionicView.enter event of the specified state controller. **/
       // var tabs = null;
@@ -149,7 +154,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
   });
 })
 .run(function($ionicPlatform){
-    ImgCache.options.debug = true;
+    // ImgCache.options.debug = true;
     ImgCache.options.chromeQuota = 25*1024*1024;
 
     $ionicPlatform.ready(function() {
@@ -164,9 +169,10 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
 .run(function (User) {
   //Check if User is authenticated
   if (User.getCachedCurrent() == null) {
-      console.log('User.getCachedCurrent() == null');
-      var user=User.getCurrent();
-      console.log(user);
+      // console.log('User.getCachedCurrent() == null');//
+      // console.log('User.isAuthenticated()='+User.isAuthenticated());//
+      // console.log('User.getCurrentId()='+User.getCurrentId());//
+      User.getCurrent();
   }
 })
 // .run(function ($state, signaling) {

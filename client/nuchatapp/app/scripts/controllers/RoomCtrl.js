@@ -27,7 +27,7 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
   // Scope Public
 	$scope.openCreateRoom = function () {
     console.log('openCreateRoom');
-    $scope.friendList = _.values(FriendService.friends);
+    $scope.friendList = _.values(FriendService.getFriends());
     if (!$scope.roomModal) {
       $ionicModal.fromTemplateUrl('templates/modals/modalCreateEditRoom.html', {
         scope: $scope,
@@ -75,10 +75,21 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
     console.log('doRefresh');//
     
     // $scope.availableRooms = RoomService.getAllRooms();
-    RoomService.getAllRooms();//
-    $scope.availableRooms = RoomService.rooms;
+    RoomService.emitGetAllRooms();
+    // console.log('RoomService.rooms');//
+    // console.log(RoomService.rooms);//
+    
+    // $scope.availableRooms = RoomService.rooms;
+    // console.log('$scope.availableRooms');//
+    // console.log($scope.availableRooms);//
 
-    var unWatchAvailableRooms = $scope.$watch('availableRooms', function(newVal) {
+    var unWatchAvailableRooms = $scope.$watch(
+      function() { return RoomService.getRooms() },
+      function(newVal, oldValue) {
+      // console.log('newVal');
+      // console.log(newVal);
+      // console.log('oldValue');      
+      // console.log(oldValue);      
       if (newVal) {
         $scope.availableRoomList = _.values(newVal);
       }

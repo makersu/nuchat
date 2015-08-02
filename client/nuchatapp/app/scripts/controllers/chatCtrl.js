@@ -121,6 +121,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   /* Getting the all the users joined this room except the currentUser
    */
   function getRoomUsers() {
+    console.log('getRoomUsers');
     $scope.joinerList = [];
     // console.log($scope.room);//
     angular.forEach($scope.room.joiners, function(joiner) {
@@ -583,10 +584,11 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   $scope.$on('$ionicView.enter', function() {
     console.log('enter controller');
     // console.log($scope.room);//
-    $scope.friends = FriendService.friends;
+    $scope.friends = FriendService.getFriends();
     // Getting the other users joined the room.
     getRoomUsers();
     RoomService.getRoomMessages($scope.room.id);
+    RoomService.getRoomTags($scope.room.id);
     // $scope.room.groupedMessages = $filter('groupBy')($scope.room.messages, 'created', function(msg) {
     //   return $filter('amChatGrouping')(msg.created);
     // });
@@ -612,7 +614,8 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
   });
 
   $scope.$on('onResume', function() {
-    $scope.friends = FriendService.friends;
+    console.log('onResume');
+    $scope.friends = FriendService.getFriends();
     // Getting the other users joined the room.
     getRoomUsers();
     RoomService.getRoomMessages($scope.room.id);
@@ -674,7 +677,7 @@ function ChatCtrl($scope, $rootScope, $document, $state, $stateParams, $animate,
       var spoke = $scope.friends[args.msg.ownerId];
       if (spoke) {
         $scope.notify = spoke.username+': '+$filter('brief')(args.msg);
-        console.log('set notify');
+        // console.log('set notify');
       } else {
         console.error('Cannot find the user('+args.msg.ownerId+') from the friend list');
       }
