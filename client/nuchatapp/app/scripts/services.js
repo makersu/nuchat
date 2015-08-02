@@ -12,62 +12,28 @@ angular.module('Nuchatapp.services', [])
 .factory('$scrolls', ScrollService)
 .factory('$imageFilters', ImageFilterService)
 .factory('$utils', UtilService)
-.factory('PouchService', PouchService)
-.factory('signaling', function (socketFactory,ENV) {
-    console.log('signaling')
-    var url='http://140.123.4.17:3001/';
-    // var url='http://54.92.67.230:3000/';//aws
-    // var url=ENV.BASE_URL
-    console.log('signaling '+url)
+// .factory('PouchService', PouchService)
+//TODO: rename
+// .factory('signaling', function (socketFactory,ENV) {
+//     // console.log('signaling')
+//     var url='http://140.123.4.17:3001/';
+//     // var url='http://54.92.67.230:3000/';//aws
+//     // var url=ENV.BASE_URL
+//     console.log('signaling '+url)
 
-    // var socket = io.connect(url);
-    var socket = io(url, {
-      transports: [ 'websocket' ]
-    });
+//     // var socket = io.connect(url);
+//     var socket = io(url, {
+//       transports: [ 'websocket' ]
+//     });
     
-    var socketFactory = socketFactory({
-      ioSocket: socket
-    });
+//     var socketFactory = socketFactory({
+//       ioSocket: socket
+//     });
 
-    return socketFactory;
-})
-.factory('SignalingService', SignalingService)
-// .factory('ContactsService', function (signaling) {
-//   console.log('ContactsService')
-//   var onlineUsers = [];
-
-//   //addto onlineUsers if someone online
-//   signaling.on('online', function (name) {
-//     console.log('signaling.on online')
-//     console.log(name)
-//     if (onlineUsers.indexOf(name) === -1) {
-//       onlineUsers.push(name);
-//     }
-//   });
-
-//   //remove from onlineUsers if someone offline
-//   signaling.on('signaling.on offline', function (name) {
-//     var index = onlineUsers.indexOf(name);
-//     if (index !== -1) {
-//       onlineUsers.splice(index, 1);
-//     }
-//   });
-
-//   return {
-//     onlineUsers: onlineUsers,
-//     setOnlineUsers: function (users, currentName) {
-//       console.log('setOnlineUsers')
-//       this.currentName = currentName;
-      
-//       onlineUsers.length = 0;
-//       users.forEach(function (user) {
-//         if (user !== currentName) {
-//           onlineUsers.push(user);
-//         }
-//       });
-//     }
-//   }
+//     return socketFactory;
 // })
+.factory('SignalingSocket', SignalingSocket)
+.factory('SignalingService', SignalingService)
 .factory('$localstorage', ['$window', function($window) {
   return {
     set: function(key, value) {

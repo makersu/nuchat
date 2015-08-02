@@ -1,9 +1,9 @@
-function SignalingService($state, $ionicPopup, User, signaling, FriendService) {
-  console.log('SignalingService')
+function SignalingService($state, $ionicPopup, User, SignalingSocket, FriendService) {
+  console.log('SignalingService');
   var onlineUsers = [];
   var onlineFriends = [];
 
-  signaling.on('login_error', function (message) {
+  SignalingSocket.on('login_error', function (message) {
     console.log('signaling.on login_error');
     var alertPopup = $ionicPopup.alert({
       title: 'Error',
@@ -11,14 +11,14 @@ function SignalingService($state, $ionicPopup, User, signaling, FriendService) {
     });
   });
 
-  signaling.on('login_successful', function (users) {
+  SignalingSocket.on('login_successful', function (users) {
     console.log('signaling.on login_successful');
     console.log(users);
     setOnlineUsers(users, User.getCachedCurrent().id);
   });
 
   //addto onlineUsers if someone online
-  signaling.on('online', function (userId) {
+  SignalingSocket.on('online', function (userId) {
     console.log('signaling.on online');
     console.log(userId);
     console.log(onlineUsers);
@@ -29,7 +29,7 @@ function SignalingService($state, $ionicPopup, User, signaling, FriendService) {
 
     //???
     // console.log(FriendService.friends);
-    var friendIds = Object.keys(FriendService.friends);
+    var friendIds = Object.keys(FriendService.getFriends());
     console.log(friendIds);
     if ( friendIds.indexOf(userId) != -1 && onlineFriends.indexOf(userId) === -1 ) {
         onlineFriends.push(userId);
@@ -40,7 +40,7 @@ function SignalingService($state, $ionicPopup, User, signaling, FriendService) {
 
   //remove from onlineUsers if someone offline
   //TODO: if someone offline on call?
-  signaling.on('offline', function (userId) {
+  SignalingSocket.on('offline', function (userId) {
     console.log('signaling.on offline');
     console.log(userId);
     var index = onlineUsers.indexOf(userId);
@@ -57,7 +57,7 @@ function SignalingService($state, $ionicPopup, User, signaling, FriendService) {
   });
 
   //receiving call //2
-  signaling.on('messageReceived', function (fromUserId, message) {
+  SignalingSocket.on('messageReceived', function (fromUserId, message) {
     console.log('signaling.on messageReceived');
     switch (message.type) {
       case 'call':
@@ -81,8 +81,13 @@ function SignalingService($state, $ionicPopup, User, signaling, FriendService) {
     console.log(onlineUsers);
   }
 
+  function login(){
+    console.log('signaling.emit login');//
+    SignalingSocket.emit('signalingLogin', User.getCachedCurrent().id);
+  }
 
   return {
+    login: login,
     onlineUsers: onlineUsers,
     onlineFriends: onlineFriends,
     setOnlineUsers: setOnlineUsers
