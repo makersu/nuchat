@@ -6,6 +6,9 @@ function TagService($filter) {
 
 	/* Methods */
 	function add(item, tag) {
+		if(!tag){
+			return;
+		}
 		var tags = tag.trim().split(',');
 		angular.forEach(tags, function(untrim) {
 			var trimmedTag = untrim.trim();
