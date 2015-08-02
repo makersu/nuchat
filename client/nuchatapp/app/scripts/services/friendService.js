@@ -1,34 +1,34 @@
-function FriendService(User, LBSocket, ENV, $q, PouchService) {
+function FriendService(User, LBSocket, ENV, $q) {
 	console.log('FriendService');
 
 	var friends = {};
 
 	//TODO: refactoring $q.defer()?
 	//load frineds from pouchdb and get friends from server 
-	function getAllFriends() {
-		console.log('getAllFriends');
+	// function getAllFriends() {
+	// 	console.log('getAllFriends');
 
-		emitGetAllFriends();
+	// 	emitGetAllFriends();
 		
-		return _.values(friends);//return array
-	}
+	// 	return _.values(friends);//return array
+	// }
 
-	//load friends from pouchdb
-	function loadAllFriends(){
-		console.log('loadAllFriends');
-		PouchService.getAllFriends().then(function(rows){
-			console.log(rows.length);
-			rows.forEach(function(row){
-				// console.log(row);
-				addFriend(row);
-			})
-		});
-	}
+	// //load friends from pouchdb
+	// function loadAllFriends(){
+	// 	console.log('loadAllFriends');
+	// 	PouchService.getAllFriends().then(function(rows){
+	// 		console.log(rows.length);
+	// 		rows.forEach(function(row){
+	// 			// console.log(row);
+	// 			addFriend(row);
+	// 		})
+	// 	});
+	// }
 
 	//TODO: refactoring rename and PouchService?
 	function emitGetAllFriends(){
-		console.log('emitGetFriends');
-		LBSocket.emit('friends:get', { user: User.getCachedCurrent().id }, function(err, friendObjs) {
+		console.log('emitGetAllFriends');
+		LBSocket.emit('friends:get', { userId: User.getCurrentId() }, function(err, friendObjs) {
 			if (err) {
 				console.log(err);
 			}
@@ -63,15 +63,15 @@ function FriendService(User, LBSocket, ENV, $q, PouchService) {
 		});
 	}
 
-	//save friend to pouchdb
-	function saveFriend(user){
-		//TODO: addFriend failed if saveFriend failed
-		PouchService.saveFriend(user).then(function(doc){
-			console.log(doc);
-		},function(err){
-			console.log(err);
-		});//end PouchService.saveFriend
-	}
+	// //save friend to pouchdb
+	// function saveFriend(user){
+	// 	//TODO: addFriend failed if saveFriend failed
+	// 	PouchService.saveFriend(user).then(function(doc){
+	// 		console.log(doc);
+	// 	},function(err){
+	// 		console.log(err);
+	// 	});//end PouchService.saveFriend
+	// }
 
 	//TODO: refactoring pouchdb and emit name?
 	//add new friends to friend list
@@ -112,7 +112,9 @@ function FriendService(User, LBSocket, ENV, $q, PouchService) {
   }
 
   function removeAll(){
+		console.log('removeAll');
 		friends = {};
+		console.log(friends);
   }
 
   function searchFriend(data){
@@ -133,15 +135,18 @@ function FriendService(User, LBSocket, ENV, $q, PouchService) {
 		return deferred.promise;
   }
 
-  // getFriends();
+  function getFriends(){
+  	// console.log(friends);
+  	return friends;
+  }
 
   var service = {
-  	friends: friends,
-		getAllFriends: getAllFriends,
+  	emitGetAllFriends: emitGetAllFriends,
 		getFriend: getFriend,
 		addNewFriends: addNewFriends,
 		removeAll: removeAll,
-		searchFriend: searchFriend
+		searchFriend: searchFriend,
+		getFriends: getFriends
   };
 
   return service;

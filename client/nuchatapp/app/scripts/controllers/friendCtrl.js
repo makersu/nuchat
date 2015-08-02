@@ -79,11 +79,12 @@ function FriendCtrl($scope, $state, $ionicHistory, $location, $ionicModal, User,
     $state.go('videocall',{ isCalling: true, contactTarget: angular.toJson(friend) },{location: 'replace'});
   };
 
+  //TODO: watch FriendService.getFriends()?
   $scope.doRefresh = function() {
     console.log('doRefresh')
     // $scope.friends=FriendService.getAllFriends();
-    $scope.friends=_.values(FriendService.friends);
-    console.log($scope.friends);
+    $scope.friends=_.values(FriendService.getFriends());
+    // console.log($scope.friends);
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply()
   };
