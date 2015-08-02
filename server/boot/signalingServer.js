@@ -8,10 +8,10 @@ module.exports = function(app) {
 	app.on('started', function() {
 
 		app.sio.on('connection', function(socket){
-			console.log('*Signaling connection');
+			console.log('*on signaling connection');
 
 			socket.on('signalingLogin', function (userId) {
-				console.log('*Signaling login');
+				console.log('*on signalingLogin');
 				// console.log(userId);
 				
 				// if this socket is already connected,
@@ -112,7 +112,7 @@ module.exports = function(app) {
 			});//socket.on sendMessage
 
 			socket.on('disconnect', function () {
-				console.log('*Signaling disconnect');
+				console.log('*signaling disconnect');
 				
 				// var index = _.findIndex(users, { socket: socket.id });
 				// // console.log(index)
