@@ -1,12 +1,13 @@
 {
   "name": "nuchat",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "main": "server/server.js",
   "scripts": {
     "pretest": "jshint ."
   },
   "dependencies": {
     "MD5": "^1.2.1",
+    "async": "^1.4.0",
     "body-parser": "^1.10.2",
     "compression": "^1.0.3",
     "errorhandler": "^1.1.1",
