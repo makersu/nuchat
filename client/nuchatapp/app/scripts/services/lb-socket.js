@@ -1,21 +1,21 @@
 function LBSocket($rootScope, ENV, User) {
 
-  console.log('websocket '+ENV.BASE_URL);
+  console.log('LBSocket '+ENV.BASE_URL);
  
   //var socket = io.connect(ENV.BASE_URL);
   var socket = io(ENV.BASE_URL, {
     transports: [ 'websocket' ]
   });
 
-  //when get new room
+  //when connection
   socket.on('connection', function(data) {
-    console.log('connection');
-    console.log(data);
+    console.log('LBSocket '+ data);
+
     if(User.getCachedCurrent()){
       socket.emit('self:join', User.getCachedCurrent().id);
     }
 
-  });//rooms:new
+  });
 
   return {
     on: function (eventName, callback) {
