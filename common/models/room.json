@@ -17,6 +17,9 @@
     "joiners": {
       "type": "array"
     },
+    "tags": {
+      "type": "array"
+    },
     "created": {
       "type": "date"
     },
