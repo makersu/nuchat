@@ -6,7 +6,7 @@ function RegisterCtrl($scope, $ionicPopup, $location, User, LBSocket, AccountSer
 	/**
    * Redirect user to the app if already logged in
    */
-  console.log(User.getCachedCurrent());//
+  // console.log(User.getCachedCurrent());//
   if (User.getCachedCurrent()!==null) {
     $location.path('/tab/chats');
   }
@@ -26,7 +26,7 @@ function RegisterCtrl($scope, $ionicPopup, $location, User, LBSocket, AccountSer
       .then(function (res) {
         $scope.registration={}
         AccountService.setAvatarUrl()
-        LBSocket.emit('self:join', User.getCachedCurrent().id);
+        // LBSocket.emit('self:join', User.getCachedCurrent().id);
         $location.path('/tab/chats')
       }, function (err) {
         $scope.loginError = err;
