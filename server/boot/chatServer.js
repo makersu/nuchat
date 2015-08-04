@@ -87,7 +87,14 @@ module.exports = function(app) {
           if(err){
             console.log(err);
             cb(err);
+            return;
           }
+          else if(!user){
+            console.log('!user');
+            cb('!user');
+            return;
+          }
+
           console.log(user);
 
           var filter={
