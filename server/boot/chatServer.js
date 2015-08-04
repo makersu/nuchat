@@ -87,7 +87,14 @@ module.exports = function(app) {
           if(err){
             console.log(err);
             cb(err);
+            return;
           }
+          else if(!user){
+            console.log('!user');
+            cb('!user');
+            return;
+          }
+
           console.log(user);
 
           if (user) {
@@ -828,28 +835,40 @@ module.exports = function(app) {
       socket.on('room:messages:get', function(data,cb) {
         console.log('*on room:messages:get')
         console.log(data)
-        //var today=new Date()
-        //data.since = data.since || new Date(today).setDate(today.getDate() - 7);
-        // var filter =  { "where":{
-        //                   roomId: data.roomId,
-        //                   created: {gt: data.since }
-        //                 } 
-        //               }
-        //data.messageId = data.messageId || 0 ;
+
         var filter =  { "where":{ 
-                          or:[{roomId: data.roomId}]
+                          roomId: data.roomId
                         },
-                        order: 'created ASC',
-                        limit: 500,
+                        order: 'created DESC',
+                        limit: 300,
                       }
-        
-        if(data.lastReadMessageId){
-          var cond={}
-          cond.and=[]
-          cond.and.push({roomId: data.roomId});
-          cond.and.push({id:{ gt:data.lastReadMessageId } });
-          filter.where.or.push(cond)
-        }
+
+        console.log(JSON.stringify(filter))
+
+        //TODO: db.collection.find().skip()?
+        app.models.message.find(filter,function(err, objs){
+          console.log(objs.length)
+          if(err){
+            cb(err);
+          }
+          else{
+            cb(null, _(objs).reverse());
+          }
+        });//end app.models.message.find
+
+      });//end socket.on
+
+      socket.on('room:messages:history', function(data,cb) {
+        console.log('*on room:messages:history')
+        console.log(data)
+
+        var filter =  { "where":{ 
+                          roomId: data.roomId,
+                          id: { lt: data.messageId }
+                        },
+                        order: 'created DESC',
+                        limit: 300,
+                      }
 
         console.log(JSON.stringify(filter))
 
@@ -859,17 +878,11 @@ module.exports = function(app) {
             cb(err);
           }
           else{
-            cb(null, objs);
-          }
-          
-        });
+            cb(null, _(objs).reverse());
+          }          
+        });//end app.models.message.find
 
-
-      });
-
-      socket.on('room:messages:previous', function(data,cb) {
-
-      });
+      });//end socket.on
 
       socket.on('room:lastReadMessage:update', function(data,cb) {
         console.log('*on room:lastReadMessage:update');
