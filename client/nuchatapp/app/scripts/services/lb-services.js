@@ -1,7 +1,8 @@
 (function(window, angular, undefined) {'use strict';
 
 var authHeader = 'authorization';
-var urlBase = 'http://140.123.4.17:3001/api';//
+// var urlBase = 'http://140.123.4.17:3001/api';//
+var urlBase = 'http://10.0.0.104:3001/api';//
 
 /**
  * @ngdoc overview

@@ -325,6 +325,7 @@ angular.module('Nuchatapp', ['ionic', 'config', 'jangular.ui', 'jangular.mobile'
       responseError: function (rejection) {
         console.log("Redirect");
         console.log(rejection);
+        console.log($location.path());
         if (rejection.status == 401 && $location.path() !== '/login' && $location.path() !== '/register') {
           $location.nextAfterLogin = $location.path();
           $location.path('/login');

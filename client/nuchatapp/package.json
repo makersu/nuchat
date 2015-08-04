@@ -61,7 +61,6 @@
     "https://github.com/katzer/cordova-plugin-local-notifications",
     "https://github.com/alongubkin/phonertc.git",
     "org.apache.cordova.network-information",
-    "https://github.com/makersu/makersu-phonertc.git",
     "https://github.com/brodysoft/Cordova-SQLitePlugin",
     "nl.x-services.plugins.socialsharing",
     "https://github.com/EddyVerbruggen/Calendar-PhoneGap-Plugin.git",
@@ -69,7 +68,13 @@
       "locator": "https://github.com/EddyVerbruggen/Calendar-PhoneGap-Plugin.git",
       "id": "nl.x-services.plugins.calendar"
     },
-    "org.apache.cordova.file-transfer"
+    "org.apache.cordova.file-transfer",
+    "https://github.com/crosswalk-project/cordova-plugin-crosswalk-webview.git",
+    "https://github.com/katzer/cordova-plugin-local-notifications.git",
+    "cordova-plugin-whitelist",
+    "cordova-plugin-splashscreen"
   ],
-  "cordovaPlatforms": []
+  "cordovaPlatforms": [
+    "android"
+  ]
 }

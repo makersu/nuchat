@@ -39,10 +39,12 @@
     <preference name="SplashScreen" value="screen" />
     <preference name="SplashScreenDelay" value="3000" />
     <preference name="Orientation" value="portrait" />
+    <preference name="LIB_MODE" value="shared" />
     <feature name="SocialSharing">
         <param name="id" value="nl.x-services.plugins.socialsharing" />
     </feature>
     <feature name="File Transfer">
         <param name="id" value="org.apache.cordova.file-transfer" />
     </feature>
+    <plugin name="cordova-plugin-crosswalk-webview" spec="^1.2.0" />
 </widget>

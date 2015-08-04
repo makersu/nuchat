@@ -90,22 +90,24 @@ module.exports = function(app) {
           }
           console.log(user);
 
-          var filter={
-            fields: {id: true, username: true, email:true, avatarThumbnail:true, avatarOriginal:true }, 
-            "where": { 
-                id:{ inq: user.friends}
+          if (user) {
+            var filter={
+              fields: {id: true, username: true, email:true, avatarThumbnail:true, avatarOriginal:true }, 
+              "where": { 
+                  id:{ inq: user.friends}
+              }
             }
-          }
-          console.log(JSON.stringify(filter));          
+            console.log(JSON.stringify(filter));          
 
-          app.models.user.find(filter,function(err, objs){
-            if(err){
-              console.log(err);
-              cb(err);
-            }
-            console.log(objs);
-            cb(null, objs);
-          });//user.find
+            app.models.user.find(filter,function(err, objs){
+              if(err){
+                console.log(err);
+                cb(err);
+              }
+              console.log(objs);
+              cb(null, objs);
+            });//user.find
+          }
         });//user.findById
       })//socket.on
 
