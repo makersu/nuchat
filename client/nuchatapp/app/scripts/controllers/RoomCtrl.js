@@ -73,29 +73,9 @@ function RoomCtrl($scope, $state, $location, RoomService, $timeout, User, $filte
 
   $scope.doRefresh = function() {
     console.log('doRefresh');//
-    
-    // $scope.availableRooms = RoomService.getAllRooms();
+
     RoomService.emitGetAllRooms();
-    // console.log('RoomService.rooms');//
-    // console.log(RoomService.rooms);//
-    
-    // $scope.availableRooms = RoomService.rooms;
-    // console.log('$scope.availableRooms');//
-    // console.log($scope.availableRooms);//
 
-    // var unWatchAvailableRooms = $scope.$watch(
-    //   function() { return RoomService.getRooms() },
-    //   function(newVal, oldValue) {
-    //   // console.log('newVal');
-    //   // console.log(newVal);
-    //   // console.log('oldValue');      
-    //   // console.log(oldValue);      
-    //   if (newVal) {
-    //     $scope.availableRoomList = _.values(newVal);
-    //   }
-    // }, true);
-
-    // $scope.friendList = _.values(FriendService.friends);
     $scope.$broadcast('scroll.refreshComplete');
     $scope.$apply();
   };

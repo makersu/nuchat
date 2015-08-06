@@ -27,9 +27,9 @@ function TagService($filter) {
 		updateTags();
 	}
 	function getTagList() {
-		return { tags: _tags };
+		return _tags;
 	}
-	function setItemList(list) {
+	function refreshTagList(list) {
 		_filteredList = _itemList = list;
 		updateTags();
 	}
@@ -91,7 +91,7 @@ function TagService($filter) {
 		add: add,
 		remove: remove,
 		getTagList: getTagList,
-		setItemList: setItemList,
+		refreshTagList: refreshTagList,
 		filterList: filterList,
 		getFilteredList: getFilteredList,
 		getOriginalList: getOriginalList,

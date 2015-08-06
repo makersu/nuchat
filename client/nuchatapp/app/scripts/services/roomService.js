@@ -8,6 +8,11 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	var _filterBy = {};
 	var _lastReadMessageId = null;
 
+	/**
+	 * WebSocket Events
+	 */
+	// TODO: clean up
+	 
 	//when get new room created by self or others
 	LBSocket.on('rooms:new', function(room) {
     console.log('on rooms:new');
@@ -15,7 +20,6 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
 		//add room then join room
 		addRoom(room);
-
   });//rooms:new
 
 	//TODO: update joinerList in chatCtrl
@@ -39,6 +43,7 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 
 
 	//when get new message
+	// TODO: Need to clean up and refactor
   LBSocket.on('room:messages:new', function(newMessageInfo) {
 		console.log('room:messages:new');
 		console.log(newMessageInfo);
@@ -78,91 +83,458 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	  }  
   });
 
-	//TODO: get everytime when enter room?if current room dont get?
-  function getRoomMessages(roomId){
-  	console.log('getRoomMessages');
-  	
-  	var data = {}
-  	data.roomId=roomId
-  	// var lastMessageId = getLastMessageId(roomId)
-  	// if( lastMessageId ){
-  	// 	data.lastMessageId = lastMessageId
-  	// }
-  	var lastReadMessageId = getLastReadMessageId();
-  	if( lastReadMessageId ){
-  		data.lastReadMessageId = lastReadMessageId
-  	}
-  	console.log(data);
 
-  	LBSocket.emit('room:messages:get', data , function(err, messageObjs){
-  		console.log('room:messages:get')//
-	    // console.log(messages)//
-	    console.log(messageObjs.length)//
-	    for (var i = 0; i < messageObjs.length; i++) {
-	    	addMessage(messageObjs[i])
-	    	// updateRoomInfo(messages.messages[i]);//???
-	    }
-	    // console.log(_.last(messageObjs))//
-			emitUpdateRoomLastReadMessage(_.last(messageObjs));
-
-	    if (!messageObjs.length) {
-				grouping(getRoom(roomId));
-	    }
-
-	    // $timeout(function() {
-	    // 	// Insert the Unread-Note before the 1st message.
-		   //  if (messageObjs.length) {
-		   //  	var unread = document.getElementById('unreadStart');
-		   //  	if (!unread) {
-		   //  		var firstMsgEl = document.getElementById('item-'+messageObjs[0].id);
-			  //   	var parentEl = angular.element(firstMsgEl).parent()[0];
-			  //   	var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($scope))[0];
-			  //   	parentEl && parentEl.insertBefore(note, firstMsgEl);
-		   //  	}
-		   //  } else {
-		   //  	var msgContainer = document.getElementById('msgContainer');
-		   //  	var unread = document.getElementById('unreadStart');
-		   //  	if (unread) {
-		   //  		angular.element(unread).remove();
-		   //  	}
-		   //  	console.log('set unreadstart');
-		   //  	angular.element(msgContainer).find('div').eq(0).append('<div id="unreadStart"></div>');
-		   //  }
-	    // });
-	  });
+	/* Private methods */
+  function getRoom(roomId) {
+		return rooms[roomId];
+	}
+	
+  function groupByDate(room) {
+  	room.viewMessages = $filter('groupDiv')(room.viewMessages, 'group');
   }
 
-  function getRoomTags(roomId){
-  	LBSocket.emit('room:tags:get', {roomId: roomId} , function(err, tags){
-  		console.log('room:tags:get');
-  		if(err){
-  			console.log(err);
-  		}
-  		else{
-  			console.log(tags)
+  function filtering(room) {
+  	// console.log(_filterBy);
+    room.viewMessages = angular.copy( $filter('filter')(_.values(room.messages), {group: _filterBy.date, ownerId: _filterBy.ownerId}) );
+    // console.log(room.viewMessages);
+    groupByDate(room);
+    $NUChatTags.refreshTagList(room.viewMessages);
+    room.tagList = $NUChatTags.getTagList();
+  }
+
+  function addRooms(newRooms) {
+  	if (DEBUG) {	// Debugging logs
+  		console.log('addRooms');
+			console.log(newRooms.length);
+  	}
+		newRooms.forEach(function(newRoom) {
+			addRoom(newRoom);
+		});
+	}
+
+	function addRoom(newRoom) {
+		if (DEBUG) {	// Debugging logs
+			console.log('addRoom');
+			console.log(newRoom);
+		}
+
+		if ( isPrivate(newRoom) ) {	// Private room
+    	if (newRoom.joiners) {
+    		var friend;
+	    	DEBUG && console.log(room.joiners);
+	    	newRoom.joiners.forEach(function(joiner) {
+	    		if (joiner != User.getCachedCurrent().id) {
+	    			friend = FriendService.getFriend(joiner)
+	    		}
+	    	});
+	    	DEBUG && console.log(friend); // Debugging log
+	    	// if private and it's friend
+	    	if (friend) {
+	    		// Creates room if not exists.
+	    		if (!rooms[newRoom.id]) {
+		    		newRoom.name = friend.username;
+		  			newRoom.roomThumbnail = friend.avatarThumbnail;
+		  			newRoom.messages = {};
+				    // console.log(room);
+						rooms[newRoom.id] = newRoom;
+	    		}
+	    		// Joins the room.
+					joinRoom(newRoom.id);
+				} else {	// No friends...
+					console.warn('!friend');
+					console.warn(newRoom.joiners)
+				}	
+    	} else {	// No joiners
+    		console.warn('!room.joiners')
+    	}
+    } else {	// Group room
+    	// Creates room if not exists.
+			if (!rooms[newRoom.id]) {
+				newRoom.messages = {};
+				rooms[newRoom.id] = newRoom;
+			}
+			// Joins the room;
+			joinRoom(newRoom.id);
+		}
+	}
+
+	// TODO: join room then update room last message and last read message?
+	function joinRoom(roomId) {
+		if (DEBUG) {	// Debugging logs
+			console.log('joinRoom');
+			console.log(roomId);
+		}
+
+		LBSocket.emit('room:join', {roomId: roomId}, function(err, roomObj) {
+			DEBUG && console.log('room:join');	// Debugging log
+			if (err) {
+				console.error(err);
+				return;
+			}
+			DEBUG && console.log(roomObj);	// Debugging log
+
+			emitGetRoomLatestMessage(roomObj.id);
+			emitGetLastReadMessageInfo(roomObj.id, User.getCachedCurrent().id);
+		});
+	}
+
+	function emitGetRoomLatestMessage(roomId) {
+		DEBUG && console.log('emitGetRoomLatestMessage'); // Debugging log
+
+    LBSocket.emit('room:messages:latest', {roomId: roomId} , function(err, latestMessage) {
+    	if (DEBUG) {	// Debugging logs
+    		console.log('room:messages:latest');
+      	console.log(latestMessage);
+    	}
+      if (err) {
+      	console.error(err);
+      } else {
+      	updateRoomLatestMessage(latestMessage);
+      }
+		});
+
+	}
+
+	function updateRoomLatestMessage(latestMessage) {
+		DEBUG && console.log('updateRoomLatestMessage'); // Debugging log
+		if (latestMessage) {
+			getRoom(latestMessage.roomId).latestMessage = latestMessage;
+		}
+	}
+
+	// TODO: rename
+	function emitGetLastReadMessageInfo(roomId, userId) {
+		DEBUG && console.log('emitGetLastReadMessageInfo'); // Debugging log
+
+    LBSocket.emit('room:lastReadMessage:get', {roomId: roomId, userId: userId}, function(err, lastReadMessageInfo) {
+    	if (DEBUG) {	// Debugging logs
+	      console.log('room:lastReadMessage:get');
+	      console.log(lastReadMessageInfo);
+	    }
+
+      if (err) {
+      	console.error(err);
+      } else {
+      	if (lastReadMessageInfo.unreadCount >= 0) {
+					getRoom(roomId).unreadCount = lastReadMessageInfo.unreadCount;
+					// console.log(getRoom(roomId).unreadCount);//
+					getRoom(roomId).lastReadMessageId = lastReadMessageInfo.lastReadMessageId; //need?
+					// console.log(getRoom(roomId).lastReadMessageId);//need?
+
+					// To check if in the chatroom and set the id of the last read message
+					var msgContainer = document.getElementById('msgContainer');
+					if (msgContainer) {
+						if (lastReadMessageInfo.lastReadMessageId) {
+							_lastReadMessageId = lastReadMessageInfo.lastReadMessageId;
+							console.log('Yes lastReadMessageId: '+_lastReadMessageId);
+						}
+					}
+				}
+      }
+		});
+	}
+
+
+	/* Room operations */
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.createGroupRoom
+	 * @description Creates a group room.
+	 * @param {object} newRoom New room object contains the related info.
+	 */
+	function createGroupRoom(newRoom) {
+		if (DEBUG) {	// Debugging logs
+			console.log('createGroupRoom');
+			console.log(newRoom);
+		}
+		LBSocket.emit('rooms:group:create', newRoom);
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.updateGroupRoom
+	 * @description Updates the given group room.
+	 * @param {object} updateRoom The room object to update.
+	 */
+	function updateGroupRoom(updateRoom) {
+		if (DEBUG) {	// Debugging logs
+			console.log('updateGroupRoom');
+			console.log(updateRoom);
+		}
+		LBSocket.emit('rooms:group:update', updateRoom, function(err, obj) {
+			if (err) {
+				console.error(err);
+			}
+		});
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.createPrivateRoom
+	 * @description Creates a new private room.
+	 * @param {object} privateroom New room object contains the related info.
+	 * @returns {object} The promise of created status from server.
+	 */
+	function createPrivateRoom(privateroom) {
+		if (DEBUG) {	// Debugging logs
+			console.log('createPrivateRoom');
+			console.log(privateroom);
+		}
+		
+		var deferred = $q.defer();
+    LBSocket.emit('rooms:private:create', privateroom, function(err, room) {
+      DEBUG && console.log('rooms:private:create callback'); // Debugging log
+      if (err) {
+      	deferred.reject(err);
+      } else {
+      	DEBUG && console.log(room); // Debugging log
+      	deferred.resolve(room);
+      }
+		});
+		return deferred.promise;
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.getRooms
+	 * @description Gets all local cahced rooms.
+	 * @returns {object} All rooms object.
+	 */
+	function getRooms() {
+  	return rooms;
+	}
+	
+	/**
+	 * @ngdoc method
+	 * @name RoomService.emitGetAllRooms
+	 * @description Emits to get all rooms related to the current user.
+	 */
+	function emitGetAllRooms() {
+		if (DEBUG) {	 // Debugging logs
+			console.log('emitGetAllRooms');
+			console.log(User.getCurrentId());
+			// console.log('rooms');
+			// console.log(rooms);
+		}
+		
+		LBSocket.emit('rooms:get', { user: User.getCurrentId() }, function(err, roomObjs) {
+			DEBUG && console.log('rooms:get'); // Debugging log
+			if (err) {
+				console.error(err);
+			} else {
+				addRooms(roomObjs);
+			}			
+		});
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.removeAll
+	 * @description Clear the local cached rooms.
+	 */
+	function removeAll() {
+		DEBUG && console.log('removeAll');	// Debugging log
+		rooms = {};
+		DEBUG && console.log(rooms);	// Debugging log
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.searchMessage
+	 * @description Full text searching in the room.
+	 * @param {string} TODO:
+	 * @returns TODO:
+	 */
+	function searchMessage() {		
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.getRoomTags
+	 * @description Gets all tags about the messages in the given room.
+	 * @param {string} roomId The id of room to get.
+	 */
+	function getRoomTags(roomId) {
+  	LBSocket.emit('room:tags:get', {roomId: roomId}, function(err, tags) {
+  		DEBUG && console.log('room:tags:get'); // Debugging log
+  		if (err) {
+  			console.error(err);
+  		} else {
+  			console.log(tags);
   		}
   	});
   }
 
+  /**
+	 * @ngdoc method
+	 * @name RoomService.updateTags
+	 * @description Updates all tags about the messages in the given room.
+	 * @param {string} roomId The id of room to update.
+	 * @param {object} tags Tags which need to update to the server.
+	 */
+  function updateTags(roomId, tags) {
+		DEBUG && console.log('room:tags:update'); // Debugging log
+		LBSocket.emit('room:tags:update', {roomId: roomId, tags: tags}, function(err, updatedTags) {
+	    if (err) {
+	      console.error(err);
+	    } else {
+	      console.log(updatedTags);
+	    }
+	  });
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.joinSelf
+	 * @description Joins the self room of current user to listen to the new messages.
+	 */
+	function joinSelf() {
+    DEBUG && console.log('joinSelf');	// Debugging log
+    LBSocket.emit('self:join', User.getCurrentId());
+	}
+
+
+	/* Chatroom operations */
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.setCurrentRoom
+	 * @description Sets the current active (entering to chat) room.
+	 * @param {string} roomId Current active (entering to chat) room id.
+	 */
+	function setCurrentRoom(roomId) {
+		if (DEBUG) { // Debuggin logs
+			console.log('setCurrentRoom');
+			console.log(roomId);
+		}
+
+		_currentRoomId = roomId;
+		_lastReadMessageId = null;
+		_filterBy = {};
+		if (roomId != -1) {
+			joinRoom(roomId);
+		}
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.getCurrentRoom
+	 * @description Gets the current active (chatting) room.
+	 * @returns {object} The room object which is currently active (chatting).
+	 */
+	function getCurrentRoom() {
+		if (DEBUG) { // Debuggin logs
+			console.log('getCurrentRoom');
+			console.log(_currentRoomId);
+		}
+		return rooms[_currentRoomId];
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.getRoomMessages
+	 * @description
+	 * Initially getting the messages of given room id.
+	 * This will emit the websocket event and broadcast to notify when
+	 * all messages have bound to the room object.
+	 * @param {string} roomId The room id to get the messages
+	 */
+  function getRoomMessages(roomId){
+  	DEBUG && console.log('getRoomMessages'); // Debugging log
+  	
+  	var data = { roomId: roomId };
+  	var lastReadMessageId = getLastReadMessageId();
+  	if( lastReadMessageId ){
+  		data.lastReadMessageId = lastReadMessageId
+  	}
+  	DEBUG && console.log(data); // Debugging log
+
+  	LBSocket.emit('room:messages:get', data , function(err, messageObjs){
+  		if (DEBUG) {	// Debugging logs
+  			console.log('room:messages:get');
+		    // console.log(messages);
+		    console.log(messageObjs.length);
+  		}
+
+  		// Binding messages to the room object
+	    for (var i = 0; i < messageObjs.length; i++) {
+	    	addMessage(messageObjs[i]);
+	    }
+			emitUpdateRoomLastReadMessage(_.last(messageObjs));
+			// Not sure if still need...
+	    // if (!messageObjs.length) {
+				// groupMessagesByDate(getRoom(roomId));
+	    // }
+
+	    // Broadcast to notify messages completed loaded.
+	    $rootScope.$broadcast('roomMessagesGot');
+	  });
+  }
+
+  function isPrivate(room) {
+  	return (room.type && room.type === 'private');
+  }
+
+  function isGroup(room) {
+  	return room.type === 'group';
+  }
+
   //TODO: performance?
+  /**
+	 * @ngdoc method
+	 * @name RoomService.addMessage
+	 * @description
+	 * Adds a message recieved from remote server or
+	 * asynchronously appended with files from local to the room object.
+	 * And broadcast to notify to update views.
+	 * @param {object} message The message object to add.
+	 */
   function addMessage(message) {
-  	console.log('addMessage');
-		// console.log(message);
+  	DEBUG && console.log('addMessage'); // Debugging log
 		var room = getRoom(message.roomId);
 		if (!message.id) {
-			console.log('local adding');
-			// console.log(message);
+			if (DEBUG) {	// Debugging logs
+				console.log('local adding');
+				console.log(message);
+			}
+
 			message.id = message.timestamp; // For removing from view after updating from server.
 			room.messages[message.timestamp] = message;
 		} 
 		else {
 			room.messages[message.id] = message;
 		}
-		// console.log(room);
-		// grouping(room);
-		// console.log(room);
+		groupMessagesByDate(room);
 		
 		$rootScope.$broadcast('onNewMessage', { msg: message });
+  }
+
+  /**
+	 * @ngdoc method
+	 * @name RoomService.emitCreateMessage
+	 * @description
+	 * Create a message to remote server through websocket.
+	 * @param {object} newMessage The message object to create.
+	 */
+  function emitCreateMessage(newMessage){
+		DEBUG && console.log('emit room:messages:new')
+		LBSocket.emit('room:messages:new', newMessage);
+	}
+
+	/**
+	 * @ngdoc method
+	 * @name RoomService.groupMessagesByDate
+	 * @description
+	 * Classifies messages into group by created date.
+	 * @param {object} room The room object to arrange.
+	 */
+	function groupMessagesByDate(room) {
+	  room.viewMessages = $filter('groupDiv')(room.messages, function(msg) {
+	    return $filter('amChatGrouping')(msg.created);
+	  });
+    $NUChatTags.refreshTagList(room.viewMessages);
+    room.tagList = $NUChatTags.getTagList();
   }
 
   function emitUpdateRoomLastReadMessage(message){
@@ -188,92 +560,70 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
   	}
   }
 
-  function grouping(room, newMsg) {
-  	// if ( newMsg && _prevLatestMsg && !$utils.sameDate(newMsg.created, _prevLatestMsg.created) ) {
-   //    var groupName = $filter('amChatGrouping')(newMsg.created);
-   //    room.viewMessages.push({type: METATYPE.GROUP, text: groupName});
-   //    newMsg.group = groupName;
-   //    room.viewMessages.push(newMsg);
-   //  } else if (!_prevLatestMsg) {
-	  room.viewMessages = $filter('groupDiv')(room.messages, function(msg) {
-	    return $filter('amChatGrouping')(msg.created);
-	  });
-	  // console.log(room.viewMessages);
-    // } else {
-    // 	console.log('what!!!');
-    //   // Append to the latest group.
-    //   // getLastGroup(room).items.push(newMsg);
-    //   newMsg.group = _prevLatestMsg.group;
-    //   room.viewMessages.push(newMsg);
-    // }
-    // filtering(room);
-    $NUChatTags.setItemList(room.viewMessages);
-    room.tagList = $NUChatTags.getTagList().tags;
-    // console.log(room);
-    // _prevLatestMsg = angular.copy(newMsg);
-  }
-
-  function groupByDate(room) {
-  	room.viewMessages = $filter('groupDiv')(room.viewMessages, 'group');
-  }
-
-  function getLastGroup(room, last) {
-  	if (room.allGroupedMessages && room.allGroupedMessages.length)
-  		return room.allGroupedMessages[room.allGroupedMessages.length-(last || 1)];
-  	return null;
-  }
-
-  function isPrivate(room) {
-  	// console.log('isPrivate');
-  	// console.log(room)
-  	return (room.type && room.type === 'private');
-  }
-
-  function isGroup(room) {
-  	return room.type === 'group';
-  }
-
+  /**
+	 * @ngdoc method
+	 * @name RoomService.filterByUser
+	 * @description
+	 * Filtering messages by given user id.
+	 * @param {object} room The room object which contains messages to filter.
+	 * @param {string} userId The user id to filter by.
+	 */
   function filterByUser(room, userId) {
     _filterBy.ownerId = userId;
     filtering(room);
   }
+  /**
+	 * @ngdoc method
+	 * @name RoomService.filterByDate
+	 * @description
+	 * Filtering messages by given date.
+	 * @param {object} room The room object which contains messages to filter.
+	 * @param {string} date The date(MM-dd EEE) to filter by.
+	 */
   function filterByDate(room, date) {
     _filterBy.date = date;
     filtering(room);
   }
-  function filtering(room) {
-  	// console.log(_filterBy);
-    room.viewMessages = angular.copy( $filter('filter')(_.values(room.messages), {group: _filterBy.date, ownerId: _filterBy.ownerId}) );
-    // console.log(room.viewMessages);
-    groupByDate(room);
-    $NUChatTags.setItemList(room.viewMessages);
-    room.tagList = $NUChatTags.getTagList().tags;
-    
-    // angular.forEach(room.viewMessages, function(group) {
-    //   group.items = $filter('filter')(group.items, { ownerId: _filterBy.ownerId });
-    //   console.log(group.items);
-    // });
-    // room.viewMessages = $filter('filter')(room.viewMessages, { ownerId: _filterBy.ownerId });
-    // console.log(room.groupedMessages);
-    // console.log(room.allGroupedMessages);
-  }
-  function getAllGroups(room) {
+  /**
+	 * @ngdoc method
+	 * @name RoomService.getAllMessages
+	 * @description
+	 * Reset filters and get original messages of the room.
+	 * @param {object} room The room object which contains the messages.
+	 */
+  function getAllMessages(room) {
     _filterBy = {};
     filtering(room);
   }
 
-	//getAllRooms
-	// function getAllRooms() {
-	// 	console.log('getAllRooms');
+  /**
+	 * @ngdoc method
+	 * @name RoomService.getUnreadMessagePosition
+	 * @description
+	 * Gets the start id of unread messages.
+	 * @param {string} roomId The room id which contains the messages.
+	 * @returns {Integer} The start index of unread messages, if none, returns 0.
+	 */
+  function getUnreadMessagePosition(roomId) {
+		var unreadIndex = 0;
+		_.find(getRoom(roomId).viewMessages, function(obj, idx) {
+			if (obj.id === _lastReadMessageId) {
+				unreadIndex = idx;
+				return true;
+			}
+		});
+		return unreadIndex;
+	}
 
-	// 	emitGetAllRooms();
-		
- //  	return rooms;
-	// }
-
-	//getAllRooms
-	function getRooms() {
-  	return rooms;
+	/**
+	 * @ngdoc method
+	 * @name RoomService.getLastReadMessageId
+	 * @description
+	 * Gets the id of the last read message.
+	 * @returns {string} The id of the last read message.
+	 */
+	function getLastReadMessageId() {
+		return _lastReadMessageId;
 	}
 
 	// //load rooms from pouchdb
@@ -287,353 +637,37 @@ function RoomService($q, $cordovaLocalNotification, User, LBSocket, FriendServic
 	// 	})
 	// }
 
-	//TODO: refactoring rename and PouchService?
-	function emitGetAllRooms(){
-		console.log('emitGetAllRooms');
-		console.log(User.getCurrentId());
-		// console.log('rooms');
-		// console.log(rooms);
-		LBSocket.emit('rooms:get', { user: User.getCurrentId() }, function(err, roomObjs) {
-			console.log('rooms:get');
-			if (err) {
-				console.error(err);
-			}
-			else{
-					addRooms(roomObjs);
-			}			
-		});
-	}
 
-	function addRooms(newRooms) {
-		console.log('addRooms');
-		console.log(newRooms.length);
-		newRooms.forEach(function(newRoom){
-			addRoom(newRoom);
-		});
-		// console.log('rooms');//
-		// console.log(rooms);//
-	}
-
-	//TODO: addRoom then joinRoom?
-	function addRoom(newRoom) {
-		console.log('addRoom')
-		console.log(newRoom);
-
-		if( isPrivate(newRoom) ) {
-    	if(newRoom.joiners){
-    		var friend;
-	    	// console.log(room.joiners)
-	    	newRoom.joiners.forEach(function(joiner){
-	    		// console.log(joiner)
-	    		if(joiner != User.getCachedCurrent().id){
-	    			friend=FriendService.getFriend(joiner)
-	    			// console.log(friend);
-	    		}
-	    	})
-	    	console.log(friend);
-	    	//if private and it's friend
-	    	// if (friend && !rooms[room.id]) {
-	    	if (friend) {
-	    		if (!rooms[newRoom.id]) {
-		    		newRoom.name = friend.username;
-		  			newRoom.roomThumbnail = friend.avatarThumbnail;
-		  			newRoom.messages = {};
-				    // console.log(room);
-						rooms[newRoom.id] = newRoom;
-	    		}
-					joinRoom(newRoom.id);
-				}
-				else{
-					console.log('!friend');
-					console.log(newRoom.joiners)
-				}	
-
-    	}
-    	else{
-    		console.log('!room.joiners')
-    	}
-				
-    }
-    else{
-    	// console.log(room.type);
-			if(!rooms[newRoom.id]){
-				newRoom.messages = {};
-				rooms[newRoom.id] = newRoom;
-			}
-			joinRoom(newRoom.id);
-		}
-
-	}
-
-	//TODO: join room then update room last message and last read message?
-	function joinRoom(roomId){
-		console.log('joinRoom');
-		console.log(roomId);
-
-		LBSocket.emit('room:join', {roomId: roomId}, function(err, roomObj) {
-			console.log('room:join');
-			if (err) {
-				console.error(err);
-				return;
-			}
-			console.log(roomObj);
-
-			emitGetRoomLatestMessage(roomObj.id);
-			emitGetLastReadMessageInfo(roomObj.id, User.getCachedCurrent().id);
-
-		});//room:join
-
-	}
-
-	function emitGetRoomLatestMessage(roomId){
-		console.log('emitGetRoomLatestMessage');//
-
-    LBSocket.emit('room:messages:latest', {roomId: roomId} , function(err, latestMessage){
-      console.log('room:messages:latest');//
-      console.log(latestMessage);//
-      if(err){
-      	console.log(err);
-      }
-      else{
-      	updateRoomLatestMessage(latestMessage);
-      }
-		});
-
-	}
-
-	function updateRoomLatestMessage(latestMessage){
-		console.log('updateRoomLatestMessage');
-		if(latestMessage){
-					getRoom(latestMessage.roomId).latestMessage=latestMessage;
-					// console.log(getRoom(latestMessage.roomId).latestMessage);//
-		}
-	}
-
-	//TODO: rename
-	function emitGetLastReadMessageInfo(roomId, userId){
-		console.log('emitGetLastReadMessageInfo');//
-
-    LBSocket.emit('room:lastReadMessage:get', {roomId: roomId, userId: userId} , function(err, lastReadMessageInfo){
-      console.log('room:lastReadMessage:get');//
-      console.log(lastReadMessageInfo);
-
-      if(err){
-      	console.log(err);
-      }
-      else {
-      	if (lastReadMessageInfo.unreadCount >= 0) {
-					getRoom(roomId).unreadCount=lastReadMessageInfo.unreadCount;
-					// console.log(getRoom(roomId).unreadCount);//
-					getRoom(roomId).lastReadMessageId=lastReadMessageInfo.lastReadMessageId;//need?
-					// console.log(getRoom(roomId).lastReadMessageId);//need?
-					// To check if in the chatroom
-					var msgContainer = document.getElementById('msgContainer');
-					if (msgContainer) {
-						// Insert the unread note
-			    	// var note = angular.element($compile('<unread-note id="unreadStart"></unread-note>')($rootScope))[0];
-						if (lastReadMessageInfo.lastReadMessageId) {
-							_lastReadMessageId = lastReadMessageInfo.lastReadMessageId;
-							console.log('Yes lastReadMessageId: '+_lastReadMessageId);
-							// var lastReadMsgEl = document.getElementById('item-'+_lastReadMessageId);
-							// console.log('lastReadMsgEl::');
-							// console.log(lastReadMsgEl);
-				   //  	var parentEl = angular.element(lastReadMsgEl).parent()[0];
-				   //  	console.log('parentEl::');
-				   //  	console.log(parentEl);
-				   //  	parentEl && parentEl.insertAfter(note, lastReadMsgEl);
-						// } else {
-							// angular.element(msgContainer).find('div').eq(0).prepend(note);
-						}
-					}
-				}
-      }
-		});
-
-	}
-
-	function createGroupRoom(newRoom){
-		console.log('createGroupRoom')
-		console.log(newRoom)
-		LBSocket.emit('rooms:group:create', newRoom)
-	}
-
-	function updateGroupRoom(updateRoom){
-		console.log('updateGroupRoom')
-		console.log(updateRoom)
-		LBSocket.emit('rooms:group:update', updateRoom, function(err,obj){
-			if(err){
-				console.log(err);
-			}
-		})
-	}
-
-	function createPrivateRoom(privateroom){
-		console.log('createPrivateRoom')
-		console.log(privateroom)
-		
-		var deferred = $q.defer();
-
-    LBSocket.emit('rooms:private:create', privateroom, function(err, room) {
-      console.log('rooms:private:create callback');
-      if(err){
-      	deferred.reject(err);
-      }
-      else{
-      	console.log(room);
-      	deferred.resolve(room);
-      }
-		});
-
-		return deferred.promise;
-	}
-	
-	function getRoom(roomId) {
-		return rooms[roomId];
-	}
-
-	//TODO: setCurrentRoom then joinRoom?
-	function setCurrentRoom(roomId) {
-		console.log('setCurrentRoom');//
-		console.log(roomId);//
-		_currentRoomId = roomId;
-		_lastReadMessageId = null;
-		_filterBy = {};
-		if(roomId!=-1){
-			joinRoom(roomId);
-		}
-		
-	}
-
-	function getCurrentRoom() {
-		console.log('getCurrentRoom');//
-		console.log(_currentRoomId);//
-		return rooms[_currentRoomId];
-	}
-
-	// //TODO: refactoring reanme room.lastMessage?
-	// function updateRoomInfo(roomInfo){
-	// 	console.log('updateRoomInfo');
-	// 	console.log(roomInfo)
-
-	// 	if(roomInfo.lastMessage){
-	// 		var room = getRoom(roomInfo.lastMessage.roomId)
-	// 		room.lastMessage=roomInfo.lastMessage
-	// 		// room.total=roomInfo.total
-	// 		var unread = roomInfo.total-Object.keys(room.messages).length
-	// 		console.log(unread);
-	// 		room.unread= (unread > 0) ? unread : 0 ;
-	// 	}
-	// }
-
-	//TODO:?
-	// function getLastMessage(roomId) {
-	// 	console.log('getLastMessage');
-	// 	// console.log(roomId);
-	// 	var room = getRoom(roomId);
-	// 	// console.log(room);//
-	// 	var lastMessage;
-	// 	if(room.messages){
-	// 		var lastKeyIndex=Object.keys(room.messages).length - 1
-	// 		console.log(lastKeyIndex);//
-
-	// 		lastMessage= room.messages[Object.keys(room.messages)[lastKeyIndex]]
-	// 		// console.log(lastMessage);
-	// 	}
-	// 	return lastMessage;	
-	// }
-
-	// function getLastMessageId(roomId) {
-	// 	console.log('getLastMessageId');
-	// 	console.log(roomId)
-	// 	var lastMessage=getLastMessage(roomId)
-	// 	console.log(lastMessage);//
-	// 	var lastMessageId;
-
-	// 	if(lastMessage){
-	// 		lastMessageId=lastMessage.id;
-	// 	}
-
-	// 	return lastMessageId;	
-	// }
-
-	function getUnreadMessagePosition(roomId) {
-		var unreadIndex = 0;
-		_.find(getRoom(roomId).viewMessages, function(obj, idx) {
-			if (obj.id === _lastReadMessageId) {
-				unreadIndex = idx;
-				return true;
-			}
-		});
-		return unreadIndex;
-	}
-
-	function getLastReadMessageId() {
-		return _lastReadMessageId;
-	}
-
-	function createMessage(newMessage){
-		console.log('emit room:messages:new')
-		LBSocket.emit('room:messages:new', newMessage);
-	}
-
-	function removeAll(){
-		console.log('removeAll');
-		rooms = {};
-		console.log(rooms);
-	}
-
-	function searchMessage(){		
-	}
-
-	function updateTags(roomId, tags){
-		console.log('room:tags:update')//
-		LBSocket.emit('room:tags:update', {roomId: roomId, tags: tags} ,function(err, updatedTags) {
-	    if(err){
-	      console.log(err);
-	    }
-	    else{
-	      console.log(updatedTags);
-	    }
-	  });
-	}
-
-	//join self room
-	function joinSelf(){
-    console.log('joinSelf');//
-    LBSocket.emit('self:join', User.getCurrentId());
-	}
-
+	// Initializing
 	joinSelf();
 
+	// Public methods
 	var service = {
-		rooms: rooms,
 		createGroupRoom: createGroupRoom,
 		updateGroupRoom: updateGroupRoom,
 		createPrivateRoom: createPrivateRoom,
+		getRooms: getRooms,
+		emitGetAllRooms: emitGetAllRooms,
+		removeAll: removeAll,
+		searchMessage: searchMessage,
+		getRoomTags: getRoomTags,
+		updateTags: updateTags,
+
 		setCurrentRoom: setCurrentRoom,
 		getCurrentRoom: getCurrentRoom,
 		getRoomMessages: getRoomMessages,
-		filterByUser: filterByUser,
-		filterByDate: filterByDate,
-		getAllGroups: getAllGroups,
-		createMessage: createMessage,
-		addMessage: addMessage,
-		getLastGroup: getLastGroup,
 		isPrivate: isPrivate,
 		isGroup: isGroup,
-		removeAll: removeAll,
-		grouping: grouping,
+		addMessage: addMessage,
+		emitCreateMessage: emitCreateMessage,
+		groupMessagesByDate: groupMessagesByDate,
 		filterByUser: filterByUser,
 		filterByDate: filterByDate,
-		// getAllGroups: getAllGroups,
+		getAllMessages: getAllMessages,
 		getUnreadMessagePosition: getUnreadMessagePosition,
 		getLastReadMessageId: getLastReadMessageId,
-		getRoomTags: getRoomTags,
-		searchMessage: searchMessage,
-		updateTags: updateTags,
+
 		joinSelf: joinSelf,
-		getRooms: getRooms,
-		emitGetAllRooms: emitGetAllRooms
 	};
 
 	return service;
